@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ThesiSmart — CeiboMed</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:#f0f2f5;color:#0f1923;min-height:100vh}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+:root{
+  --bg:#f0f2f5;--surface:#ffffff;--ink:#0f1923;--inkSoft:#3d4f5c;--inkMuted:#7a8d99;
+  --accent:#1a5276;--accentLt:#d6eaf8;--accentMid:#2980b9;
+  --gold:#b7950b;--goldLt:#fef9e7;--goldMid:#c9a84c;
+  --success:#1e8449;--successLt:#d5f5e3;
+  --warn:#b7770d;--warnLt:#fef3cd;
+  --danger:#922b21;--dangerLt:#fadbd8;
+  --border:#dce3e8;--shadow:0 2px 12px rgba(15,25,35,0.08);
+  --dark:#0f1a2e;--darkMid:#1a2d4a
+}
+#app{display:flex;flex-direction:column;min-height:100vh}
+header{background:var(--dark);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,0.3)}
+.logo-main{font-family:Georgia,serif;font-size:1.35rem;color:#fff;letter-spacing:-.5px}
+.logo-main span{color:var(--goldMid)}
+.logo-sub{font-size:.57rem;color:rgba(255,255,255,.38);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:10px}
+#api-bar{display:flex;gap:6px;align-items:center}
+#api-bar input{padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:.78rem;width:160px;outline:none;font-family:inherit}
+#api-bar button{background:#4db6e8;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:.78rem;cursor:pointer;font-weight:700}
+#api-active{display:none;gap:8px;align-items:center}
+.chip-ia{background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:var(--goldMid);padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600}
+.chip-credits{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:4px 10px;border-radius:20px;font-size:.72rem}
+#btn-desconectar{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);border-radius:6px;padding:4px 9px;font-size:.72rem;cursor:pointer}
+#api-warning{background:#1a1f2e;border-bottom:1px solid rgba(201,168,76,.25);padding:8px 20px;font-size:.8rem;color:rgba(201,168,76,.8);text-align:center}
+.body-wrap{display:flex;flex:1;position:relative}
+nav{width:200px;background:var(--dark);flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 52px);position:sticky;top:52px;border-right:1px solid rgba(255,255,255,.06)}
+.nav-group{padding:10px 14px 4px;font-size:.55rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:6px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;border-left:3px solid transparent;color:rgba(255,255,255,.5);font-size:.79rem;transition:all .15s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.85)}
+.nav-item.active{border-left-color:var(--goldMid);background:rgba(201,168,76,.08);color:var(--goldMid)}
+.nav-badge{margin-left:auto;font-size:.6rem;background:var(--success);color:#fff;padding:1px 6px;border-radius:10px;font-weight:700;display:none}
+.nav-sep{height:1px;background:rgba(255,255,255,.06);margin:8px 14px}
+main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow);animation:fadeIn .25s ease}
+.card-title{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.card-title .icon{font-size:1.2rem}
+.card-title .title{font-family:Georgia,serif;font-size:1.1rem;color:var(--ink)}
+.card-desc{font-size:.75rem;color:var(--inkMuted);margin-bottom:16px;line-height:1.5}
+.module-tip{background:linear-gradient(135deg,var(--goldLt),#fffdf0);border:1px solid rgba(201,168,76,.3);border-left:4px solid var(--goldMid);border-radius:0 8px 8px 0;padding:10px 14px;font-size:.8rem;color:#5a4200;margin-bottom:14px;line-height:1.55}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:7px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit;white-space:nowrap}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:#154360}
+.btn-gold{background:var(--goldMid);color:#fff}
+.btn-gold:hover:not(:disabled){background:var(--gold)}
+.btn-secondary{background:var(--bg);color:var(--inkSoft);border:1px solid var(--border)}
+.btn-sm{padding:5px 13px;font-size:.78rem}
+.btn-full{width:100%;justify-content:center}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.form-label{font-size:.72rem;font-weight:700;color:var(--inkSoft);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:.85rem;font-family:inherit;outline:none;background:var(--bg);color:var(--ink);transition:border .2s}
+.form-input:focus{border-color:var(--accentMid)}
+.form-select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:.85rem;font-family:inherit;outline:none;background:var(--bg);color:var(--ink);cursor:pointer}
+.form-textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:.83rem;font-family:inherit;outline:none;background:var(--bg);color:var(--ink);resize:vertical;min-height:90px;line-height:1.6;transition:border .2s}
+.form-textarea:focus,.form-input:focus,.form-select:focus{border-color:var(--accentMid)}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.form-row{margin-bottom:12px}
+.ia-response{background:linear-gradient(135deg,#1a2d4a,#0f1f35);border:1px solid rgba(201,168,76,.2);border-left:4px solid var(--goldMid);border-radius:0 10px 10px 0;padding:16px 18px;margin-top:14px;animation:fadeIn .3s ease}
+.ia-response-label{font-size:.6rem;font-weight:700;letter-spacing:2px;color:var(--goldMid);text-transform:uppercase;margin-bottom:10px}
+.ia-response-text{font-size:.83rem;color:rgba(255,255,255,.85);line-height:1.75;white-space:pre-wrap}
+.ia-loading{display:flex;align-items:center;gap:8px;padding:14px;color:var(--goldMid);font-size:.82rem;margin-top:12px}
+.ia-spinner{width:14px;height:14px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--goldMid);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.alert{border-radius:8px;padding:10px 14px;font-size:.82rem;line-height:1.6;margin-top:10px}
+.alert-info{background:var(--accentLt);border:1px solid var(--accentMid);color:var(--accent)}
+.alert-warn{background:var(--warnLt);border:1px solid var(--warn);color:var(--warn)}
+.alert-gold{background:var(--goldLt);border:1px solid rgba(183,149,11,.3);color:var(--gold)}
+.study-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.study-type-card{padding:10px 12px;border-radius:8px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);transition:all .15s;text-align:center}
+.study-type-card.active{border-color:var(--goldMid);background:var(--goldLt)}
+.study-type-icon{font-size:1.3rem;margin-bottom:4px}
+.study-type-label{font-size:.73rem;font-weight:600;color:var(--inkSoft)}
+.study-type-card.active .study-type-label{color:var(--gold)}
+.section-wrap{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--inkMuted);margin-bottom:12px}
+.variables-list{display:flex;flex-direction:column;gap:8px}
+.variable-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px;display:flex;align-items:center;gap:10px}
+.var-name{font-size:.83rem;font-weight:600;color:var(--ink);flex:1}
+.var-type{font-size:.7rem;padding:2px 8px;border-radius:10px;font-weight:600}
+.var-cuant{background:var(--accentLt);color:var(--accent)}
+.var-cual{background:#d5f5e3;color:#1e8449}
+.var-dic{background:var(--warnLt);color:var(--warn)}
+.data-tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--bg);border-radius:8px;padding:4px}
+.data-tab{flex:1;padding:8px 6px;border-radius:6px;cursor:pointer;text-align:center;font-size:.78rem;font-weight:600;border:none;background:transparent;color:var(--inkSoft);transition:all .15s;font-family:inherit}
+.data-tab.active{background:var(--surface);color:var(--accent);box-shadow:var(--shadow)}
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);margin-top:12px}
+.data-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.data-table th{background:var(--dark);color:rgba(255,255,255,.8);padding:8px 10px;text-align:left;font-weight:600;font-size:.7rem;text-transform:uppercase}
+.data-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--inkSoft)}
+.data-table tr:hover td{background:#f8fafc}
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s}
+.drop-zone:hover{border-color:var(--accentMid)}
+.drop-zone.loaded{border-color:var(--success);border-style:solid;background:var(--successLt)}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-value{font-size:1.5rem;font-weight:700;color:var(--accent);font-family:Georgia,serif}
+.stat-label{font-size:.68rem;color:var(--inkMuted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.stat-sub{font-size:.72rem;color:var(--inkSoft);margin-top:2px}
+.section-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.section-pill{padding:5px 12px;border-radius:20px;cursor:pointer;font-size:.74rem;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--inkSoft);transition:all .15s}
+.section-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.section-pill.done{background:#d5f5e3;color:#1e8449;border-color:#1e8449}
+.word-count{font-size:.68rem;color:var(--inkMuted);text-align:right;margin-top:4px}
+.sample-result{background:linear-gradient(135deg,var(--dark),var(--darkMid));border-radius:12px;padding:20px;text-align:center;margin-top:14px}
+.sample-n{font-size:3rem;font-weight:700;color:var(--goldMid);font-family:Georgia,serif;line-height:1}
+.sample-n-label{font-size:.72rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-top:6px}
+.checklist{display:flex;flex-direction:column;gap:6px}
+.check-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;transition:all .15s}
+.check-item.checked{background:#d5f5e3;border-color:#1e8449}
+.check-box{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;background:transparent;transition:all .2s}
+.check-item.checked .check-box{background:#1e8449;border-color:#1e8449}
+.check-label{font-size:.81rem;color:var(--inkSoft);flex:1}
+.check-item.checked .check-label{color:#1e8449}
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.export-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .2s}
+.export-card:hover{border-color:var(--accentMid);background:var(--accentLt)}
+.export-icon{font-size:2rem;margin-bottom:8px}
+.export-label{font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:3px}
+.export-desc{font-size:.72rem;color:var(--inkMuted)}
+.manual-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:6px}
+.manual-item-label{font-size:.8rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.manual-item-desc{font-size:.77rem;color:var(--inkSoft);line-height:1.55}
+.ref-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:8px;display:flex;gap:10px}
+.ref-num{font-size:.7rem;font-weight:700;color:var(--accent);min-width:20px;margin-top:2px}
+.ref-text{font-size:.79rem;color:var(--inkSoft);line-height:1.55;flex:1}
+.version-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.version-label{font-size:.82rem;font-weight:600;color:var(--ink)}
+.version-date{font-size:.7rem;color:var(--inkMuted)}
+#panel-director{position:fixed;right:0;top:52px;width:340px;height:calc(100vh - 52px);background:var(--dark);border-left:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;z-index:150;transform:translateX(100%);transition:transform .3s ease}
+#panel-director.open{transform:translateX(0)}
+.director-header{background:rgba(201,168,76,.08);border-bottom:1px solid rgba(201,168,76,.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.director-title{font-family:Georgia,serif;font-size:.95rem;color:var(--goldMid)}
+.director-subtitle{font-size:.65rem;color:rgba(255,255,255,.35);margin-top:2px}
+.director-close{background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1.1rem;padding:4px}
+.director-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:90%;padding:10px 12px;border-radius:10px;font-size:.8rem;line-height:1.6;animation:slideIn .2s ease}
+.msg-ai{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);align-self:flex-start;border:1px solid rgba(255,255,255,.08)}
+.msg-user{background:rgba(201,168,76,.15);color:rgba(255,255,255,.9);align-self:flex-end;border:1px solid rgba(201,168,76,.2);border-radius:10px 10px 2px 10px}
+.director-input-wrap{border-top:1px solid rgba(255,255,255,.08);padding:12px}
+.director-input-row{display:flex;gap:6px}
+.director-input{flex:1;padding:8px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:#fff;font-size:.8rem;outline:none;font-family:inherit}
+.director-input::placeholder{color:rgba(255,255,255,.25)}
+.director-send{background:var(--goldMid);border:none;border-radius:6px;padding:8px 12px;color:#fff;cursor:pointer;font-size:.8rem;font-family:inherit}
+#btn-director{position:fixed;right:0;top:50%;transform:translateY(-50%);background:var(--dark);border:1px solid rgba(201,168,76,.3);border-right:none;border-radius:8px 0 0 8px;padding:12px 8px;cursor:pointer;z-index:160;color:var(--goldMid);font-size:.7rem;font-weight:700;writing-mode:vertical-lr;letter-spacing:1px;transition:all .2s}
+#btn-director:hover{background:rgba(201,168,76,.1)}
+#btn-director.open{right:340px}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div>
+    <div class="logo-main">Thesi<span>Smart</span></div>
+    <div class="logo-sub">CeiboMed · Asistente de tesis e investigación académica</div>
+  </div>
+  <div class="header-right">
+    <div id="api-bar">
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off"/>
+      <button onclick="conectarAPI()">Conectar</button>
+    </div>
+    <div id="api-active">
+      <div class="chip-ia">✦ Director activo</div>
+      <div class="chip-credits" id="creditsChip">✦ 80 créditos</div>
+      <button id="btn-desconectar" onclick="desconectarAPI()">✕</button>
+    </div>
+  </div>
+</header>
+<div id="api-warning">🔑 Conectá tu API key de Anthropic para activar el Director IA — <strong>console.anthropic.com</strong></div>
+<div class="body-wrap">
+<nav id="sidebar">
+  <div class="nav-group">Proyecto</div>
+  <div class="nav-item active" data-mod="builder" onclick="goTo('builder',this)"><span>🏗️</span> ThesisBuilder <span id="nb-builder" class="nav-badge">✓</span></div>
+  <div class="nav-item" data-mod="objectives" onclick="goTo('objectives',this)"><span>🎯</span> Objetivos <span id="nb-objectives" class="nav-badge">✓</span></div>
+  <div class="nav-item" data-mod="variables" onclick="goTo('variables',this)"><span>📐</span> Variables <span id="nb-variables" class="nav-badge">✓</span></div>
+  <div class="nav-item" data-mod="timeline" onclick="goTo('timeline',this)"><span>📅</span> Cronograma</div>
+  <div class="nav-item" data-mod="ethics" onclick="goTo('ethics',this)"><span>⚖️</span> Ética y CEI</div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">Datos</div>
+  <div class="nav-item" data-mod="samplesize" onclick="goTo('samplesize',this)"><span>🧮</span> Tamaño muestral</div>
+  <div class="nav-item" data-mod="data" onclick="goTo('data',this)"><span>📊</span> Recolección <span id="nb-data" class="nav-badge">✓</span></div>
+  <div class="nav-item" data-mod="stats" onclick="goTo('stats',this)"><span>📈</span> Análisis estadístico</div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">Escritura</div>
+  <div class="nav-item" data-mod="litsearch" onclick="goTo('litsearch',this)"><span>🔎</span> Bibliografía</div>
+  <div class="nav-item" data-mod="writer" onclick="goTo('writer',this)"><span>✍️</span> Escritura guiada</div>
+  <div class="nav-item" data-mod="abstract" onclick="goTo('abstract',this)"><span>📋</span> Abstract</div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">Calidad</div>
+  <div class="nav-item" data-mod="bias" onclick="goTo('bias',this)"><span>⚖️</span> Sesgos</div>
+  <div class="nav-item" data-mod="quality" onclick="goTo('quality',this)"><span>✅</span> Checklist</div>
+  <div class="nav-item" data-mod="coherence" onclick="goTo('coherence',this)"><span>🔗</span> Coherencia</div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">Defensa</div>
+  <div class="nav-item" data-mod="defense" onclick="goTo('defense',this)"><span>🎓</span> Simulador defensa</div>
+  <div class="nav-item" data-mod="benchmark" onclick="goTo('benchmark',this)"><span>📚</span> Benchmark</div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">Final</div>
+  <div class="nav-item" data-mod="references" onclick="goTo('references',this)"><span>📖</span> Referencias</div>
+  <div class="nav-item" data-mod="versions" onclick="goTo('versions',this)"><span>🗂️</span> Versiones</div>
+  <div class="nav-item" data-mod="slides" onclick="goTo('slides',this)"><span>🖼️</span> Presentación</div>
+  <div class="nav-item" data-mod="export" onclick="goTo('export',this)"><span>📤</span> Exportar</div>
+  <div class="nav-sep"></div>
+  <div class="nav-item" data-mod="manual" onclick="goTo('manual',this)"><span>📘</span> Manual</div>
+</nav>
+<main id="main-content">
+
+<!-- BUILDER -->
+<div id="mod-builder">
+  <div class="card">
+    <div class="card-title"><span class="icon">🏗️</span><span class="title">ThesisBuilder — Arquitectura del proyecto</span></div>
+    <div class="card-desc">Definí tu tema, tipo de estudio y alcance. La IA genera la estructura completa de tu tesis.</div>
+    <div class="section-wrap">
+      <div class="section-title">Datos del investigador</div>
+      <div class="form-grid-2">
+        <div class="form-row"><label class="form-label">Nombre completo</label><input class="form-input" id="f-investigador" placeholder="Dr. / Dra. ..."/></div>
+        <div class="form-row"><label class="form-label">Institución</label><input class="form-input" id="f-institucion" placeholder="Universidad / Hospital..."/></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row"><label class="form-label">Carrera / Posgrado</label><input class="form-input" id="f-carrera" placeholder="Especialización en Cardiología..."/></div>
+        <div class="form-row"><label class="form-label">Tutor / Director</label><input class="form-input" id="f-tutor" placeholder="Prof. Dr. ..."/></div>
+      </div>
+    </div>
+    <div class="section-wrap">
+      <div class="section-title">Tema y alcance</div>
+      <div class="form-row"><label class="form-label">Tema de investigación</label><textarea class="form-textarea" id="f-tema" placeholder="Ej: Perfil epidemiológico y calidad asistencial del laboratorio cardiovascular — análisis de estudios ecocardiográficos y ergometrías consecutivas..."></textarea></div>
+      <div class="form-grid-2">
+        <div class="form-row"><label class="form-label">Población</label><input class="form-input" id="f-poblacion" placeholder="Ej: Pacientes adultos con indicación de ecocardiograma..."/></div>
+        <div class="form-row"><label class="form-label">Período de estudio</label><input class="form-input" id="f-periodo" placeholder="Ej: 2023–2024 (12 meses)"/></div>
+      </div>
+      <div class="form-row"><label class="form-label">Lugar de realización</label><input class="form-input" id="f-lugar" placeholder="Ej: Laboratorio cardiovascular del Hospital X, Artigas, Uruguay"/></div>
+    </div>
+    <div class="section-wrap">
+      <div class="section-title">Tipo de estudio</div>
+      <div class="study-type-grid">
+        <div class="study-type-card" onclick="setStudyType('descriptivo',this)"><div class="study-type-icon">📸</div><div class="study-type-label">Descriptivo</div></div>
+        <div class="study-type-card" onclick="setStudyType('cohorte',this)"><div class="study-type-icon">👣</div><div class="study-type-label">Cohorte</div></div>
+        <div class="study-type-card" onclick="setStudyType('casos-controles',this)"><div class="study-type-icon">🔙</div><div class="study-type-label">Casos y controles</div></div>
+        <div class="study-type-card" onclick="setStudyType('transversal',this)"><div class="study-type-icon">📷</div><div class="study-type-label">Transversal</div></div>
+        <div class="study-type-card" onclick="setStudyType('eca',this)"><div class="study-type-icon">🎲</div><div class="study-type-label">ECA</div></div>
+        <div class="study-type-card" onclick="setStudyType('revision',this)"><div class="study-type-icon">📚</div><div class="study-type-label">Revisión sistemática</div></div>
+        <div class="study-type-card" onclick="setStudyType('cualitativo',this)"><div class="study-type-icon">💬</div><div class="study-type-label">Cualitativo</div></div>
+        <div class="study-type-card" onclick="setStudyType('otro',this)"><div class="study-type-icon">🔬</div><div class="study-type-label">Otro</div></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row"><label class="form-label">Temporalidad</label><select class="form-select" id="f-temporalidad"><option value="">Seleccionar...</option><option>Retrospectivo</option><option>Prospectivo</option><option>Ambispectivo</option></select></div>
+        <div class="form-row"><label class="form-label">N estimado</label><input class="form-input" id="f-n" placeholder="Ej: 300, ~1000, por calcular..."/></div>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-gold" onclick="generarArquitectura()">✦ Generar arquitectura con IA</button>
+      <button class="btn btn-primary" onclick="guardarBuilder()">💾 Guardar proyecto</button>
+    </div>
+    <div id="ia-builder"></div>
+  </div>
+</div>
+
+<!-- OBJETIVOS -->
+<div id="mod-objectives" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🎯</span><span class="title">ObjectiveDesigner — Formulación de objetivos</span></div>
+    <div class="card-desc">Formulá correctamente tu objetivo general y los específicos. La IA los verifica y sugiere mejoras.</div>
+    <div class="form-row"><label class="form-label">Objetivo general</label><textarea class="form-textarea" id="f-obj-general" placeholder="Describir el perfil epidemiológico y la calidad asistencial del laboratorio cardiovascular..."></textarea></div>
+    <div class="form-row"><label class="form-label">Objetivos específicos (uno por línea)</label><textarea class="form-textarea" id="f-obj-especificos" style="min-height:130px" placeholder="1. Caracterizar las variables demográficas&#10;2. Determinar la distribución de diagnósticos&#10;3. Analizar la concordancia entre indicación y resultado..."></textarea></div>
+    <div class="form-row"><label class="form-label">Hipótesis (si aplica)</label><textarea class="form-textarea" id="f-hipotesis" style="min-height:70px" placeholder="Ej: Los pacientes con IC tienen mayor prevalencia de...&#10;(Opcional para estudios descriptivos)"></textarea></div>
+    <div class="btn-group">
+      <button class="btn btn-gold" onclick="verificarObjetivos()">✦ Verificar y mejorar con IA</button>
+      <button class="btn btn-primary" onclick="guardarMod('objectives')">💾 Guardar</button>
+    </div>
+    <div id="ia-objectives"></div>
+  </div>
+</div>
+
+<!-- VARIABLES -->
+<div id="mod-variables" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📐</span><span class="title">Variables de estudio</span></div>
+    <div class="card-desc">Definí las variables que vas a recolectar. La IA sugiere variables según tu tipo de estudio.</div>
+    <div class="btn-group" style="margin-bottom:14px">
+      <button class="btn btn-gold btn-sm" onclick="sugerirVariables()">✦ Sugerir variables con IA</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleAddVar()">+ Agregar variable</button>
+    </div>
+    <div class="variables-list" id="variables-list"><div class="alert alert-info">Las variables aparecerán acá. Usá "Sugerir con IA" o agregá manualmente.</div></div>
+    <div id="add-var-form" style="display:none;margin-top:12px;background:var(--bg);border:1px dashed var(--border);border-radius:8px;padding:14px">
+      <div class="form-grid-3">
+        <div><label class="form-label">Nombre</label><input class="form-input" id="new-var-name" placeholder="Edad, FEVI, HTA..."/></div>
+        <div><label class="form-label">Tipo</label><select class="form-select" id="new-var-tipo"><option value="cuantitativa">Cuantitativa continua</option><option value="cuant-discreta">Cuantitativa discreta</option><option value="cualitativa">Cualitativa nominal</option><option value="dicotomica">Dicotómica (Sí/No)</option><option value="ordinal">Ordinal</option></select></div>
+        <div><label class="form-label">Unidad / Valores</label><input class="form-input" id="new-var-unidad" placeholder="años, %, Sí/No..."/></div>
+      </div>
+      <div class="btn-group"><button class="btn btn-primary btn-sm" onclick="agregarVariable()">+ Agregar</button><button class="btn btn-secondary btn-sm" onclick="toggleAddVar()">Cancelar</button></div>
+    </div>
+    <div id="ia-variables" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- CRONOGRAMA -->
+<div id="mod-timeline" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📅</span><span class="title">Cronograma de trabajo</span></div>
+    <div class="card-desc">Planificá las etapas con fechas y metas.</div>
+    <div class="form-grid-2">
+      <div class="form-row"><label class="form-label">Fecha de inicio</label><input class="form-input" id="f-fecha-inicio" type="date"/></div>
+      <div class="form-row"><label class="form-label">Fecha límite de entrega</label><input class="form-input" id="f-fecha-fin" type="date"/></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="generarCronograma()">✦ Generar cronograma con IA</button></div>
+    <div id="ia-timeline"></div>
+  </div>
+</div>
+
+<!-- ÉTICA -->
+<div id="mod-ethics" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">⚖️</span><span class="title">Ética e integridad de la investigación</span></div>
+    <div class="card-desc">Aspectos éticos del protocolo, consentimiento informado y CEI.</div>
+    <div class="alert alert-warn" style="font-size:.82rem">La exención de revisión ética y la dispensa de consentimiento son determinaciones del <b>Comité de Ética Institucional (CEI)</b>, no del investigador. Datos retrospectivos o anonimizados no implican automáticamente exención. Consultá al CEI de tu institución. (Declaración de Helsinki / normativa local). La IA puede ayudar a redactar la justificación para el CEI, no a determinar que el proyecto está exento.</div>
+    <div class="form-row"><label class="form-label">Estado ante el CEI</label><select class="form-select" id="f-cei" onchange="updateEticaUI()"><option value="">Seleccionar...</option><option value="si">Protocolo enviado o pendiente de evaluación</option><option value="exencion-solicitada">Exención solicitada al CEI</option><option value="exencion-aprobada">Exención aprobada por CEI (adjuntar doc.)</option><option value="en-evaluacion">En proceso de evaluación por CEI</option><option value="no-aplica">No aplica (revisión de literatura)</option></select></div>
+    <div id="cei-detalle" style="display:none">
+      <div class="form-row"><label class="form-label">Número de protocolo</label><input class="form-input" id="f-cei-num" placeholder="CEI-2024-0123"/></div>
+      <div class="form-row"><label class="form-label">Estado</label><select class="form-select" id="f-cei-estado"><option>En elaboración</option><option>Enviado — pendiente</option><option>Aprobado</option><option>Con observaciones</option></select></div>
+    </div>
+    <div class="form-row" style="margin-top:12px"><label class="form-label">¿Consentimiento informado?</label><select class="form-select" id="f-consentimiento"><option value="">Seleccionar...</option><option value="si">Sí — individual</option><option value="colectivo">Colectivo / waiver del CEI</option><option value="dispensado">Consentimiento dispensado por CEI</option><option value="en-evaluacion">En proceso de evaluación por CEI</option></select></div>
+    <div class="form-row"><label class="form-label">Notas éticas</label><textarea class="form-textarea" id="f-etica-notas" placeholder="Datos de registros de CeiboMed — anonimizados — uso académico..."></textarea></div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="asesoriaEtica()">✦ Asesoría ética con IA</button><button class="btn btn-primary" onclick="guardarMod('ethics')">💾 Guardar</button></div>
+    <div id="ia-ethics"></div>
+  </div>
+</div>
+
+<!-- TAMAÑO MUESTRAL -->
+<div id="mod-samplesize" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🧮</span><span class="title">Cálculo de tamaño muestral</span></div>
+    <div class="card-desc">Calculá el N necesario o verificá si tu muestra es suficiente.</div>
+    <div class="form-row"><label class="form-label">Tipo de cálculo</label><select class="form-select" id="f-sample-tipo" onchange="updateSampleUI()"><option value="proporcion">Estimación de proporción (descriptivo)</option><option value="medias">Comparación de medias</option><option value="ya-tengo">Ya tengo la muestra — verificar potencia</option></select></div>
+    <div id="sample-proporcion">
+      <div class="form-grid-3">
+        <div><label class="form-label">Prevalencia esperada (p)</label><input class="form-input" id="f-p" value="0.5"/></div>
+        <div><label class="form-label">Precisión / error (d)</label><input class="form-input" id="f-d" value="0.05"/></div>
+        <div><label class="form-label">Confianza</label><select class="form-select" id="f-z"><option value="1.96">95% (Z=1.96)</option><option value="2.576">99%</option><option value="1.645">90%</option></select></div>
+      </div>
+    </div>
+    <div id="sample-medias" style="display:none">
+      <div class="form-grid-3">
+        <div><label class="form-label">Diferencia esperada (δ)</label><input class="form-input" id="f-delta" placeholder="Ej: 5"/></div>
+        <div><label class="form-label">Desviación estándar (σ)</label><input class="form-input" id="f-sigma" placeholder="Ej: 10"/></div>
+        <div><label class="form-label">Potencia</label><select class="form-select" id="f-potencia"><option value="0.842">80%</option><option value="1.282">90%</option></select></div>
+      </div>
+    </div>
+    <div id="sample-yatengo" style="display:none">
+      <div class="form-grid-2">
+        <div><label class="form-label">N por grupo</label><input class="form-input" id="f-n-actual" placeholder="Ej: 150"/></div>
+        <div><label class="form-label">Contraste</label><select class="form-select" id="f-contraste"><option value="prop">Dos proporciones (p1 vs p2)</option><option value="media">Dos medias (δ, σ)</option></select></div>
+      </div>
+      <div class="form-grid-2">
+        <div><label class="form-label">p1 / δ</label><input class="form-input" id="f-p1" placeholder="prop: p1 (ej 0.30) · media: δ"/></div>
+        <div><label class="form-label">p2 / σ</label><input class="form-input" id="f-p2" placeholder="prop: p2 (ej 0.15) · media: σ"/></div>
+      </div>
+      <div class="alert alert-warn" style="margin-top:8px">Se calcula la <b>potencia observada</b> para contraste bilateral α=0.05, dos grupos independientes 1:1. Para diseños complejos (pareado, cluster, multivariable) usar G*Power, R (paquete pwr) o Stata. La potencia post hoc tiene limitaciones — los IC y la precisión del efecto son más informativos.</div>
+    </div>
+    <div class="form-row"><label class="form-label">% Pérdidas estimado</label><input class="form-input" id="f-perdidas" value="10" style="max-width:120px"/></div>
+    <div class="btn-group">
+      <button class="btn btn-gold" onclick="calcularMuestra()">🧮 Calcular</button>
+      <button class="btn btn-primary" onclick="asesoriamuestra()">✦ Asesoría con IA</button>
+    </div>
+    <div id="sample-result" style="display:none">
+      <div class="sample-result"><div class="sample-n" id="sample-n-value">—</div><div class="sample-n-label">pacientes necesarios</div><div style="color:rgba(255,255,255,.5);font-size:.75rem;margin-top:10px" id="sample-n-detail"></div></div>
+    </div>
+    <div id="ia-samplesize"></div>
+  </div>
+</div>
+
+<!-- DATA COLLECTOR -->
+<div id="mod-data" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📊</span><span class="title">DataCollector — Recolección de datos</span></div>
+    <div class="card-desc">Cargá datos manualmente, importá Excel/CSV, o subí una foto de tabla y la IA extrae los datos.</div>
+    <div class="data-tabs">
+      <button class="data-tab active" onclick="setDataTab('manual',this)">✏️ Manual</button>
+      <button class="data-tab" onclick="setDataTab('excel',this)">📊 Excel/CSV</button>
+      <button class="data-tab" onclick="setDataTab('foto',this)">📷 Foto de tabla</button>
+    </div>
+    <div id="data-panel-manual">
+      <div class="alert alert-info" style="margin-bottom:12px">Definí primero las <strong>Variables</strong> para generar el formulario de carga.</div>
+      <div id="patient-form-fields"></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="agregarPaciente()">+ Agregar registro</button><button class="btn btn-secondary btn-sm" onclick="limpiarForm()">Limpiar</button></div>
+      <div id="data-table-wrap" style="display:none">
+        <div class="table-wrap"><table class="data-table"><thead id="dt-head"></thead><tbody id="dt-body"></tbody></table></div>
+        <div style="margin-top:6px;font-size:.72rem;color:var(--inkMuted)" id="data-count"></div>
+      </div>
+    </div>
+    <div id="data-panel-excel" style="display:none">
+      <div class="drop-zone" id="excel-drop" onclick="document.getElementById('excel-file').click()">
+        <div style="font-size:2rem;margin-bottom:8px">📊</div>
+        <div style="font-size:.88rem;font-weight:600;color:var(--ink)" id="excel-label">Subí tu archivo Excel o CSV</div>
+        <div style="font-size:.72rem;color:var(--inkMuted);margin-top:4px">.xlsx, .xls, .csv — las columnas se mapean automáticamente</div>
+        <input type="file" id="excel-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="onExcel(this)"/>
+      </div>
+      <div id="excel-preview" style="margin-top:14px"></div>
+    </div>
+    <div id="data-panel-foto" style="display:none">
+      <div class="drop-zone" onclick="document.getElementById('foto-file').click()">
+        <div style="font-size:2rem;margin-bottom:8px">📷</div>
+        <div style="font-size:.88rem;font-weight:600;color:var(--ink)" id="foto-label">Subí foto o captura de tabla</div>
+        <div style="font-size:.72rem;color:var(--inkMuted);margin-top:4px">JPG, PNG — la IA extrae los datos</div>
+        <input type="file" id="foto-file" accept="image/*" style="display:none" onchange="onFotoTabla(this)"/>
+      </div>
+      <div id="foto-preview" style="margin-top:12px"></div>
+      <div id="foto-btn-wrap" class="btn-group" style="display:none"><button class="btn btn-gold" onclick="extraerDatosFoto()">✦ Extraer datos con IA</button></div>
+      <div id="ia-foto-tabla"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="mod-stats" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📈</span><span class="title">StatAnalyzer — Análisis estadístico</span></div>
+    <div class="card-desc">Análisis descriptivo automático. Frecuencias, medias, medianas, IC 95%.</div>
+    <div id="stats-no-data" class="alert alert-warn">Primero cargá datos en el módulo <strong>Recolección de datos</strong>.</div>
+    <div id="stats-content" style="display:none">
+      <div class="stat-grid" id="stat-cards"></div>
+      <div class="form-row" style="margin-top:14px"><label class="form-label">Variable a analizar</label><select class="form-select" id="stat-var-select" onchange="analizarVariable()"><option value="">Seleccionar variable...</option></select></div>
+      <div id="stat-detail" style="margin-top:12px"></div>
+      <div class="alert" style="margin-top:10px;font-size:.82rem;background:var(--goldLt,#faf6e8)">ℹ️ <b>Interpretación del IC95%:</b> bajo el procedimiento utilizado, si el estudio se repitiera muchas veces, el 95% de los intervalos construidos de esta manera contendrían el parámetro verdadero. No significa que haya 95% de probabilidad de que el valor verdadero esté en este intervalo específico.</div>
+      <div class="btn-group" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="analisisCompleto()">📊 Interpretación descriptiva con IA</button>
+      </div>
+      <div class="alert alert-warn" style="margin-top:8px;font-size:.82rem">Esta función envía las estadísticas descriptivas a la IA para interpretación orientativa. <b>NO ejecuta tests estadísticos</b> (t-test, chi-cuadrado, Mann-Whitney, regresión, etc.). Para análisis inferencial usar R, SPSS, Stata o Python.</div>
+      <div id="ia-stats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LITSEARCH -->
+<div id="mod-litsearch" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🔎</span><span class="title">LitSearch — Búsqueda bibliográfica asistida</span></div>
+    <div class="card-desc">La IA te ayuda a identificar los artículos clave para tu marco teórico.</div>
+    <div class="form-row"><label class="form-label">Palabras clave / términos de búsqueda</label><textarea class="form-textarea" id="f-lit-keywords" placeholder="Ej: echocardiography quality indicators LATAM, ergometry cardiovascular risk..."></textarea></div>
+    <div class="form-grid-2">
+      <div><label class="form-label">Bases de datos</label><select class="form-select" id="f-lit-bases"><option>PubMed / MEDLINE</option><option>PubMed + Embase + Cochrane</option><option>SciELO (América Latina)</option><option>Todas</option></select></div>
+      <div><label class="form-label">Límite temporal</label><select class="form-select" id="f-lit-anos"><option>Últimos 5 años</option><option>Últimos 10 años</option><option>Sin límite</option></select></div>
+    </div>
+    <div class="alert alert-warn" style="font-size:.82rem">⚠ La IA no tiene acceso a bases de datos bibliográficas en tiempo real. Genera una <b>estrategia de búsqueda</b>, no resultados reales. Los estudios deben verificarse en PubMed u otras fuentes antes de citarlos.</div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="buscarBibliografia()">✦ Generar estrategia de búsqueda con IA</button></div>
+    <div id="ia-litsearch"></div>
+  </div>
+</div>
+
+<!-- WRITER -->
+<div id="mod-writer" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">✍️</span><span class="title">ThesisWriter — Escritura guiada</span></div>
+    <div class="card-desc">Redactá tu tesis sección por sección con ayuda de la IA. Estructura IMRYD.</div>
+    <div class="section-nav" id="section-nav">
+      <div class="section-pill active" onclick="setSection('intro',this)">Introducción</div>
+      <div class="section-pill" onclick="setSection('antecedentes',this)">Antecedentes</div>
+      <div class="section-pill" onclick="setSection('justificacion',this)">Justificación</div>
+      <div class="section-pill" onclick="setSection('metodos',this)">Métodos</div>
+      <div class="section-pill" onclick="setSection('resultados',this)">Resultados</div>
+      <div class="section-pill" onclick="setSection('discusion',this)">Discusión</div>
+      <div class="section-pill" onclick="setSection('conclusion',this)">Conclusión</div>
+    </div>
+    <div id="writer-guide" class="module-tip"></div>
+    <div class="alert alert-warn" style="font-size:.82rem">⚠ Las referencias generadas por IA pueden ser incorrectas o inexistentes. Verificá cada cita en PubMed (PMID) o DOI antes de incluirla en la tesis. ICMJE 2026 exige que los autores verifiquen la exactitud de todas las referencias. La IA marca lo que requiere fuente como <b>[REF PENDIENTE]</b>.</div>
+    <textarea class="form-textarea" id="writer-text" style="min-height:220px" placeholder="Escribí acá el contenido de esta sección..." oninput="updateWC()"></textarea>
+    <div class="word-count" id="writer-wc">0 palabras</div>
+    <div class="btn-group">
+      <button class="btn btn-gold" onclick="generarSeccion()">✦ Generar borrador con IA</button>
+      <button class="btn btn-secondary" onclick="mejorarSeccion()">✦ Mejorar lo escrito</button>
+      <button class="btn btn-primary" onclick="guardarSeccion()">💾 Guardar sección</button>
+    </div>
+    <div id="ia-writer"></div>
+  </div>
+</div>
+
+<!-- ABSTRACT -->
+<div id="mod-abstract" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📋</span><span class="title">Abstract estructurado</span></div>
+    <div class="card-desc">Generá el resumen estructurado en español e inglés.</div>
+    <div class="form-grid-2">
+      <div><label class="form-label">Idioma</label><select class="form-select" id="f-abstract-lang"><option>Español</option><option>Inglés</option><option>Ambos</option></select></div>
+      <div><label class="form-label">Extensión máxima</label><select class="form-select" id="f-abstract-words"><option>250 palabras</option><option>300 palabras</option><option>400 palabras</option></select></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="generarAbstract()">✦ Generar abstract con IA</button></div>
+    <div id="ia-abstract"></div>
+    <div id="abstract-editor" style="display:none;margin-top:14px">
+      <label class="form-label">Abstract — editá si es necesario</label>
+      <textarea class="form-textarea" id="abstract-text" style="min-height:180px" oninput="updateAbstractWC()"></textarea>
+      <div class="word-count" id="abstract-wc">0 palabras</div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="guardarAbstract()">💾 Guardar abstract</button>
+        <button class="btn btn-secondary btn-sm" onclick="traducirAbstract()">🌐 Traducir al inglés</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BIAS -->
+<div id="mod-bias" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">⚖️</span><span class="title">Control de sesgos</span></div>
+    <div class="card-desc">Identificación y estrategias de control de sesgos según tu diseño.</div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="analizarSesgos()">✦ Analizar sesgos con IA</button></div>
+    <div id="ia-bias"></div>
+  </div>
+</div>
+
+<!-- QUALITY -->
+<div id="mod-quality" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">✅</span><span class="title">Checklist de calidad</span></div>
+    <div class="card-desc">Verificá que tu tesis cumple con los estándares antes de entregar.</div>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--inkSoft);margin-bottom:6px"><span>Progreso</span><span id="quality-pct">0%</span></div>
+      <div style="background:var(--border);border-radius:10px;height:8px;overflow:hidden"><div id="quality-bar" style="height:8px;background:linear-gradient(90deg,var(--goldMid),#1e8449);border-radius:10px;transition:width .4s;width:0%"></div></div>
+    </div>
+    <div class="checklist" id="quality-checklist"></div>
+  </div>
+</div>
+
+<!-- COHERENCE -->
+<div id="mod-coherence" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🔗</span><span class="title">Coherencia metodológica</span></div>
+    <div class="card-desc">Verificá que objetivos, variables, métodos y resultados sean coherentes entre sí.</div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="verificarCoherencia()">✦ Verificar coherencia con IA</button></div>
+    <div id="ia-coherence"></div>
+  </div>
+</div>
+
+<!-- DEFENSE -->
+<div id="mod-defense" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🎓</span><span class="title">Simulador de defensa</span></div>
+    <div class="card-desc">Practicá con preguntas del tribunal generadas por IA.</div>
+    <div class="form-grid-2">
+      <div><label class="form-label">Perfil del examinador</label><select class="form-select" id="f-examinador"><option>Metodólogo / bioestadístico</option><option>Clínico especialista en el tema</option><option>Epidemiólogo</option><option>Tribunal mixto</option></select></div>
+      <div><label class="form-label">Dificultad</label><select class="form-select" id="f-defensa-dif"><option>Mixta</option><option>Solo difíciles</option><option>Progresiva</option></select></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-gold" onclick="generarPreguntas()">✦ Generar preguntas del tribunal</button>
+      <button class="btn btn-secondary" onclick="nuevaPregunta()">↻ Nueva pregunta</button>
+    </div>
+    <div id="ia-defense"></div>
+  </div>
+</div>
+
+<!-- BENCHMARK -->
+<div id="mod-benchmark" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📚</span><span class="title">Benchmark — Contexto en la literatura</span></div>
+    <div class="card-desc">¿Qué ya se sabe? ¿Qué aporta tu trabajo?</div>
+    <div class="alert alert-warn" style="font-size:.82rem">⚠ La IA no busca en bases de datos reales. Describe el tipo de estudios y brechas que suelen reportarse — no afirma que existan o no estudios específicos. El gap real debe confirmarse con búsqueda sistemática.</div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="generarBenchmark()">✦ Generar benchmark con IA</button></div>
+    <div id="ia-benchmark"></div>
+  </div>
+</div>
+
+<!-- REFERENCES -->
+<div id="mod-references" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📖</span><span class="title">Gestión de referencias</span></div>
+    <div class="card-desc">Formateá tu bibliografía en estilo Vancouver u otro estándar.</div>
+    <div class="form-grid-2" style="margin-bottom:12px">
+      <div><label class="form-label">Formato</label><select class="form-select" id="f-ref-formato"><option>Vancouver</option><option>APA 7ma edición</option><option>Chicago</option></select></div>
+    </div>
+    <div class="form-row"><label class="form-label">Pegá las referencias en cualquier formato (una por línea)</label><textarea class="form-textarea" id="f-refs-raw" style="min-height:130px" placeholder="Smith J et al. 2022. NEJM. Fibrinolysis in STEMI...&#10;o: https://pubmed.ncbi.nlm.nih.gov/12345678/"></textarea></div>
+    <div class="btn-group">
+      <button class="btn btn-gold" onclick="formatearRefs()">📖 Formatear con IA</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('f-refs-raw').value=''">Limpiar</button>
+    </div>
+    <div id="ia-references"></div>
+  </div>
+</div>
+
+<!-- VERSIONS -->
+<div id="mod-versions" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🗂️</span><span class="title">Control de versiones</span></div>
+    <div class="card-desc">Guardá snapshots del progreso de tu tesis.</div>
+    <div class="btn-group" style="margin-bottom:14px"><button class="btn btn-gold" onclick="guardarVersion()">📸 Guardar versión actual</button></div>
+    <div id="versions-list"><div class="alert alert-info">Todavía no hay versiones guardadas.</div></div>
+  </div>
+</div>
+
+<!-- SLIDES -->
+<div id="mod-slides" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🖼️</span><span class="title">Generador de presentación</span></div>
+    <div class="card-desc">La IA genera un esquema de diapositivas para la defensa.</div>
+    <div class="form-grid-2">
+      <div><label class="form-label">Duración</label><select class="form-select" id="f-slides-min"><option>10 minutos (10-12 slides)</option><option>15 minutos (15-18 slides)</option><option>20 minutos (20-25 slides)</option><option>30 minutos (30+ slides)</option></select></div>
+      <div><label class="form-label">Estilo</label><select class="form-select" id="f-slides-estilo"><option>Académico formal</option><option>Científico con datos</option><option>Visual / narrativo</option></select></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-gold" onclick="generarSlides()">✦ Generar esquema de slides con IA</button></div>
+    <div id="ia-slides"></div>
+  </div>
+</div>
+
+<!-- EXPORT -->
+<div id="mod-export" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📤</span><span class="title">Exportar tesis</span></div>
+    <div class="card-desc">Exportá todo el contenido redactado en un documento listo para entregar.</div>
+    <div class="export-grid">
+      <div class="export-card" onclick="exportarTXT()"><div class="export-icon">📄</div><div class="export-label">Texto completo (.txt)</div><div class="export-desc">Todo el contenido redactado + declaración de IA</div></div>
+      <div class="export-card" onclick="exportarResumen()"><div class="export-icon">📋</div><div class="export-label">Resumen ejecutivo</div><div class="export-desc">Objetivos, métodos y resultados</div></div>
+    </div>
+    <div class="btn-group" style="margin-top:12px"><button class="btn btn-primary" onclick="editarDeclaracionIA()">🤖 Ver/Editar declaración de uso de IA</button></div>
+    <div id="decl-ia-editor" style="display:none;margin-top:10px">
+      <div class="alert alert-warn" style="font-size:.82rem">ICMJE 2026 exige declarar qué herramienta de IA se usó, con qué propósito, y que el autor mantiene la responsabilidad completa. Editá el texto si es necesario:</div>
+      <textarea class="form-textarea" id="f-decl-ia" style="min-height:160px"></textarea>
+      <div class="btn-group" style="margin-top:8px"><button class="btn btn-gold" onclick="guardarDeclaracionIA()">💾 Guardar declaración</button></div>
+    </div>
+    <div class="alert alert-gold">💡 Para exportar en Word (.docx) con formato académico completo, usá <strong>Claude Code Desktop</strong> con el archivo de texto generado.</div>
+  </div>
+</div>
+
+<!-- MANUAL -->
+<div id="mod-manual" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📘</span><span class="title">Manual de ThesiSmart</span></div>
+    <div class="card-desc">Guía completa de uso de todos los módulos.</div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--goldLt)">🏗️ Cómo empezar</div>
+      <div class="manual-item"><div class="manual-item-label">1. ThesisBuilder</div><div class="manual-item-desc">Empezá siempre por acá. Cargá el tema, tipo de estudio, población y período. "Generar arquitectura" crea la estructura completa: secciones, preguntas, cronograma sugerido. Guardás el proyecto y tenés la base para todos los demás módulos.</div></div>
+      <div class="manual-item"><div class="manual-item-label">2. Objetivos</div><div class="manual-item-desc">Formulá tu objetivo general y los específicos. La IA los evalúa con criterios SMART y sugiere reformulaciones si detecta problemas.</div></div>
+      <div class="manual-item"><div class="manual-item-label">3. Variables</div><div class="manual-item-desc">Listá todas las variables que vas a recolectar. La IA sugiere variables según el tipo de estudio. Esto genera automáticamente el formulario del DataCollector.</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--goldLt)">📊 Trabajo con datos</div>
+      <div class="manual-item"><div class="manual-item-label">DataCollector</div><div class="manual-item-desc">Tres modos: (1) Manual — formulario estructurado basado en tus variables. (2) Excel/CSV — subís tu planilla y la app detecta las columnas. (3) Foto de tabla — la IA extrae los datos de imágenes de tablas impresas o capturadas.</div></div>
+      <div class="manual-item"><div class="manual-item-label">StatAnalyzer</div><div class="manual-item-desc">Análisis descriptivo automático: frecuencias y porcentajes para variables cualitativas; media, mediana, DS, rango intercuartilo para cuantitativas. La IA interpreta los resultados en lenguaje clínico.</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--goldLt)">✍️ Escritura y revisión</div>
+      <div class="manual-item"><div class="manual-item-label">ThesisWriter</div><div class="manual-item-desc">Sección por sección (IMRYD). Para cada sección la IA muestra qué debería contener y puede generar un borrador basado en tu proyecto. Podés escribir vos y pedir que mejore lo escrito.</div></div>
+      <div class="manual-item"><div class="manual-item-label">Panel Director IA</div><div class="manual-item-desc">El chat lateral (botón dorado a la derecha) está disponible en cualquier módulo. Preguntale sobre metodología, estadística, redacción o cualquier aspecto de tu investigación. Tiene contexto completo de tu proyecto.</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--goldLt)">💡 Flujo recomendado</div>
+      <div class="manual-item"><div class="manual-item-label">Orden sugerido de módulos</div><div class="manual-item-desc">Builder → Objetivos → Variables → Tamaño muestral → Ética → DataCollector → StatAnalyzer → LitSearch → Writer → Abstract → Sesgos → Checklist → Coherencia → Referencias → Slides → Simulador defensa → Exportar</div></div>
+      <div class="manual-item"><div class="manual-item-label">Sin API key</div><div class="manual-item-desc">Podés usar la estructura, el DataCollector y el StatAnalyzer básico sin API key. La key se ingresa en el header y no se guarda en ningún servidor.</div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- PANEL DIRECTOR -->
+<button id="btn-director" onclick="toggleDirector()">✦ DIRECTOR IA</button>
+<div id="panel-director">
+  <div class="director-header">
+    <div><div class="director-title">✦ Director IA</div><div class="director-subtitle">Asistente · Contexto completo de tu tesis</div></div>
+    <button class="director-close" onclick="toggleDirector()">✕</button>
+  </div>
+  <div class="director-messages" id="director-messages">
+    <div class="msg msg-ai">Hola 👋 Soy tu Director IA. Preguntame sobre metodología, estadística, redacción o cualquier aspecto de tu investigación. Tengo acceso a todo tu proyecto.</div>
+  </div>
+  <div class="director-input-wrap">
+    <div class="director-input-row">
+      <input class="director-input" id="director-input" placeholder="Preguntá sobre tu tesis..." onkeydown="if(event.key==='Enter')enviarDirector()"/>
+      <button class="director-send" onclick="enviarDirector()">→</button>
+    </div>
+  </div>
+</div>
+<script>
+const TS = {
+  apiKey:'', iaActiva:false, creditos:80,
+  proyecto:{
+    investigador:'',institucion:'',carrera:'',tutor:'',
+    tema:'',poblacion:'',periodo:'',lugar:'',
+    tipoEstudio:'',temporalidad:'',n:'',
+    objetivoGeneral:'',objetivosEspecificos:'',hipotesis:'',
+    variables:[],pacientes:[],
+    secciones:{intro:'',antecedentes:'',justificacion:'',metodos:'',resultados:'',discusion:'',conclusion:''},
+    abstract:'',referencias:[],
+    cei:'',consentimiento:'',eticaNotas:'',fechaInicio:'',fechaFin:'',declaracionIA:''
+  },
+  sectionActiva:'intro',
+  directorOpen:false,
+  qualityChecks:[],
+  versions:[],
+  fotoB64:'',fotoMime:'',
+  aiLog:[],
+  pendingImport:null,pendingFoto:null
+};
+
+const SYS = 'Sos un experto en metodología de investigación biomédica, bioestadística y redacción científica. Ayudás a médicos y residentes de LATAM a elaborar tesis académicas. Respondés en español, de forma clara y directa. Cuando el usuario comparte datos de su proyecto, los usás para respuestas personalizadas.';
+
+async function llamarIA(msgs, maxTokens=1500) {
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':TS.apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,system:SYS,messages:msgs})
+  });
+  const d = await r.json();
+  if(d.error) throw new Error(d.error.message);
+  return d.content?.[0]?.text||'';
+}
+
+function conectarAPI(){
+  const k=document.getElementById('apiKeyInput').value.trim();
+  if(!k.startsWith('sk-ant-')){alert('API key inválida — debe empezar con sk-ant-');return;}
+  TS.apiKey=k;TS.iaActiva=true;
+  document.getElementById('api-bar').style.display='none';
+  document.getElementById('api-active').style.display='flex';
+  document.getElementById('api-warning').style.display='none';
+  actualizarCreditos();
+}
+function desconectarAPI(){
+  TS.apiKey='';TS.iaActiva=false;
+  document.getElementById('api-bar').style.display='flex';
+  document.getElementById('api-active').style.display='none';
+  document.getElementById('api-warning').style.display='block';
+}
+function actualizarCreditos(){document.getElementById('creditsChip').textContent='✦ '+TS.creditos+' créditos';}
+function usarCredito(){if(TS.creditos<=0){alert('Sin créditos.');return false;}TS.creditos--;actualizarCreditos();return true;}
+
+function goTo(mod,el){
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  if(el)el.classList.add('active');
+  else document.querySelector('[data-mod="'+mod+'"]')?.classList.add('active');
+  document.querySelectorAll('[id^="mod-"]').forEach(m=>m.style.display='none');
+  const t=document.getElementById('mod-'+mod);
+  if(t){t.style.display='block';}
+  if(mod==='stats')initStats();
+  if(mod==='data')initDataForm();
+  if(mod==='quality')initChecklist();
+}
+
+function ctx(){
+  const p=TS.proyecto;
+  return `PROYECTO DE TESIS:
+Investigador: ${p.investigador||'No especificado'}
+Institución: ${p.institucion||'No especificada'}
+Tema: ${p.tema||'No definido'}
+Tipo de estudio: ${p.tipoEstudio||'No definido'} ${p.temporalidad?'/ '+p.temporalidad:''}
+Población: ${p.poblacion||'No definida'}
+Período: ${p.periodo||'No definido'}
+Lugar: ${p.lugar||'No definido'}
+N estimado: ${p.n||'Sin calcular'}
+Objetivo general: ${p.objetivoGeneral||'No definido'}
+Objetivos específicos: ${p.objetivosEspecificos||'No definidos'}
+Variables: ${p.variables.length?p.variables.map(v=>v.nombre+' ('+v.tipo+')').join(', '):'No definidas'}
+Registros cargados: ${p.pacientes.length}`;
+}
+
+// FIX 11 — esc() escapa también comillas (para atributos HTML)
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+// FIX 11 — nunca usar el nombre de variable como id de elemento; usar id interno seguro
+function safeId(index){return 'var-field-'+index;}
+const variableIdMap={};
+
+// FIX 10 — Log automático de uso de IA (ICMJE 2026)
+const AI_PURPOSES={
+  'ia-writer':'Redacción de sección de la tesis',
+  'ia-litsearch':'Estrategia de búsqueda bibliográfica',
+  'ia-benchmark':'Benchmark en la literatura',
+  'ia-stats':'Interpretación descriptiva de estadísticas',
+  'ia-abstract':'Redacción/traducción de abstract',
+  'ia-bias':'Análisis de sesgos',
+  'ia-coherence':'Verificación de coherencia metodológica',
+  'ia-defense':'Generación de preguntas de defensa',
+  'ia-references':'Formateo de referencias',
+  'ia-samplesize':'Asesoría de tamaño muestral',
+  'ia-foto-tabla':'Extracción de datos de tabla por imagen'
+};
+function logAI(divId,proposito){
+  try{
+    const now=new Date();
+    TS.aiLog.push({
+      modulo:divId||'',
+      fecha:now.toISOString().slice(0,10),
+      hora:now.toTimeString().slice(0,5),
+      proposito:proposito||AI_PURPOSES[divId]||'Uso de IA',
+      accion:'Contenido generado por IA — requiere revisión del autor'
+    });
+  }catch(e){console.warn('logAI:',e);}
+}
+
+// Banner de revisión humana para outputs de IA (FIX 1)
+const AI_REVIEW_BANNER='<div class="alert alert-warn" style="margin-bottom:10px">🤖 Texto generado por IA — requiere revisión humana completa. Las referencias indicadas como <b>[REF PENDIENTE]</b> deben verificarse en PubMed (PMID) o DOI antes de incluirlas.</div>';
+
+function showLoading(id){document.getElementById(id).innerHTML='<div class="ia-loading"><div class="ia-spinner"></div> Director IA analizando...</div>';}
+function showResp(id,txt,banner){document.getElementById(id).innerHTML=(banner||'')+'<div class="ia-response"><div class="ia-response-label">✦ Director IA — ThesiSmart</div><div class="ia-response-text">'+esc(txt)+'</div></div>';}
+function showErr(id,msg){document.getElementById(id).innerHTML='<div class="alert alert-warn">⚠️ '+esc(msg)+'</div>';}
+
+async function callIA(divId,prompt,maxTokens=1500,banner){
+  if(!TS.iaActiva){alert('Conectá tu API key primero.');return;}
+  if(!usarCredito())return;
+  showLoading(divId);
+  try{
+    const r=await llamarIA([{role:'user',content:prompt}],maxTokens);
+    logAI(divId);
+    showResp(divId,r,banner);
+  }catch(e){showErr(divId,e.message);}
+}
+
+// FIX 3/4/5 — Helpers estadísticos
+function _erf(x){const t=1/(1+0.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return x>=0?y:-y;}
+function normCDF(z){return 0.5*(1+_erf(z/Math.SQRT2));}
+const T95=[NaN,12.706,4.303,3.182,2.776,2.571,2.447,2.365,2.306,2.262,2.228,2.201,2.179,2.160,2.145,2.131,2.120,2.110,2.101,2.093,2.086,2.080,2.074,2.069,2.064,2.060,2.056,2.052,2.048,2.045,2.042];
+function tValue95(df){if(df<1)return NaN;if(df<=30)return T95[df];if(df<=60)return 2.00;if(df<=120)return 1.98;return 1.96;}
+// DS muestral (denominador n-1); null si n<2
+function sdMuestral(nums){const n=nums.length;if(n<2)return null;const m=nums.reduce((a,b)=>a+b,0)/n;return Math.sqrt(nums.reduce((a,b)=>a+(b-m)**2,0)/(n-1));}
+// IC95% Wilson para proporciones
+function wilsonCI(x,n){if(n<=0)return null;const z=1.96,p=x/n,den=1+z*z/n;const centre=(p+z*z/(2*n))/den;const margin=(z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n)))/den;return [Math.max(0,centre-margin),Math.min(1,centre+margin)];}
+
+// ── BUILDER ──
+function setStudyType(tipo,el){
+  document.querySelectorAll('.study-type-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  TS.proyecto.tipoEstudio=tipo;
+}
+function guardarBuilder(){
+  const p=TS.proyecto;
+  p.investigador=document.getElementById('f-investigador').value;
+  p.institucion=document.getElementById('f-institucion').value;
+  p.carrera=document.getElementById('f-carrera').value;
+  p.tutor=document.getElementById('f-tutor').value;
+  p.tema=document.getElementById('f-tema').value;
+  p.poblacion=document.getElementById('f-poblacion').value;
+  p.periodo=document.getElementById('f-periodo').value;
+  p.lugar=document.getElementById('f-lugar').value;
+  p.temporalidad=document.getElementById('f-temporalidad').value;
+  p.n=document.getElementById('f-n').value;
+  document.getElementById('nb-builder').style.display='inline';
+  alert('✅ Proyecto guardado.');
+}
+async function generarArquitectura(){
+  guardarBuilder();
+  const p=TS.proyecto;
+  if(!p.tema){alert('Ingresá el tema primero.');return;}
+  await callIA('ia-builder',ctx()+'\n\nGenerá la arquitectura completa de esta tesis académica:\n1. TÍTULO SUGERIDO (3 opciones)\n2. ESTRUCTURA DE SECCIONES (con estimación de páginas)\n3. PREGUNTAS DE INVESTIGACIÓN derivadas del tema\n4. VARIABLES CLAVE sugeridas según el tipo de estudio\n5. CRONOGRAMA SUGERIDO\n6. FORTALEZAS del diseño propuesto\n7. LIMITACIONES anticipadas y cómo abordarlas\n8. RECOMENDACIONES para el éxito\n\nSé específico y práctico para un posgrado médico de LATAM.',2000);
+}
+
+// ── OBJETIVOS ──
+function guardarMod(mod){
+  if(mod==='objectives'){
+    TS.proyecto.objetivoGeneral=document.getElementById('f-obj-general').value;
+    TS.proyecto.objetivosEspecificos=document.getElementById('f-obj-especificos').value;
+    TS.proyecto.hipotesis=document.getElementById('f-hipotesis').value;
+    document.getElementById('nb-objectives').style.display='inline';
+  }
+  if(mod==='ethics'){
+    TS.proyecto.cei=document.getElementById('f-cei').value;
+    TS.proyecto.consentimiento=document.getElementById('f-consentimiento').value;
+    TS.proyecto.eticaNotas=document.getElementById('f-etica-notas').value;
+  }
+  alert('✅ Guardado.');
+}
+async function verificarObjetivos(){
+  const og=document.getElementById('f-obj-general').value;
+  const oe=document.getElementById('f-obj-especificos').value;
+  if(!og){alert('Ingresá al menos el objetivo general.');return;}
+  await callIA('ia-objectives',ctx()+'\n\nOBJETIVO GENERAL propuesto: "'+og+'"\nOBJETIVOS ESPECÍFICOS:\n'+oe+'\n\nEvaluá estos objetivos con criterios SMART y metodológicos:\n1. ¿Son claros, medibles y alcanzables?\n2. ¿Alineados con el tipo de estudio?\n3. ¿Los específicos se derivan del general?\n4. ¿Consistencia con variables esperadas?\n5. REFORMULACIONES sugeridas si detectás problemas\n6. Semáforo: 🟢 bien formulados / 🟡 con observaciones / 🔴 requieren revisión');
+}
+
+// ── VARIABLES ──
+function toggleAddVar(){
+  const f=document.getElementById('add-var-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function agregarVariable(){
+  const nombre=document.getElementById('new-var-name').value.trim();
+  if(!nombre){alert('Ingresá el nombre.');return;}
+  const tipo=document.getElementById('new-var-tipo').value;
+  const unidad=document.getElementById('new-var-unidad').value;
+  TS.proyecto.variables.push({nombre,tipo,unidad});
+  renderVariables();
+  document.getElementById('new-var-name').value='';
+  document.getElementById('new-var-unidad').value='';
+  document.getElementById('add-var-form').style.display='none';
+  document.getElementById('nb-variables').style.display='inline';
+}
+function eliminarVariable(idx){TS.proyecto.variables.splice(idx,1);renderVariables();}
+function renderVariables(){
+  const el=document.getElementById('variables-list');
+  if(!TS.proyecto.variables.length){el.innerHTML='<div class="alert alert-info">Las variables aparecerán acá. Usá "Sugerir con IA" o agregá manualmente.</div>';return;}
+  el.innerHTML=TS.proyecto.variables.map((v,i)=>'<div class="variable-item"><div class="var-name">'+esc(v.nombre)+(v.unidad?' <span style="color:var(--inkMuted);font-weight:400;font-size:.75rem">('+esc(v.unidad)+')</span>':'')+'</div><span class="var-type '+(v.tipo.includes('cuant')?'var-cuant':v.tipo.includes('dicot')?'var-dic':'var-cual')+'">'+esc(v.tipo)+'</span><button onclick="eliminarVariable('+i+')" style="background:var(--dangerLt);color:var(--danger);border:none;border-radius:5px;padding:3px 8px;cursor:pointer;font-size:.72rem">✕</button></div>').join('');
+}
+async function sugerirVariables(){
+  if(!TS.proyecto.tema){alert('Guardá el tema en ThesisBuilder primero.');return;}
+  await callIA('ia-variables',ctx()+'\n\nSugerí las variables más relevantes para este estudio. Para cada una: nombre, tipo (cuantitativa continua/discreta/cualitativa nominal/dicotómica/ordinal), unidad o valores posibles, cómo se recolecta, por qué es relevante. Organizalas en: Variables demográficas / Variables independientes / Variables dependientes / Variables de control.',2000);
+}
+
+// ── CRONOGRAMA ──
+async function generarCronograma(){
+  const fi=document.getElementById('f-fecha-inicio').value;
+  const ff=document.getElementById('f-fecha-fin').value;
+  TS.proyecto.fechaInicio=fi;TS.proyecto.fechaFin=ff;
+  await callIA('ia-timeline',ctx()+'\nFecha inicio: '+(fi||'No especificada')+'\nFecha límite: '+(ff||'No especificada')+'\n\nGenerá un cronograma de trabajo detallado por semanas/meses:\n1. Fase de preparación y protocolo\n2. Recolección de datos\n3. Análisis estadístico\n4. Escritura\n5. Revisión y corrección\n6. Preparación de la defensa\n\nPara cada etapa: duración, tareas concretas, entregable y hitos clave. Sé realista para un médico que trabaja en paralelo.',2000);
+}
+
+// ── ÉTICA ──
+function updateEticaUI(){const v=document.getElementById('f-cei').value;document.getElementById('cei-detalle').style.display=(v&&v!=='no-aplica')?'block':'none';}
+async function asesoriaEtica(){
+  await callIA('ia-ethics',ctx()+'\nCEI: '+document.getElementById('f-cei').value+'\nConsentimiento: '+document.getElementById('f-consentimiento').value+'\nNotas: '+document.getElementById('f-etica-notas').value+'\n\nAnalizá los aspectos éticos:\n1. ¿Requiere aprobación del CEI? ¿Por qué?\n2. ¿Necesita consentimiento informado?\n3. Consideraciones de protección de datos (Uruguay — Ley 18.331)\n4. Principios bioéticos aplicables\n5. Posibles conflictos éticos y cómo abordarlos\n6. Checklist de integridad científica');
+}
+
+// ── SAMPLE SIZE ──
+function updateSampleUI(){
+  const t=document.getElementById('f-sample-tipo').value;
+  document.getElementById('sample-proporcion').style.display=t==='proporcion'?'block':'none';
+  document.getElementById('sample-medias').style.display=t==='medias'?'block':'none';
+  document.getElementById('sample-yatengo').style.display=t==='ya-tengo'?'block':'none';
+}
+// FIX 3 — nota de diseño (dos grupos independientes 1:1 bilateral)
+const SAMPLE_DESIGN_NOTE='⚠ Esta fórmula aplica para comparación de dos grupos independientes con asignación 1:1, contraste bilateral α=0.05 y varianzas comparables. Para otros diseños (pareado, medidas repetidas, >2 grupos, no inferioridad, cluster) usar calculadora específica o software estadístico (G*Power, R, Stata).';
+function sampleError(msg){
+  document.getElementById('sample-n-value').textContent='—';
+  document.getElementById('sample-n-detail').innerHTML='<span style="color:var(--danger)">⚠ '+esc(msg)+'</span>';
+  document.getElementById('sample-result').style.display='block';
+}
+function calcularMuestra(){
+  const tipo=document.getElementById('f-sample-tipo').value;
+  const perdidasRaw=document.getElementById('f-perdidas').value;
+  const perdidas=parseFloat(perdidasRaw);
+  let n=0,detalle='',nota='';
+  // FIX 3A — validación de pérdidas (común a proporción/medias)
+  if(tipo==='proporcion'||tipo==='medias'){
+    if(!(perdidas>=0&&perdidas<100)) return sampleError('Pérdidas inválidas: deben ser 0 ≤ pérdidas < 100 (valor ingresado: '+perdidasRaw+').');
+  }
+  if(tipo==='proporcion'){
+    const p=parseFloat(document.getElementById('f-p').value);
+    const d=parseFloat(document.getElementById('f-d').value);
+    const z=parseFloat(document.getElementById('f-z').value)||1.96;
+    if(!(p>0&&p<1)) return sampleError('Prevalencia inválida: debe ser 0 < p < 1.');
+    if(!(d>0&&d<0.5)) return sampleError('Precisión inválida: debe ser 0 < d < 0.5.');
+    n=Math.ceil((z*z*p*(1-p))/(d*d));
+    if(!Number.isFinite(n)||n<=0) return sampleError('N calculado no válido — revisá los parámetros.');
+    const nAdj=Math.ceil(n/(1-perdidas/100));
+    detalle='n base: '+n+' · Con '+perdidas+'% pérdidas: '+nAdj+' · p='+p+', d=±'+d+', Z='+z;
+    nota=SAMPLE_DESIGN_NOTE;
+    n=nAdj;
+  }else if(tipo==='medias'){
+    const delta=parseFloat(document.getElementById('f-delta').value);
+    const sigma=parseFloat(document.getElementById('f-sigma').value);
+    const za=1.96,zb=parseFloat(document.getElementById('f-potencia').value)||0.842;
+    if(!(delta>0)) return sampleError('Diferencia (δ) inválida: debe ser δ > 0.');
+    if(!(sigma>0)) return sampleError('Desviación estándar (σ) inválida: debe ser σ > 0.');
+    n=Math.ceil(2*((za+zb)**2*sigma**2)/(delta**2));
+    if(!Number.isFinite(n)||n<=0) return sampleError('N calculado no válido — revisá los parámetros.');
+    const nAdj=Math.ceil(n/(1-perdidas/100));
+    detalle='n por grupo: '+n+' · Total con '+perdidas+'% pérdidas: '+(nAdj*2)+' ('+nAdj+'/grupo)';
+    nota=SAMPLE_DESIGN_NOTE;
+    n=nAdj*2;
+  }else{
+    // FIX 4 — cálculo real de potencia observada
+    const nActual=parseFloat(document.getElementById('f-n-actual').value);
+    if(!(nActual>0)) return sampleError('N por grupo inválido: debe ser > 0.');
+    const contraste=document.getElementById('f-contraste').value;
+    const za=1.96; let power=null, det='';
+    if(contraste==='prop'){
+      const p1=parseFloat(document.getElementById('f-p1').value);
+      const p2=parseFloat(document.getElementById('f-p2').value);
+      if(!(p1>0&&p1<1)||!(p2>0&&p2<1)) return sampleError('Proporciones inválidas: 0 < p1,p2 < 1.');
+      const pbar=(p1+p2)/2;
+      const Z=(Math.abs(p1-p2)*Math.sqrt(nActual))/Math.sqrt(2*pbar*(1-pbar));
+      power=normCDF(Z-za);
+      det='Dos proporciones · p1='+p1+', p2='+p2+' · N/grupo='+nActual;
+    }else{
+      const delta=parseFloat(document.getElementById('f-p1').value);
+      const sigma=parseFloat(document.getElementById('f-p2').value);
+      if(!(delta>0)||!(sigma>0)) return sampleError('Parámetros inválidos: δ > 0 y σ > 0.');
+      const Z=(delta/(sigma*Math.sqrt(2/nActual)))-za;
+      power=normCDF(Z);
+      det='Dos medias · δ='+delta+', σ='+sigma+' · N/grupo='+nActual;
+    }
+    if(!Number.isFinite(power)) return sampleError('No se pudo calcular la potencia — revisá los parámetros.');
+    const pct=Math.round(power*1000)/10;
+    document.getElementById('sample-n-value').textContent=pct+'%';
+    document.getElementById('sample-n-detail').innerHTML=esc('Potencia observada: '+pct+'% · α=0.05 (bilateral) · '+det)+'<div class="alert alert-warn" style="margin-top:8px">La potencia post hoc observada tiene limitaciones — los IC y la precisión del efecto son más informativos que la potencia calculada con los datos obtenidos. Para diseños complejos (pareado, cluster, multivariable) usar G*Power, R (pwr) o Stata.</div>';
+    document.getElementById('sample-result').style.display='block';
+    return;
+  }
+  document.getElementById('sample-n-value').textContent=n;
+  document.getElementById('sample-n-detail').innerHTML=esc(detalle)+(nota?'<div class="alert alert-warn" style="margin-top:8px">'+esc(nota)+'</div>':'');
+  document.getElementById('sample-result').style.display='block';
+}
+async function asesoriamuestra(){
+  await callIA('ia-samplesize',ctx()+'\nTipo de cálculo: '+document.getElementById('f-sample-tipo').value+'\nPérdidas estimadas: '+document.getElementById('f-perdidas').value+'%\n\nAsesorá sobre el tamaño muestral:\n1. ¿Es el tipo de cálculo correcto para este diseño?\n2. ¿Los parámetros son razonables?\n3. ¿Es factible obtener esa muestra?\n4. Alternativas si el N es muy grande o pequeño\n5. Cómo documentarlo en la sección de Métodos');
+}
+
+// ── DATA COLLECTOR ──
+function setDataTab(tab,el){
+  document.querySelectorAll('.data-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['manual','excel','foto'].forEach(t=>{
+    document.getElementById('data-panel-'+t).style.display=t===tab?'block':'none';
+  });
+}
+function initDataForm(){
+  if(!TS.proyecto.variables.length)return;
+  const wrap=document.getElementById('patient-form-fields');
+  // FIX 11 — id interno seguro por índice; el nombre se muestra solo escapado (nunca como id)
+  wrap.innerHTML='<div class="form-grid-3">'+TS.proyecto.variables.map((v,i)=>{
+    const id=safeId(i);variableIdMap[id]=v.nombre;
+    const label='<label class="form-label">'+esc(v.nombre)+(v.unidad?' ('+esc(v.unidad)+')':'')+'</label>';
+    const field=v.tipo.includes('dicot')
+      ? '<select class="form-select" id="'+id+'"><option>Sí</option><option>No</option></select>'
+      : '<input class="form-input" id="'+id+'" placeholder="'+esc(v.tipo)+'"/>';
+    return '<div class="form-row">'+label+field+'</div>';
+  }).join('')+'</div>';
+}
+function agregarPaciente(){
+  if(!TS.proyecto.variables.length){alert('Definí variables primero.');return;}
+  const row={};
+  TS.proyecto.variables.forEach((v,i)=>{const el=document.getElementById(safeId(i));if(el)row[v.nombre]=el.value;});
+  TS.proyecto.pacientes.push(row);
+  renderDataTable();
+  limpiarForm();
+  document.getElementById('nb-data').style.display='inline';
+}
+function limpiarForm(){TS.proyecto.variables.forEach((v,i)=>{const el=document.getElementById(safeId(i));if(el&&el.tagName==='INPUT')el.value='';});}
+function eliminarPaciente(idx){TS.proyecto.pacientes.splice(idx,1);renderDataTable();}
+function renderDataTable(){
+  const vars=TS.proyecto.variables,pacs=TS.proyecto.pacientes;
+  if(!pacs.length){document.getElementById('data-table-wrap').style.display='none';return;}
+  document.getElementById('data-table-wrap').style.display='block';
+  document.getElementById('dt-head').innerHTML='<tr><th>#</th>'+vars.map(v=>'<th>'+esc(v.nombre)+'</th>').join('')+'<th></th></tr>';
+  document.getElementById('dt-body').innerHTML=pacs.map((p,i)=>'<tr><td>'+(i+1)+'</td>'+vars.map(v=>'<td>'+esc(p[v.nombre]||'')+'</td>').join('')+'<td><button onclick="eliminarPaciente('+i+')" style="background:var(--dangerLt);color:var(--danger);border:none;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:.7rem">✕</button></td></tr>').join('');
+  document.getElementById('data-count').textContent=pacs.length+' registro'+(pacs.length!==1?'s':'')+' cargado'+(pacs.length!==1?'s':'');
+}
+// FIX 7B — parser CSV RFC 4180 básico (comillas, comas internas, comillas escapadas)
+function parseCSVLine(line){
+  const result=[];let current='';let inQuotes=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){
+      if(inQuotes&&line[i+1]==='"'){current+='"';i++;}
+      else{inQuotes=!inQuotes;}
+    }else if(line[i]===','&&!inQuotes){result.push(current);current='';}
+    else{current+=line[i];}
+  }
+  result.push(current);return result;
+}
+// Parser CSV completo (maneja saltos de línea dentro de campos entre comillas)
+function parseCSV(text){
+  const records=[];let field='';let row=[];let inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){ if(inQuotes&&text[i+1]==='"'){field+='"';i++;} else inQuotes=!inQuotes; }
+    else if(c===','&&!inQuotes){row.push(field);field='';}
+    else if((c==='\n'||c==='\r')&&!inQuotes){
+      if(c==='\r'&&text[i+1]==='\n')i++;
+      row.push(field);records.push(row);row=[];field='';
+    } else field+=c;
+  }
+  if(field.length||row.length){row.push(field);records.push(row);}
+  return records.filter(r=>r.some(x=>String(x).trim()!==''));
+}
+// FIX 7A — detección automática de tipo de variable
+function detectTipo(values){
+  const vals=values.map(v=>String(v==null?'':v).trim()).filter(v=>v!=='');
+  if(!vals.length)return 'texto';
+  const uniq=[...new Set(vals)];
+  const allNum=vals.every(v=>v!==''&&!isNaN(Number(v)));
+  const dateRe=/^\d{4}-\d{2}-\d{2}$|^\d{1,2}\/\d{1,2}\/\d{2,4}$/;
+  const allDate=vals.every(v=>dateRe.test(v));
+  if(allDate)return 'fecha';
+  if(uniq.length===2)return 'dicotómica';
+  if(allNum)return 'cuantitativa continua';
+  if(uniq.length>=3&&uniq.length<=10)return 'categórica/ordinal';
+  return 'texto';
+}
+const TIPO_OPCIONES=['cuantitativa continua','dicotómica','categórica/ordinal','fecha','texto'];
+
+function onExcel(input){
+  const f=input.files[0];if(!f)return;
+  // FIX 12A — límite de tamaño antes de leer
+  const MAX_CSV=5*1024*1024;
+  if(f.size>MAX_CSV){alert('Archivo demasiado grande. Máx: 5MB');input.value='';return;}
+  if(!f.name.toLowerCase().endsWith('.csv')){
+    document.getElementById('excel-preview').innerHTML='<div class="alert alert-warn">⚠️ Para .xlsx usá una versión con soporte XLSX. Importá un archivo .csv (separado por comas).</div>';
+    input.value='';return;
+  }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const records=parseCSV(e.target.result);
+      if(records.length<2){document.getElementById('excel-preview').innerHTML='<div class="alert alert-warn">⚠️ El CSV necesita al menos una fila de encabezados y una de datos.</div>';return;}
+      const headers=records[0].map(h=>String(h).trim());
+      const rows=records.slice(1).map(r=>{const obj={};headers.forEach((h,i)=>obj[h]=(r[i]!=null?String(r[i]).trim():''));return obj;});
+      // guardar import pendiente (NO importar todavía)
+      TS.pendingImport={headers,rows,tipos:headers.map(h=>detectTipo(rows.map(r=>r[h]))),fuente:f.name};
+      renderImportPreview();
+    }catch(err){document.getElementById('excel-preview').innerHTML='<div class="alert alert-warn">⚠️ Error al leer el archivo. Asegurate de usar comas como separador.</div>';}
+  };
+  reader.readAsText(f);input.value='';
+}
+// FIX 7A — preview editable del diccionario de variables antes de importar
+function renderImportPreview(){
+  const pi=TS.pendingImport;if(!pi)return;
+  const opts=(sel)=>TIPO_OPCIONES.map(t=>'<option value="'+t+'"'+(t===sel?' selected':'')+'>'+t+'</option>').join('');
+  let html='<div class="alert alert-warn">Verificá el tipo de cada variable antes de continuar. Un tipo incorrecto puede producir análisis estadístico equivocado.</div>';
+  html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Variable</th><th>Tipo sugerido</th><th>Ejemplo</th></tr></thead><tbody>';
+  pi.headers.forEach((h,i)=>{
+    const ejemplo=pi.rows.length?esc(pi.rows[0][h]||''):'';
+    html+='<tr><td>'+esc(h)+'</td><td><select class="form-select" id="imp-tipo-'+i+'">'+opts(pi.tipos[i])+'</select></td><td>'+ejemplo+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  html+='<div class="btn-group" style="margin-top:10px"><button class="btn btn-gold" onclick="confirmarImportCSV()">✅ Confirmar e importar '+pi.rows.length+' filas</button><button class="btn btn-primary" onclick="cancelarImportCSV()">Cancelar</button></div>';
+  document.getElementById('excel-preview').innerHTML=html;
+}
+function cancelarImportCSV(){TS.pendingImport=null;document.getElementById('excel-preview').innerHTML='';}
+function confirmarImportCSV(){
+  const pi=TS.pendingImport;if(!pi)return;
+  pi.headers.forEach((h,i)=>{const sel=document.getElementById('imp-tipo-'+i);pi.tipos[i]=sel?sel.value:pi.tipos[i];});
+  TS.proyecto.variables=pi.headers.map((h,i)=>({nombre:h,tipo:pi.tipos[i],unidad:''}));
+  TS.proyecto.pacientes=pi.rows;
+  TS.pendingImport=null;
+  renderDataTable();renderVariables();
+  document.getElementById('excel-preview').innerHTML='<div class="alert" style="background:var(--goldLt,#faf6e8)">✅ '+esc(pi.fuente)+' — '+pi.rows.length+' filas importadas.</div>';
+  document.getElementById('excel-label').textContent='✅ '+pi.fuente+' — '+pi.rows.length+' filas importadas';
+  document.getElementById('excel-drop').classList.add('loaded');
+  document.getElementById('nb-data').style.display='inline';
+}
+function onFotoTabla(input){
+  const f=input.files[0];if(!f)return;
+  // FIX 12A — límite de tamaño antes de leer
+  const MAX_IMG=5*1024*1024;
+  if(f.size>MAX_IMG){alert('Imagen demasiado grande. Máx: 5MB');input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    TS.fotoB64=e.target.result.split(',')[1];TS.fotoMime=f.type;
+    document.getElementById('foto-label').textContent='✅ '+f.name;
+    document.getElementById('foto-preview').innerHTML='<img src="'+e.target.result+'" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain"/>';
+    document.getElementById('foto-btn-wrap').style.display='flex';
+  };
+  reader.readAsDataURL(f);input.value='';
+}
+// FIX 12B — modal obligatorio de advertencia PHI antes de enviar a Anthropic
+function phiConfirm(){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML='<div style="background:#fff;border-radius:12px;max-width:460px;width:100%;padding:22px;font-size:.9rem;color:#222">'
+      +'<div style="font-weight:700;font-size:1rem;margin-bottom:10px">⚠ Envío a servicio externo (Anthropic)</div>'
+      +'<p style="margin:0 0 12px">Esta imagen será enviada a Anthropic para extracción de datos. Verificá antes de continuar:</p>'
+      +'<label style="display:block;margin:6px 0"><input type="checkbox" class="phi-chk"> La tabla NO contiene nombres de pacientes</label>'
+      +'<label style="display:block;margin:6px 0"><input type="checkbox" class="phi-chk"> La tabla NO contiene CI ni documentos</label>'
+      +'<label style="display:block;margin:6px 0"><input type="checkbox" class="phi-chk"> La tabla NO contiene fechas de nacimiento</label>'
+      +'<label style="display:block;margin:6px 0"><input type="checkbox" class="phi-chk"> Los datos están desidentificados</label>'
+      +'<div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">'
+      +'<button id="phi-cancel" class="btn btn-primary">Cancelar</button>'
+      +'<button id="phi-ok" class="btn btn-gold" disabled style="opacity:.5">Confirmar — datos desidentificados</button>'
+      +'</div></div>';
+    document.body.appendChild(ov);
+    const chks=[...ov.querySelectorAll('.phi-chk')];const ok=ov.querySelector('#phi-ok');
+    chks.forEach(c=>c.addEventListener('change',()=>{const all=chks.every(x=>x.checked);ok.disabled=!all;ok.style.opacity=all?'1':'.5';}));
+    ov.querySelector('#phi-cancel').onclick=()=>{document.body.removeChild(ov);resolve(false);};
+    ok.onclick=()=>{if(ok.disabled)return;document.body.removeChild(ov);resolve(true);};
+  });
+}
+async function extraerDatosFoto(){
+  if(!TS.iaActiva){alert('Conectá tu API key.');return;}
+  const okPhi=await phiConfirm();
+  if(!okPhi)return;
+  if(!usarCredito())return;
+  showLoading('ia-foto-tabla');
+  try{
+    const r=await llamarIA([{role:'user',content:[{type:'image',source:{type:'base64',media_type:TS.fotoMime,data:TS.fotoB64}},{type:'text',text:'Extraé los datos de esta tabla. Identificá los encabezados y todas las filas. Devolvé el contenido en formato CSV (separado por comas). Primera línea: encabezados. Las siguientes: datos. Solo el CSV, nada más.'}]}],2000);
+    logAI('ia-foto-tabla');
+    // FIX 8 — NO importar automáticamente; mostrar preview editable
+    const records=parseCSV(r.trim());
+    if(records.length<2){showResp('ia-foto-tabla','No se pudo interpretar una tabla CSV en la respuesta:\n\n'+r);return;}
+    const headers=records[0].map(h=>String(h).trim());
+    const rows=records.slice(1).map(rr=>{const o={};headers.forEach((h,i)=>o[h]=(rr[i]!=null?String(rr[i]).trim():''));return o;});
+    TS.pendingFoto={headers,rows,tipos:headers.map(h=>detectTipo(rows.map(x=>x[h])))};
+    renderFotoPreview();
+  }catch(e){showErr('ia-foto-tabla',e.message);}
+}
+// FIX 8 — preview editable de datos extraídos por foto antes de importar
+function renderFotoPreview(){
+  const pf=TS.pendingFoto;if(!pf)return;
+  let html='<div class="alert alert-warn">⚠ Verificá cada valor antes de importar. La extracción por IA puede contener errores. Un error en los datos invalida el análisis.</div>';
+  html+='<div class="table-wrap" style="max-height:280px;overflow:auto"><table class="data-table"><thead><tr>'+pf.headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>';
+  pf.rows.forEach((row,ri)=>{
+    html+='<tr>'+pf.headers.map((h,ci)=>'<td><input class="form-input" style="min-width:90px;font-size:.78rem;padding:3px 5px" id="foto-cell-'+ri+'-'+ci+'" value="'+esc(row[h])+'"/></td>').join('')+'</tr>';
+  });
+  html+='</tbody></table></div>';
+  html+='<div class="btn-group" style="margin-top:10px"><button class="btn btn-gold" onclick="confirmarImportFoto()">✅ Confirmar e importar '+pf.rows.length+' filas</button><button class="btn btn-primary" onclick="cancelarImportFoto()">Cancelar</button></div>';
+  document.getElementById('ia-foto-tabla').innerHTML=html;
+}
+function cancelarImportFoto(){TS.pendingFoto=null;document.getElementById('ia-foto-tabla').innerHTML='';}
+function confirmarImportFoto(){
+  const pf=TS.pendingFoto;if(!pf)return;
+  // leer valores editados
+  const rows=pf.rows.map((row,ri)=>{const o={};pf.headers.forEach((h,ci)=>{const el=document.getElementById('foto-cell-'+ri+'-'+ci);o[h]=el?el.value:row[h];});return o;});
+  if(!TS.proyecto.variables.length)pf.headers.forEach((h,i)=>TS.proyecto.variables.push({nombre:h,tipo:pf.tipos[i],unidad:''}));
+  rows.forEach(r=>TS.proyecto.pacientes.push(r));
+  TS.pendingFoto=null;
+  renderDataTable();renderVariables();
+  document.getElementById('ia-foto-tabla').innerHTML='<div class="alert" style="background:var(--goldLt,#faf6e8)">✅ '+rows.length+' filas importadas tras revisión.</div>';
+  document.getElementById('nb-data').style.display='inline';
+}
+
+// ── STATS ──
+function initStats(){
+  const pacs=TS.proyecto.pacientes,vars=TS.proyecto.variables;
+  if(!pacs.length||!vars.length){document.getElementById('stats-no-data').style.display='block';document.getElementById('stats-content').style.display='none';return;}
+  document.getElementById('stats-no-data').style.display='none';document.getElementById('stats-content').style.display='block';
+  document.getElementById('stat-cards').innerHTML='<div class="stat-card"><div class="stat-value">'+pacs.length+'</div><div class="stat-label">Registros</div></div><div class="stat-card"><div class="stat-value">'+vars.length+'</div><div class="stat-label">Variables</div></div><div class="stat-card"><div class="stat-value">'+vars.filter(v=>v.tipo.includes('cuant')).length+'</div><div class="stat-label">Cuantitativas</div></div><div class="stat-card"><div class="stat-value">'+vars.filter(v=>!v.tipo.includes('cuant')).length+'</div><div class="stat-label">Cualitativas</div></div>';
+  const sel=document.getElementById('stat-var-select');
+  sel.innerHTML='<option value="">Seleccionar variable...</option>'+vars.map(v=>'<option value="'+esc(v.nombre)+'">'+esc(v.nombre)+' ('+esc(v.tipo)+')</option>').join('');
+}
+function analizarVariable(){
+  const varNombre=document.getElementById('stat-var-select').value;if(!varNombre)return;
+  const variable=TS.proyecto.variables.find(v=>v.nombre===varNombre);
+  const valores=TS.proyecto.pacientes.map(p=>p[varNombre]).filter(v=>v!==undefined&&v!=='');
+  const div=document.getElementById('stat-detail');
+  if(variable.tipo.includes('cuant')){
+    const nums=valores.map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+    if(!nums.length){div.innerHTML='<div class="alert alert-warn">No hay datos numéricos.</div>';return;}
+    const nN=nums.length;
+    const mean=nums.reduce((a,b)=>a+b,0)/nN;
+    const med=nN%2===0?(nums[nN/2-1]+nums[nN/2])/2:nums[Math.floor(nN/2)];
+    const sd=sdMuestral(nums); // FIX 3C — denominador n-1
+    const sdTxt=sd==null?'DS no calculable (n<2)':sd.toFixed(2);
+    // FIX 5A — IC95% de la media (t de Student si n<30)
+    let icTxt='IC95%: no calculable (n<2)';
+    if(sd!=null){const crit=nN>=30?1.96:tValue95(nN-1);const se=sd/Math.sqrt(nN);icTxt='IC95% media: '+(mean-crit*se).toFixed(2)+' – '+(mean+crit*se).toFixed(2);}
+    const q1=nums[Math.floor(nN*0.25)];const q3=nums[Math.floor(nN*0.75)];
+    div.innerHTML='<div class="stat-grid"><div class="stat-card"><div class="stat-value">'+mean.toFixed(2)+'</div><div class="stat-label">Media</div><div class="stat-sub">DS: '+sdTxt+'</div></div><div class="stat-card"><div class="stat-value">'+med.toFixed(2)+'</div><div class="stat-label">Mediana</div><div class="stat-sub">RIQ: '+q1.toFixed(1)+'–'+q3.toFixed(1)+'</div></div><div class="stat-card"><div class="stat-value">'+nums[0]+'</div><div class="stat-label">Mínimo</div></div><div class="stat-card"><div class="stat-value">'+nums[nN-1]+'</div><div class="stat-label">Máximo</div></div><div class="stat-card"><div class="stat-value">'+nN+'</div><div class="stat-label">N válido</div></div></div><div class="alert" style="margin-top:8px;background:var(--goldLt,#faf6e8)">📏 '+esc(icTxt)+' · DS muestral (n−1)</div>';
+  }else{
+    const freq={};valores.forEach(v=>freq[v]=(freq[v]||0)+1);const total=valores.length;
+    div.innerHTML='<div class="table-wrap"><table class="data-table"><thead><tr><th>Categoría</th><th>N</th><th>%</th><th>IC95% (Wilson)</th></tr></thead><tbody>'+Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(([cat,n])=>{const ci=wilsonCI(n,total);const ciTxt=ci?(ci[0]*100).toFixed(1)+'%–'+(ci[1]*100).toFixed(1)+'%':'—';return '<tr><td>'+esc(cat)+'</td><td>'+n+'</td><td>'+((n/total)*100).toFixed(1)+'%</td><td>'+ciTxt+'</td></tr>';}).join('')+'</tbody></table></div>';
+  }
+}
+async function analisisIA(){
+  const pacs=TS.proyecto.pacientes;if(!pacs.length)return;
+  const vars=TS.proyecto.variables;let statsText='';
+  vars.forEach(v=>{
+    const vals=pacs.map(p=>p[v.nombre]).filter(x=>x!==undefined&&x!=='');
+    if(v.tipo.includes('cuant')){const nums=vals.map(Number).filter(n=>!isNaN(n));if(nums.length){const mean=(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2);const sdv=sdMuestral(nums);const sd=sdv==null?'NC(n<2)':sdv.toFixed(2);statsText+=v.nombre+': media='+mean+' DS(n-1)='+sd+' n='+nums.length+'\n';}}
+    else{const freq={};vals.forEach(x=>freq[x]=(freq[x]||0)+1);statsText+=v.nombre+': '+Object.entries(freq).map(([k,n])=>k+'='+n+'('+((n/vals.length)*100).toFixed(0)+'%)').join(', ')+'\n';}
+  });
+  await callIA('ia-stats',ctx()+'\n\nESTADÍSTICAS DESCRIPTIVAS (DS con denominador n−1):\n'+statsText+'\n\nInterpretá estas estadísticas DESCRIPTIVAS en lenguaje clínico para la sección de Resultados:\n1. Descripción de las características basales\n2. Hallazgos principales por variable\n3. Distribuciones llamativas o valores extremos\n4. Cómo presentarlos en una Tabla 1\n\nIMPORTANTE: NO sugerir que se ejecutaron tests estadísticos que no fueron realizados. Si el usuario necesita análisis inferencial, indicá qué test sería apropiado (t-test, chi-cuadrado, Mann-Whitney, regresión, etc.) y que debe ejecutarlo en software estadístico (R, SPSS, Stata, Python).',2000,AI_REVIEW_BANNER);
+}
+async function analisisCompleto(){await analisisIA();}
+
+// ── LITSEARCH ──
+async function buscarBibliografia(){
+  const kw=document.getElementById('f-lit-keywords').value;
+  const bases=document.getElementById('f-lit-bases').value;
+  const anos=document.getElementById('f-lit-anos').value;
+  await callIA('ia-litsearch',ctx()+'\n\nTÉRMINOS: '+kw+'\nBASES: '+bases+'\nPERÍODO: '+anos+'\n\nGenerá una ESTRATEGIA DE BÚSQUEDA para bases de datos (PubMed, Cochrane, MEDLINE, SciELO, LILACS) con términos MeSH y libres, filtros y operadores booleanos:\n1. ECUACIÓN DE BÚSQUEDA en formato PubMed/MeSH con operadores AND/OR/NOT\n2. TÉRMINOS MeSH clave y términos libres/sinónimos\n3. FILTROS sugeridos (idioma, período, tipo de estudio)\n4. Tipos de GUÍAS CLÍNICAS y documentos de consenso a buscar (ESC, AHA, ACC, SIAC)\n5. REVISTAS de alto impacto donde buscar\n6. Estrategia para literatura en español/portugués (SciELO, LILACS)\n7. Cómo gestionar duplicados y seleccionar artículos\n\nNO listar estudios específicos como si fueran resultados de una búsqueda real. Aclarar explícitamente: "Esta estrategia debe ejecutarse en las bases de datos — los resultados dependen de la búsqueda real que realice el investigador."',2000,AI_REVIEW_BANNER);
+}
+
+// ── WRITER ──
+const SECTION_GUIDES={
+  intro:'📌 Introducción: Contexto epidemiológico del problema, relevancia clínica, brecha de conocimiento que justifica tu estudio. Terminar con la pregunta de investigación. (800–1200 palabras)',
+  antecedentes:'📚 Antecedentes: Revisión crítica de estudios previos. Qué se sabe, qué no, cómo tu trabajo complementa el conocimiento. (600–1000 palabras)',
+  justificacion:'💡 Justificación: Por qué es necesario este estudio en este momento y contexto. Relevancia local, regional y para la práctica clínica. (300–500 palabras)',
+  metodos:'🔬 Métodos: Diseño, período, lugar, criterios de inclusión/exclusión, definición de variables, procedimientos de recolección, análisis estadístico, consideraciones éticas. (700–1200 palabras)',
+  resultados:'📊 Resultados: Presentación objetiva de los hallazgos. Primero las características basales (Tabla 1), luego los resultados por objetivo. Sin interpretación. (500–1000 palabras)',
+  discusion:'💬 Discusión: Interpretación de los resultados, comparación con literatura, fortalezas y limitaciones, implicaciones para la práctica clínica. (800–1200 palabras)',
+  conclusion:'✅ Conclusión: Respuesta directa a los objetivos. Una o dos oraciones por objetivo. Aporte principal del trabajo. Líneas futuras. (200–400 palabras)'
+};
+function setSection(sec,el){
+  TS.proyecto.secciones[TS.sectionActiva]=document.getElementById('writer-text').value;
+  TS.sectionActiva=sec;
+  document.querySelectorAll('.section-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('writer-text').value=TS.proyecto.secciones[sec]||'';
+  document.getElementById('writer-guide').textContent=SECTION_GUIDES[sec]||'';
+  updateWC();
+}
+function updateWC(){const t=document.getElementById('writer-text').value;document.getElementById('writer-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
+function updateAbstractWC(){const t=document.getElementById('abstract-text').value;document.getElementById('abstract-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
+function guardarSeccion(){
+  TS.proyecto.secciones[TS.sectionActiva]=document.getElementById('writer-text').value;
+  const secs=['intro','antecedentes','justificacion','metodos','resultados','discusion','conclusion'];
+  document.querySelectorAll('.section-pill').forEach((p,i)=>{if(secs[i]===TS.sectionActiva&&TS.proyecto.secciones[TS.sectionActiva].trim())p.classList.add('done');});
+  alert('✅ Sección guardada.');
+}
+async function generarSeccion(){
+  const sec=TS.sectionActiva;
+  await callIA('ia-writer',ctx()+'\n\nGenerá el borrador de la sección "'+sec.toUpperCase()+'" de esta tesis académica.\nGuía de la sección: '+SECTION_GUIDES[sec]+'\n\nTexto actual: '+(TS.proyecto.secciones[sec]||'(vacío)')+'\n\nEscribí un borrador completo y académico, específico para el tema y diseño del estudio.\n\nIMPORTANTE sobre referencias:\n- NO generar numeración bibliográfica como [1],[2] en el texto.\n- Si algo requiere una referencia, usar el marcador [REF PENDIENTE: tema/concepto] para que el autor busque y verifique la fuente real.\n- Nunca inventar autores, títulos, journals ni años de publicación.',2000,AI_REVIEW_BANNER);
+}
+async function mejorarSeccion(){
+  const txt=document.getElementById('writer-text').value;
+  if(!txt.trim()){alert('Escribí algo primero.');return;}
+  await callIA('ia-writer',ctx()+'\n\nSección: '+TS.sectionActiva.toUpperCase()+'\nGuía: '+SECTION_GUIDES[TS.sectionActiva]+'\n\nTEXTO ESCRITO POR EL AUTOR:\n'+txt+'\n\nMejorá este texto manteniendo las ideas del autor. Corregí: claridad, estructura lógica, terminología técnica, gramática. Devolvé el texto mejorado completo listo para copiar.',2000);
+}
+
+// ── ABSTRACT ──
+async function generarAbstract(){
+  const lang=document.getElementById('f-abstract-lang').value;
+  const words=document.getElementById('f-abstract-words').value;
+  const p=TS.proyecto;
+  await callIA('ia-abstract',ctx()+'\n\nSecciones escritas:\nIntroducción: '+(p.secciones.intro.substring(0,400)||'No disponible')+'\nMétodos: '+(p.secciones.metodos.substring(0,400)||'No disponible')+'\nResultados: '+(p.secciones.resultados.substring(0,400)||'No disponible')+'\nConclusión: '+(p.secciones.conclusion.substring(0,200)||'No disponible')+'\n\nGenerá un abstract estructurado en '+lang+' de máximo '+words+'.\nEstructura: Introducción / Objetivo / Métodos / Resultados / Conclusión / Palabras clave (5-8 términos MeSH)',1500);
+  document.getElementById('abstract-editor').style.display='block';
+}
+function guardarAbstract(){TS.proyecto.abstract=document.getElementById('abstract-text').value;alert('✅ Abstract guardado.');}
+async function traducirAbstract(){
+  const txt=document.getElementById('abstract-text').value;if(!txt.trim())return;
+  await callIA('ia-abstract','Traducí este abstract al inglés de forma académica. Mantenés la estructura IMRYD. Términos técnicos en inglés correcto.\n\n'+txt);
+}
+
+// ── BIAS, COHERENCE, BENCHMARK ──
+async function analizarSesgos(){
+  await callIA('ia-bias',ctx()+'\n\nAnalizá exhaustivamente los sesgos de este estudio:\n1. SESGO DE SELECCIÓN\n2. SESGO DE INFORMACIÓN\n3. SESGO DE CONFUSIÓN\n4. SESGO TEMPORAL según el diseño\n5. SESGO DE MEDICIÓN\n6. ESTRATEGIAS DE CONTROL para cada sesgo\n7. Cómo reportar limitaciones por sesgos en la Discusión\n8. Semáforo: 🟢 bajo / 🟡 moderado / 🔴 alto riesgo',2000);
+}
+async function verificarCoherencia(){
+  const p=TS.proyecto;
+  await callIA('ia-coherence',ctx()+'\n\nOBJETIVOS: '+p.objetivoGeneral+' | '+p.objetivosEspecificos+'\nVARIABLES: '+p.variables.map(v=>v.nombre).join(', ')+'\nMÉTODOS: '+(p.secciones.metodos.substring(0,400)||'No redactado aún')+'\n\nVerificá la coherencia metodológica:\n1. ¿El diseño es adecuado para los objetivos?\n2. ¿Las variables permiten responder todos los objetivos específicos?\n3. ¿Los métodos de análisis son correctos?\n4. ¿Hay objetivos sin variable que los soporte?\n5. ¿Hay variables que no responden a ningún objetivo?\n6. Recomendaciones de mejora\n7. Semáforo: 🟢 coherente / 🟡 observaciones / 🔴 requiere revisión');
+}
+async function generarBenchmark(){
+  await callIA('ia-benchmark',ctx()+'\n\nDescribí el TIPO de estudios que típicamente existe sobre este tema y qué brechas suelen reportarse en la literatura:\n1. ¿QUÉ TIPO de estudios suele existir sobre este tema? (describir, sin afirmar que existen o no estudios específicos)\n2. ¿QUÉ podría aportar un trabajo como este?\n3. TIPOS de estudios de referencia y guías que conviene revisar\n4. FORTALEZAS potenciales del diseño\n5. CÓMO POSICIONAR el trabajo en la discusión\n6. Brechas que SUELEN reportarse en la literatura sobre este tema\n\nNO afirmar que existen o no existen estudios específicos sin búsqueda verificada. Indicá explícitamente: "El gap real debe confirmarse mediante búsqueda sistemática en bases de datos."',2000,AI_REVIEW_BANNER);
+}
+
+// ── DEFENSE ──
+async function generarPreguntas(){
+  const perfil=document.getElementById('f-examinador').value;
+  const dific=document.getElementById('f-defensa-dif').value;
+  await callIA('ia-defense',ctx()+'\n\nGenerá 8 preguntas de tribunal para la defensa.\nPerfil del examinador: '+perfil+'\nDificultad: '+dific+'\n\nPara cada pregunta:\n- La pregunta (formulada como la haría un tribunal)\n- Nivel de dificultad: 🔴 Alta / 🟡 Media / 🟢 Baja\n- Qué aspectos evalúa\n- Claves para responderla bien\n\nIncluí preguntas sobre: diseño, validez, limitaciones, implicaciones clínicas, aplicabilidad a LATAM.',2000);
+}
+async function nuevaPregunta(){
+  const perfil=document.getElementById('f-examinador').value;
+  await callIA('ia-defense',ctx()+'\n\nGenerá UNA sola pregunta difícil que podría hacer un '+perfil+' durante la defensa. Incluí: la pregunta, por qué es difícil, y las claves para responderla.',500);
+}
+
+// ── REFERENCES ──
+async function formatearRefs(){
+  const raw=document.getElementById('f-refs-raw').value;
+  const fmt=document.getElementById('f-ref-formato').value;
+  if(!raw.trim()){alert('Pegá las referencias primero.');return;}
+  await callIA('ia-references','Formateá estas referencias bibliográficas en estilo '+fmt+'. Devolvé SOLO la lista formateada, numerada, una por línea. Sin comentarios adicionales.\n\n'+raw,2000);
+}
+
+// ── QUALITY ──
+const QUALITY_ITEMS=[
+  {id:'q1',label:'Tema claramente definido y delimitado'},
+  {id:'q2',label:'Objetivo general formulado en forma SMART'},
+  {id:'q3',label:'Al menos 2 objetivos específicos derivados del general'},
+  {id:'q4',label:'Variables de estudio completamente definidas con tipo y unidad'},
+  {id:'q5',label:'Tamaño muestral calculado o justificado'},
+  {id:'q6',label:'Aprobación/exención ética gestionada ante el CEI (determinación del Comité, no del investigador)'},
+  {id:'q7',label:'Marco teórico / antecedentes redactados'},
+  {id:'q8',label:'Sección de Métodos completa (diseño, período, lugar, criterios)'},
+  {id:'q9',label:'Resultados presentados objetivamente sin discusión'},
+  {id:'q10',label:'Discusión compara con literatura existente'},
+  {id:'q11',label:'Limitaciones del estudio explicitadas'},
+  {id:'q12',label:'Conclusiones responden a cada objetivo específico'},
+  {id:'q13',label:'Abstract estructurado completo'},
+  {id:'q14',label:'Referencias en formato Vancouver (u otro estándar)'},
+  {id:'q15',label:'Coherencia entre objetivos, variables y análisis verificada'},
+];
+function initChecklist(){
+  const el=document.getElementById('quality-checklist');
+  el.innerHTML=QUALITY_ITEMS.map(item=>{
+    const checked=TS.qualityChecks.includes(item.id);
+    return '<div class="check-item'+(checked?' checked':'')+'" id="ci-'+item.id+'" onclick="toggleCheck(\''+item.id+'\')"><div class="check-box">'+(checked?'✓':'')+'</div><div class="check-label">'+esc(item.label)+'</div></div>';
+  }).join('');
+  updateQualityPct();
+}
+function toggleCheck(id){
+  const idx=TS.qualityChecks.indexOf(id);
+  if(idx>=0)TS.qualityChecks.splice(idx,1);else TS.qualityChecks.push(id);
+  const el=document.getElementById('ci-'+id);
+  el.classList.toggle('checked');
+  el.querySelector('.check-box').textContent=TS.qualityChecks.includes(id)?'✓':'';
+  updateQualityPct();
+}
+function updateQualityPct(){
+  const pct=Math.round(TS.qualityChecks.length/QUALITY_ITEMS.length*100);
+  document.getElementById('quality-pct').textContent=pct+'%';
+  document.getElementById('quality-bar').style.width=pct+'%';
+}
+
+// ── SLIDES ──
+async function generarSlides(){
+  const min=document.getElementById('f-slides-min').value;
+  const estilo=document.getElementById('f-slides-estilo').value;
+  await callIA('ia-slides',ctx()+'\n\nGenerá el esquema completo de presentación para la defensa.\nDuración: '+min+' | Estilo: '+estilo+'\n\nPara cada slide:\n1. Número y título\n2. Contenido principal (bullets o estructura visual)\n3. Mensaje clave que debe transmitir\n4. Tiempo estimado de exposición\n\nIncluí: Portada, índice, introducción, objetivos, métodos, resultados (con tablas/gráficos sugeridos), discusión, conclusiones, agradecimientos.',2000);
+}
+
+// ── VERSIONS ──
+function guardarVersion(){
+  const snapshot={id:Date.now(),fecha:new Date().toLocaleDateString('es-UY')+' '+new Date().toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'}),label:'Versión '+(TS.versions.length+1),data:JSON.parse(JSON.stringify(TS.proyecto))};
+  TS.versions.push(snapshot);renderVersions();alert('✅ Versión guardada.');
+}
+function renderVersions(){
+  const el=document.getElementById('versions-list');
+  if(!TS.versions.length){el.innerHTML='<div class="alert alert-info">Todavía no hay versiones guardadas.</div>';return;}
+  el.innerHTML=TS.versions.slice().reverse().map(v=>'<div class="version-item"><div><div class="version-label">'+esc(v.label)+'</div><div class="version-date">'+v.fecha+' · '+esc(v.data.tema.substring(0,40)||'Sin tema')+'...</div></div><button class="btn btn-secondary btn-sm" onclick="restaurarVersion('+v.id+')">↩ Restaurar</button></div>').join('');
+}
+function restaurarVersion(id){
+  if(!confirm('¿Restaurar esta versión? Se perderán los cambios no guardados.'))return;
+  const v=TS.versions.find(x=>x.id===id);
+  if(v){Object.assign(TS.proyecto,JSON.parse(JSON.stringify(v.data)));alert('✅ Versión restaurada.');}
+}
+
+// ── EXPORT ── FIX 10: declaración de uso de IA (ICMJE 2026)
+function modulosUsadosIA(){
+  const set=[...new Set(TS.aiLog.map(l=>AI_PURPOSES[l.modulo]||l.proposito))];
+  return set.length?set.join('; '):'(sin usos registrados en esta sesión)';
+}
+function generarDeclaracionIA(){
+  const lineas=[];
+  lineas.push('Esta tesis utilizó asistencia de IA (Claude, Anthropic) para: '+modulosUsadosIA()+'.');
+  lineas.push('Todo el contenido fue revisado y es responsabilidad del autor. Las referencias fueron verificadas independientemente. (ICMJE Recommendations 2026)');
+  if(TS.aiLog.length){
+    lineas.push('');
+    lineas.push('Registro de uso de IA en la sesión:');
+    TS.aiLog.forEach(l=>lineas.push('- '+l.fecha+' '+l.hora+' · '+(AI_PURPOSES[l.modulo]||l.proposito)+' — '+l.accion));
+  }
+  return lineas.join('\n');
+}
+function editarDeclaracionIA(){
+  const ed=document.getElementById('decl-ia-editor');
+  const ta=document.getElementById('f-decl-ia');
+  if(!TS.proyecto.declaracionIA)TS.proyecto.declaracionIA=generarDeclaracionIA();
+  else TS.proyecto.declaracionIA=TS.proyecto.declaracionIA; // conservar edición previa
+  ta.value=TS.proyecto.declaracionIA;
+  ed.style.display=ed.style.display==='none'?'block':'none';
+}
+function guardarDeclaracionIA(){TS.proyecto.declaracionIA=document.getElementById('f-decl-ia').value;alert('✅ Declaración de uso de IA guardada.');}
+
+function exportarTXT(){
+  const p=TS.proyecto;const secs=p.secciones;const lineas=[];
+  lineas.push('═'.repeat(60));lineas.push('THESISMART — TESIS ACADÉMICA');lineas.push('CeiboMed · ceibomed.com');lineas.push('Exportado: '+new Date().toLocaleDateString('es-UY'));lineas.push('═'.repeat(60));lineas.push('');
+  lineas.push('INVESTIGADOR: '+(p.investigador||'No especificado'));lineas.push('INSTITUCIÓN: '+(p.institucion||'No especificada'));lineas.push('CARRERA: '+(p.carrera||''));lineas.push('DIRECTOR: '+(p.tutor||''));lineas.push('');
+  lineas.push('TEMA: '+(p.tema||'No definido'));lineas.push('TIPO DE ESTUDIO: '+(p.tipoEstudio||'')+' '+(p.temporalidad?'/ '+p.temporalidad:''));lineas.push('POBLACIÓN: '+(p.poblacion||''));lineas.push('PERÍODO: '+(p.periodo||''));lineas.push('LUGAR: '+(p.lugar||''));lineas.push('');
+  if(p.abstract){lineas.push('─'.repeat(60));lineas.push('ABSTRACT');lineas.push('─'.repeat(60));lineas.push(p.abstract);lineas.push('');}
+  const secNames={intro:'INTRODUCCIÓN',antecedentes:'ANTECEDENTES',justificacion:'JUSTIFICACIÓN',metodos:'MÉTODOS',resultados:'RESULTADOS',discusion:'DISCUSIÓN',conclusion:'CONCLUSIÓN'};
+  Object.entries(secs).forEach(([k,v])=>{if(v.trim()){lineas.push('─'.repeat(60));lineas.push(secNames[k]||k.toUpperCase());lineas.push('─'.repeat(60));lineas.push(v);lineas.push('');}});
+  if(p.variables.length){lineas.push('─'.repeat(60));lineas.push('VARIABLES DE ESTUDIO');lineas.push('─'.repeat(60));p.variables.forEach(v=>lineas.push('- '+v.nombre+' ('+v.tipo+(v.unidad?', '+v.unidad:'')+')')); lineas.push('');}
+  if(p.pacientes.length){lineas.push('─'.repeat(60));lineas.push('DATOS RECOLECTADOS ('+p.pacientes.length+' registros)');lineas.push('─'.repeat(60));lineas.push(p.variables.map(v=>v.nombre).join('\t'));p.pacientes.forEach(pac=>lineas.push(p.variables.map(v=>pac[v.nombre]||'').join('\t')));lineas.push('');}
+  // FIX 10 — Declaración de uso de IA (ICMJE 2026)
+  lineas.push('─'.repeat(60));lineas.push('DECLARACIÓN DE USO DE IA');lineas.push('─'.repeat(60));
+  lineas.push(p.declaracionIA&&p.declaracionIA.trim()?p.declaracionIA:generarDeclaracionIA());
+  lineas.push('');
+  lineas.push('═'.repeat(60));lineas.push('Generado con ThesiSmart — CeiboMed');
+  const blob=new Blob([lineas.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ThesiSmart_'+(p.investigador||'tesis').replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.txt';a.click();URL.revokeObjectURL(a.href);
+}
+function exportarResumen(){
+  const p=TS.proyecto;const lineas=[];
+  lineas.push('THESISMART — RESUMEN EJECUTIVO');lineas.push('Tema: '+(p.tema||'No definido'));lineas.push('Investigador: '+(p.investigador||''));lineas.push('Fecha: '+new Date().toLocaleDateString('es-UY'));lineas.push('');
+  lineas.push('OBJETIVO: '+(p.objetivoGeneral||'No definido'));if(p.objetivosEspecificos){lineas.push('');lineas.push('OBJETIVOS ESPECÍFICOS:');lineas.push(p.objetivosEspecificos);}lineas.push('');
+  if(p.secciones.metodos){lineas.push('MÉTODOS:');lineas.push(p.secciones.metodos.substring(0,1000));lineas.push('');}
+  if(p.secciones.resultados){lineas.push('RESULTADOS:');lineas.push(p.secciones.resultados.substring(0,1000));lineas.push('');}
+  if(p.secciones.conclusion){lineas.push('CONCLUSIÓN:');lineas.push(p.secciones.conclusion);}
+  const blob=new Blob([lineas.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ThesiSmart_Resumen_'+new Date().toISOString().split('T')[0]+'.txt';a.click();URL.revokeObjectURL(a.href);
+}
+
+// ── PANEL DIRECTOR ──
+function toggleDirector(){
+  TS.directorOpen=!TS.directorOpen;
+  document.getElementById('panel-director').classList.toggle('open',TS.directorOpen);
+  document.getElementById('btn-director').classList.toggle('open',TS.directorOpen);
+}
+async function enviarDirector(){
+  if(!TS.iaActiva){alert('Conectá tu API key primero.');return;}
+  const input=document.getElementById('director-input');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';
+  const msgWrap=document.getElementById('director-messages');
+  msgWrap.innerHTML+='<div class="msg msg-user">'+esc(msg)+'</div><div class="msg msg-ai" id="dir-loading">⏳ Pensando...</div>';
+  msgWrap.scrollTop=msgWrap.scrollHeight;
+  if(!usarCredito()){document.getElementById('dir-loading').remove();return;}
+  try{
+    const r=await llamarIA([{role:'user',content:ctx()+'\n\nPREGUNTA: '+msg}],1000);
+    document.getElementById('dir-loading').remove();
+    msgWrap.innerHTML+='<div class="msg msg-ai">'+esc(r)+'</div>';
+    msgWrap.scrollTop=msgWrap.scrollHeight;
+  }catch(e){document.getElementById('dir-loading').remove();msgWrap.innerHTML+='<div class="msg msg-ai">⚠️ Error: '+esc(e.message)+'</div>';}
+}
+
+// ── INIT ──
+window.addEventListener('load',()=>{
+  goTo('builder',document.querySelector('[data-mod="builder"]'));
+  updateSampleUI();renderVersions();
+  document.getElementById('writer-guide').textContent=SECTION_GUIDES.intro;
+  initChecklist();
+});
+</script>
+</body>
+</html>
