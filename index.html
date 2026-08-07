@@ -1279,7 +1279,8 @@ function setSection(sec,el){
   document.querySelectorAll('.section-pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('writer-text').value=TS.proyecto.secciones[sec]||'';
-  document.getElementById('writer-guide').textContent=SECTION_GUIDES[sec]||'';
+  const wg = document.getElementById('writer-guide');
+  if(wg) wg.textContent = SECTION_GUIDES[sec]||'';
   updateWC();
 }
 function updateWC(){const t=document.getElementById('writer-text').value;document.getElementById('writer-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
@@ -1490,7 +1491,8 @@ async function enviarDirector(){
 window.addEventListener('load',()=>{
   goTo('builder',document.querySelector('[data-mod="builder"]'));
   updateSampleUI();renderVersions();
-  document.getElementById('writer-guide').textContent=SECTION_GUIDES.intro;
+  const wg = document.getElementById('writer-guide');
+  if(wg) wg.textContent = SECTION_GUIDES.intro;
   initChecklist();
 });
 </script>
