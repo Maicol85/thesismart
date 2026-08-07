@@ -21,6 +21,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:
   --dark:#0f1a2e;--darkMid:#1a2d4a
 }
 #app{display:flex;flex-direction:column;min-height:100vh}
+/* ── Login + disclaimer + footer (estándar CeiboMed) ── */
+#ts-login{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,var(--dark),var(--darkMid));display:flex;align-items:center;justify-content:center;padding:20px}
+.ts-login-card{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:34px 30px;width:100%;max-width:380px;box-shadow:0 24px 70px rgba(0,0,0,.5);backdrop-filter:blur(10px);text-align:center}
+.ts-login-logo{font-family:Georgia,serif;font-size:2rem;color:#fff;letter-spacing:-.5px;margin-bottom:4px}
+.ts-login-logo span{color:var(--goldMid)}
+.ts-login-sub{font-size:.62rem;color:rgba(255,255,255,.45);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:22px}
+.ts-login-card input{width:100%;padding:11px 14px;background:rgba(6,20,45,.5);border:1.5px solid rgba(201,168,76,.3);border-radius:8px;font-size:.95rem;outline:none;margin-bottom:12px;font-family:inherit;text-align:center;letter-spacing:2px;color:#eaf4ff}
+.ts-login-card input:focus{border-color:var(--goldMid)}
+.ts-login-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--goldMid),var(--gold));color:#1a1200;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit}
+.ts-login-btn:hover{filter:brightness(1.06)}
+#ts-login-error{color:#ff8a8a;font-size:.8rem;margin-top:8px;display:none}
+.ts-login-foot{margin-top:20px;font-size:.66rem;color:rgba(255,255,255,.4);letter-spacing:.5px}
+#ts-legal{position:fixed;inset:0;z-index:9998;background:rgba(6,12,24,.82);display:none;align-items:center;justify-content:center;padding:20px}
+.ts-legal-card{background:var(--dark);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:26px 26px 22px;width:100%;max-width:520px;box-shadow:0 24px 70px rgba(0,0,0,.55);animation:fadeIn .2s ease}
+.ts-legal-card h2{font-family:Georgia,serif;color:#fff;font-size:1.3rem;margin:0 0 4px}
+.ts-legal-card h2 span{color:var(--goldMid)}
+.ts-legal-sub{font-size:.66rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+.ts-legal-list{list-style:none;margin:0 0 18px;padding:0}
+.ts-legal-list li{position:relative;padding:8px 0 8px 26px;font-size:.86rem;line-height:1.55;color:rgba(255,255,255,.82);border-bottom:1px solid rgba(255,255,255,.06)}
+.ts-legal-list li:before{content:'⚠';position:absolute;left:0;color:var(--goldMid)}
+.ts-legal-list li:last-child{border-bottom:none}
+.ts-legal-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--goldMid),var(--gold));color:#1a1200;border:none;border-radius:9px;font-size:.92rem;font-weight:700;cursor:pointer;font-family:inherit}
+.ts-legal-btn:hover{filter:brightness(1.06)}
+#ts-footer{position:fixed;left:0;right:0;bottom:0;height:30px;background:var(--dark);border-top:1px solid rgba(201,168,76,.22);color:rgba(255,255,255,.5);font-size:.68rem;display:flex;align-items:center;justify-content:center;letter-spacing:.5px;z-index:140}
+#ts-footer b{color:var(--goldMid);font-weight:600}
+#main-content{padding-bottom:46px}
+.body-wrap nav{padding-bottom:38px}
 header{background:var(--dark);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,0.3)}
 .logo-main{font-family:Georgia,serif;font-size:1.35rem;color:#fff;letter-spacing:-.5px}
 .logo-main span{color:var(--goldMid)}
@@ -34,6 +61,41 @@ header{background:var(--dark);padding:11px 20px;display:flex;align-items:center;
 .chip-credits{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:4px 10px;border-radius:20px;font-size:.72rem}
 #btn-desconectar{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);border-radius:6px;padding:4px 9px;font-size:.72rem;cursor:pointer}
 #api-warning{background:#1a1f2e;border-bottom:1px solid rgba(201,168,76,.25);padding:8px 20px;font-size:.8rem;color:rgba(201,168,76,.8);text-align:center}
+/* ── Proyectos guardados ── */
+#btn-proyectos{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.4);color:var(--goldMid);border-radius:6px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap}
+#btn-proyectos:hover{background:rgba(201,168,76,.22)}
+#proj-overlay{position:fixed;inset:0;background:rgba(6,12,24,.72);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+#proj-overlay.open{display:flex}
+#proj-panel{background:var(--dark);border:1px solid rgba(201,168,76,.25);border-radius:14px;width:100%;max-width:640px;box-shadow:0 24px 70px rgba(0,0,0,.55);animation:fadeIn .2s ease;overflow:hidden}
+.proj-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.proj-head h2{font-family:Georgia,serif;font-size:1.15rem;color:#fff;margin:0}
+.proj-head h2 span{color:var(--goldMid)}
+.proj-close{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);border-radius:6px;padding:4px 10px;font-size:.9rem;cursor:pointer;line-height:1;font-family:inherit}
+.proj-close:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.proj-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.proj-tbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.82);border-radius:7px;padding:7px 14px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.proj-tbtn:hover{background:rgba(255,255,255,.12)}
+.proj-tbtn.gold{background:rgba(201,168,76,.16);border-color:rgba(201,168,76,.4);color:var(--goldMid)}
+.proj-tbtn.gold:hover{background:rgba(201,168,76,.26)}
+.proj-list{padding:14px 20px 20px;max-height:52vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.proj-empty{text-align:center;color:rgba(255,255,255,.4);font-size:.85rem;padding:26px 10px;line-height:1.7}
+.proj-item{background:var(--darkMid);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--goldMid);border-radius:0 10px 10px 0;padding:13px 15px}
+.proj-item-name{font-family:Georgia,serif;font-size:.98rem;color:#fff;margin-bottom:4px}
+.proj-item-meta{font-size:.72rem;color:rgba(255,255,255,.45);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.proj-item-meta b{color:var(--goldMid);font-weight:600}
+.proj-bar{height:5px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:9px 0 11px}
+.proj-bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--goldMid),var(--success));border-radius:6px}
+.proj-actions{display:flex;gap:6px;flex-wrap:wrap}
+.proj-act{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.8);border-radius:6px;padding:5px 10px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.proj-act:hover{background:rgba(255,255,255,.14)}
+.proj-act.danger{color:#eda29b;border-color:rgba(233,120,102,.38)}
+.proj-act.danger:hover{background:rgba(233,120,102,.16)}
+#proj-print-area{position:absolute;left:-99999px;top:0;width:100%}
+@media print{
+  body *{visibility:hidden}
+  #proj-print-area,#proj-print-area *{visibility:visible}
+  #proj-print-area{left:0}
+}
 .body-wrap{display:flex;flex:1;position:relative}
 nav{width:200px;background:var(--dark);flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 52px);position:sticky;top:52px;border-right:1px solid rgba(255,255,255,.06)}
 .nav-group{padding:10px 14px 4px;font-size:.55rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:6px}
@@ -112,6 +174,40 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
 .section-pill{padding:5px 12px;border-radius:20px;cursor:pointer;font-size:.74rem;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--inkSoft);transition:all .15s}
 .section-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .section-pill.done{background:#d5f5e3;color:#1e8449;border-color:#1e8449}
+/* ── Referencias (Escritura guiada) ── */
+#refs-bar{margin-top:12px}
+.refs-btn{background:var(--goldLt);border:1px solid var(--goldMid);color:#7a5c00;border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.refs-btn:hover{background:#fbf1cf}
+#refs-preview{margin-top:12px;border:1px solid var(--border);border-radius:8px;background:#fbfaf6;padding:10px 12px}
+.ref-prev-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--inkMuted);margin-bottom:6px}
+.ref-prev-text{font-size:.83rem;line-height:1.75;color:var(--inkSoft);white-space:pre-wrap;max-height:200px;overflow:auto}
+.ref-tok{font-weight:700;padding:0 3px;border-radius:4px}
+.ref-tok.pend{color:var(--warn);background:var(--warnLt)}
+.ref-tok.ok{color:var(--success);background:var(--successLt)}
+#refs-card{margin-top:12px;border:1px solid var(--goldMid);border-radius:10px;background:var(--surface);padding:14px 16px;box-shadow:var(--shadow);animation:fadeIn .2s ease}
+.refs-card-head{display:flex;align-items:center;justify-content:space-between;font-family:Georgia,serif;font-size:1rem;color:var(--ink)}
+.refs-sync{background:var(--bg);border:1px solid var(--border);color:var(--inkSoft);border-radius:6px;padding:4px 10px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:inherit}
+.refs-sync:hover{background:var(--accentLt)}
+.ref-row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}
+.ref-row:last-child{border-bottom:none}
+.ref-row.ok{background:linear-gradient(90deg,var(--successLt),transparent);border-radius:8px;padding:11px 8px}
+.ref-num{font-family:Georgia,serif;font-weight:700;color:var(--accent);min-width:32px;font-size:.95rem;padding-top:5px}
+.ref-row.ok .ref-num{color:var(--success)}
+.ref-body{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.ref-desc{width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;font-family:inherit;color:var(--ink);outline:none}
+.ref-desc:focus{border-color:var(--accentMid)}
+.ref-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ref-badge{font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap}
+.ref-badge.pend{background:var(--warnLt);color:var(--warn)}
+.ref-badge.ok{background:var(--successLt);color:var(--success)}
+.ref-link{font-size:.74rem;font-weight:600;color:var(--accentMid);text-decoration:none;border:1px solid var(--accentLt);border-radius:6px;padding:3px 9px;white-space:nowrap}
+.ref-link:hover{background:var(--accentLt)}
+.ref-doi{flex:1;min-width:130px;padding:5px 9px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:inherit;outline:none}
+.ref-doi:focus{border-color:var(--accentMid)}
+.ref-verif{background:var(--surface);border:1px solid var(--success);color:var(--success);border-radius:6px;padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.ref-verif:hover{background:var(--successLt)}
+.ref-row.ok .ref-verif{border-color:var(--warn);color:var(--warn)}
+.ref-empty{font-size:.82rem;color:var(--inkMuted);text-align:center;padding:16px;line-height:1.7}
 .word-count{font-size:.68rem;color:var(--inkMuted);text-align:right;margin-top:4px}
 .sample-result{background:linear-gradient(135deg,var(--dark),var(--darkMid));border-radius:12px;padding:20px;text-align:center;margin-top:14px}
 .sample-n{font-size:3rem;font-weight:700;color:var(--goldMid);font-family:Georgia,serif;line-height:1}
@@ -161,6 +257,31 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
 </style>
 </head>
 <body>
+<!-- LOGIN CeiboMed -->
+<div id="ts-login">
+  <div class="ts-login-card">
+    <div class="ts-login-logo">Thesi<span>Smart</span></div>
+    <div class="ts-login-sub">CeiboMed · Asistente de tesis</div>
+    <input type="password" id="ts-login-input" placeholder="Contraseña" autocomplete="off" onkeydown="if(event.key==='Enter')tsCheckLogin()"/>
+    <button class="ts-login-btn" onclick="tsCheckLogin()">Ingresar</button>
+    <div id="ts-login-error">Contraseña incorrecta</div>
+    <div class="ts-login-foot">© 2026 CeiboMed — Todos los derechos reservados</div>
+  </div>
+</div>
+<!-- DISCLAIMER médico-legal -->
+<div id="ts-legal">
+  <div class="ts-legal-card">
+    <h2>Aviso <span>académico-legal</span></h2>
+    <div class="ts-legal-sub">Leé antes de continuar</div>
+    <ul class="ts-legal-list">
+      <li>Esta aplicación es una <b>guía de apoyo académico basada en IA</b>, no un sustituto del juicio profesional ni de la revisión de un tutor.</li>
+      <li>El contenido generado <b>puede contener errores</b> — el usuario es responsable de verificarlo, incluidas todas las referencias (PubMed/DOI).</li>
+      <li>Los desarrolladores de <b>CeiboMed no asumen responsabilidad</b> por el uso del contenido generado.</li>
+      <li>Tus <b>datos y proyectos se guardan localmente</b> en este navegador (localStorage), no en un servidor. Exportá a JSON para respaldarlos; borrar los datos del navegador los elimina.</li>
+    </ul>
+    <button class="ts-legal-btn" onclick="tsCloseLegal()">Entendido — Ingresar</button>
+  </div>
+</div>
 <div id="app">
 <header>
   <div>
@@ -168,6 +289,7 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
     <div class="logo-sub">CeiboMed · Asistente de tesis e investigación académica</div>
   </div>
   <div class="header-right">
+    <button id="btn-proyectos" onclick="abrirPanelProyectos()" title="Proyectos guardados">📁 Proyectos</button>
     <div id="api-bar">
       <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off"/>
       <button onclick="conectarAPI()">Conectar</button>
@@ -179,6 +301,22 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
     </div>
   </div>
 </header>
+<!-- Panel de Proyectos guardados -->
+<div id="proj-overlay" onclick="if(event.target===this)cerrarPanelProyectos()">
+  <div id="proj-panel" role="dialog" aria-modal="true" aria-label="Proyectos guardados">
+    <div class="proj-head">
+      <h2>📁 Proyectos <span>guardados</span></h2>
+      <button class="proj-close" onclick="cerrarPanelProyectos()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="proj-toolbar">
+      <button class="proj-tbtn gold" onclick="nuevoProyecto()">➕ Nuevo proyecto</button>
+      <button class="proj-tbtn" onclick="document.getElementById('proj-import-file').click()">📥 Importar JSON</button>
+      <input type="file" id="proj-import-file" accept=".json,application/json" style="display:none" onchange="importarProyectoJSON(this)"/>
+    </div>
+    <div class="proj-list" id="proj-list"></div>
+  </div>
+</div>
+<div id="proj-print-area" aria-hidden="true"></div>
 <div id="api-warning">🔑 Conectá tu API key de Anthropic para activar el Director IA — <strong>console.anthropic.com</strong></div>
 <div class="body-wrap">
 <nav id="sidebar">
@@ -475,7 +613,7 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
     </div>
     <div id="writer-guide" class="module-tip"></div>
     <div class="alert alert-warn" style="font-size:.82rem">⚠ Las referencias generadas por IA pueden ser incorrectas o inexistentes. Verificá cada cita en PubMed (PMID) o DOI antes de incluirla en la tesis. ICMJE 2026 exige que los autores verifiquen la exactitud de todas las referencias. La IA marca lo que requiere fuente como <b>[REF PENDIENTE]</b>.</div>
-    <textarea class="form-textarea" id="writer-text" style="min-height:220px" placeholder="Escribí acá el contenido de esta sección..." oninput="updateWC()"></textarea>
+    <textarea class="form-textarea" id="writer-text" style="min-height:220px" placeholder="Escribí acá el contenido de esta sección... Citá fuentes con [1], [2], [3] y gestionalas en 📚 Referencias." oninput="updateWC();refsScanAdditive()" onblur="refsSync()"></textarea>
     <div class="word-count" id="writer-wc">0 palabras</div>
     <div class="btn-group">
       <button class="btn btn-gold" onclick="generarSeccion()">✦ Generar borrador con IA</button>
@@ -483,6 +621,14 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
       <button class="btn btn-primary" onclick="guardarSeccion()">💾 Guardar sección</button>
     </div>
     <div id="ia-writer"></div>
+    <!-- Referencias de la sección/proyecto -->
+    <div id="refs-preview" style="display:none"></div>
+    <div id="refs-bar"><button id="btn-refs" class="refs-btn" onclick="refsToggleCard()">📚 Referencias (<span id="refs-count">0</span>)</button></div>
+    <div id="refs-card" style="display:none">
+      <div class="refs-card-head"><span>📚 Referencias del proyecto</span><button class="refs-sync" onclick="refsSync()" title="Renumerar según el orden de aparición en el texto">🔄 Renumerar</button></div>
+      <div class="alert alert-warn" style="font-size:.78rem;margin:8px 0 4px">⚠ Verificá cada cita en PubMed (PMID) o DOI antes de darla por válida (ICMJE 2026). La numeración se ordena automáticamente según la aparición de <b>[n]</b> en el texto.</div>
+      <div id="refs-list"></div>
+    </div>
   </div>
 </div>
 
@@ -679,7 +825,34 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
     </div>
   </div>
 </div>
+<div id="ts-footer">© 2026 <b>CeiboMed</b> · ThesiSmart · Todos los derechos reservados</div>
 <script>
+// ── Login + disclaimer médico-legal (estándar CeiboMed) ──
+const TS_PASS='Tesis2026';
+function tsCheckLogin(){
+  const v=document.getElementById('ts-login-input').value;
+  if(v===TS_PASS){
+    try{localStorage.setItem('ts_auth','1');}catch(e){}
+    document.getElementById('ts-login').style.display='none';
+    tsShowLegal();
+  } else {
+    document.getElementById('ts-login-error').style.display='block';
+    const i=document.getElementById('ts-login-input'); i.value=''; i.focus();
+  }
+}
+function tsShowLegal(){ document.getElementById('ts-legal').style.display='flex'; }
+function tsCloseLegal(){ document.getElementById('ts-legal').style.display='none'; }
+(function tsInitLogin(){
+  try{
+    if(localStorage.getItem('ts_auth')==='1'){
+      document.getElementById('ts-login').style.display='none';
+      tsShowLegal();
+    } else {
+      setTimeout(function(){ const i=document.getElementById('ts-login-input'); if(i)i.focus(); },200);
+    }
+  }catch(e){}
+})();
+
 const TS = {
   apiKey:'', iaActiva:false, creditos:80,
   proyecto:{
@@ -742,6 +915,7 @@ function goTo(mod,el){
   if(mod==='stats')initStats();
   if(mod==='data')initDataForm();
   if(mod==='quality')initChecklist();
+  if(mod==='writer')initWriter();
 }
 
 function ctx(){
@@ -841,7 +1015,202 @@ function guardarBuilder(){
   p.temporalidad=document.getElementById('f-temporalidad').value;
   p.n=document.getElementById('f-n').value;
   document.getElementById('nb-builder').style.display='inline';
-  alert('✅ Proyecto guardado.');
+  const ok=persistirProyecto();
+  alert(ok
+    ? '✅ Proyecto guardado (disponible en 📁 Proyectos).'
+    : '✅ Proyecto guardado en esta sesión.\nⓘ Completá "Investigador" o "Tema" para guardarlo en 📁 Proyectos.');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROYECTOS GUARDADOS (localStorage) — clave = investigador + tema
+// ══════════════════════════════════════════════════════════════════
+const PROJ_PREFIX='thesismart_proj_';
+let PROJ_LIST=[]; // caché de la última render (los onclick referencian por índice)
+
+function projSlug(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);}
+function projNombre(p){return (p&&p.tema||'').trim() || (p&&p.investigador||'').trim() || 'Proyecto sin título';}
+function projClave(p){
+  const inv=projSlug(p.investigador), tema=projSlug(p.tema);
+  if(!inv && !tema) return null; // sin identidad no hay clave estable
+  return PROJ_PREFIX+inv+'__'+tema;
+}
+function projProgreso(p){
+  let done=0,total=0;
+  [p.tema,p.poblacion,p.tipoEstudio,p.objetivoGeneral,p.hipotesis].forEach(function(c){total++;if((c||'').trim())done++;});
+  Object.values(p.secciones||{}).forEach(function(s){total++;if((s||'').trim())done++;});
+  total++; if((p.variables||[]).length)done++;
+  total++; if((p.pacientes||[]).length)done++;
+  return total?Math.round(done/total*100):0;
+}
+function projFechaLegible(){
+  var d=new Date();
+  return d.toLocaleDateString('es-UY')+' '+d.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'});
+}
+
+// Persistir el proyecto actual (invocado desde guardarBuilder)
+function persistirProyecto(){
+  const p=TS.proyecto;
+  const key=projClave(p);
+  if(!key) return false;
+  const rec={schema:'thesismart-project',v:1,nombre:projNombre(p),investigador:p.investigador||'',tema:p.tema||'',
+    updatedAt:new Date().toISOString(),updatedLabel:projFechaLegible(),progreso:projProgreso(p),
+    proyecto:JSON.parse(JSON.stringify(p)),versions:TS.versions||[],qualityChecks:TS.qualityChecks||[]};
+  try{ localStorage.setItem(key,JSON.stringify(rec)); return true; }
+  catch(e){ alert('No se pudo guardar en el navegador (¿almacenamiento lleno?).'); return false; }
+}
+
+function leerProyectos(){
+  const out=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k || k.indexOf(PROJ_PREFIX)!==0) continue;
+    try{ const r=JSON.parse(localStorage.getItem(k)); if(r&&r.proyecto){ r._key=k; out.push(r); } }catch(e){}
+  }
+  out.sort(function(a,b){return String(b.updatedAt||'').localeCompare(String(a.updatedAt||''));});
+  return out;
+}
+
+function abrirPanelProyectos(){ renderProyectos(); document.getElementById('proj-overlay').classList.add('open'); }
+function cerrarPanelProyectos(){ document.getElementById('proj-overlay').classList.remove('open'); }
+
+function renderProyectos(){
+  PROJ_LIST=leerProyectos();
+  const el=document.getElementById('proj-list');
+  if(!PROJ_LIST.length){
+    el.innerHTML='<div class="proj-empty">Todavía no hay proyectos guardados.<br>Guardá uno desde <b style="color:var(--goldMid)">ThesisBuilder → 💾 Guardar proyecto</b>.</div>';
+    return;
+  }
+  // Contenido estático salvo datos de usuario, que se escapan con esc(); los onclick usan índice (sin interpolar datos)
+  el.innerHTML=PROJ_LIST.map(function(r,i){
+    const pct=Math.max(0,Math.min(100,parseInt(r.progreso,10)||0));
+    return '<div class="proj-item">'
+      +'<div class="proj-item-name">'+esc(r.nombre||'Proyecto sin título')+'</div>'
+      +'<div class="proj-item-meta"><span>👤 '+esc(r.investigador||'—')+'</span><span>🕓 '+esc(r.updatedLabel||r.updatedAt||'—')+'</span><span><b>'+pct+'%</b> completado</span></div>'
+      +'<div class="proj-bar"><span style="width:'+pct+'%"></span></div>'
+      +'<div class="proj-actions">'
+      +'<button class="proj-act" onclick="abrirProyecto('+i+')">📂 Abrir</button>'
+      +'<button class="proj-act" onclick="exportarProyectoJSON('+i+')">📤 Exportar JSON</button>'
+      +'<button class="proj-act" onclick="exportarProyectoPDF('+i+')">📄 Exportar PDF</button>'
+      +'<button class="proj-act danger" onclick="eliminarProyecto('+i+')">🗑️ Eliminar</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+// Rellenar el formulario visible desde el estado (para Abrir / Nuevo / Importar)
+function sincronizarFormulario(){
+  const p=TS.proyecto, set=function(id,v){var e=document.getElementById(id); if(e)e.value=(v==null?'':v);};
+  set('f-investigador',p.investigador);set('f-institucion',p.institucion);set('f-carrera',p.carrera);set('f-tutor',p.tutor);
+  set('f-tema',p.tema);set('f-poblacion',p.poblacion);set('f-periodo',p.periodo);set('f-lugar',p.lugar);
+  set('f-temporalidad',p.temporalidad);set('f-n',p.n);
+  set('f-obj-general',p.objetivoGeneral);set('f-obj-especificos',p.objetivosEspecificos);set('f-hipotesis',p.hipotesis);
+  set('f-cei',p.cei);set('f-consentimiento',p.consentimiento);set('f-etica-notas',p.eticaNotas);
+  if(typeof renderVariables==='function')renderVariables();
+  if(typeof renderVersions==='function')renderVersions();
+  if(typeof initChecklist==='function')initChecklist();
+}
+
+function _cargarRec(r){
+  TS.proyecto=JSON.parse(JSON.stringify(r.proyecto));
+  TS.versions=Array.isArray(r.versions)?JSON.parse(JSON.stringify(r.versions)):[];
+  TS.qualityChecks=Array.isArray(r.qualityChecks)?r.qualityChecks.slice():[];
+  sincronizarFormulario();
+  const nb=document.getElementById('nb-builder'); if(nb)nb.style.display='inline';
+  goTo('builder',document.querySelector('[data-mod="builder"]'));
+}
+
+function abrirProyecto(i){ const r=PROJ_LIST[i]; if(!r)return; _cargarRec(r); cerrarPanelProyectos(); }
+
+function eliminarProyecto(i){
+  const r=PROJ_LIST[i]; if(!r)return;
+  if(!confirm('¿Eliminar el proyecto "'+projNombre(r.proyecto)+'"?\nEsta acción no se puede deshacer.'))return;
+  try{ localStorage.removeItem(r._key); }catch(e){}
+  renderProyectos();
+}
+
+function exportarProyectoJSON(i){
+  const r=PROJ_LIST[i]; if(!r)return;
+  const blob=new Blob([JSON.stringify(r,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ThesiSmart_'+(projSlug(r.nombre)||'proyecto')+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function importarProyectoJSON(input){
+  const f=input&&input.files&&input.files[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const raw=JSON.parse(reader.result);
+      const proyecto=raw.proyecto||raw.data||raw; // tolera export completo o proyecto crudo
+      if(!proyecto||typeof proyecto!=='object'||(!proyecto.tema&&!proyecto.investigador&&!proyecto.secciones)){
+        alert('El archivo no parece un proyecto de ThesiSmart válido.'); return;
+      }
+      const rec={schema:'thesismart-project',v:1,
+        nombre:raw.nombre||projNombre(proyecto),
+        investigador:proyecto.investigador||raw.investigador||'',
+        tema:proyecto.tema||raw.tema||'',
+        updatedAt:new Date().toISOString(),updatedLabel:projFechaLegible(),
+        progreso:projProgreso(proyecto),proyecto:proyecto,
+        versions:Array.isArray(raw.versions)?raw.versions:[],
+        qualityChecks:Array.isArray(raw.qualityChecks)?raw.qualityChecks:[]};
+      const key=projClave(proyecto)||(PROJ_PREFIX+'importado-'+new Date().getTime());
+      try{ localStorage.setItem(key,JSON.stringify(rec)); }catch(e){}
+      rec._key=key;
+      _cargarRec(rec);
+      cerrarPanelProyectos();
+      alert('✅ Proyecto importado y cargado.');
+    }catch(e){ alert('No se pudo leer el archivo: '+e.message); }
+    finally{ input.value=''; }
+  };
+  reader.readAsText(f);
+}
+
+function proyectoVacio(){
+  return {investigador:'',institucion:'',carrera:'',tutor:'',tema:'',poblacion:'',periodo:'',lugar:'',
+    tipoEstudio:'',temporalidad:'',n:'',objetivoGeneral:'',objetivosEspecificos:'',hipotesis:'',
+    variables:[],pacientes:[],
+    secciones:{intro:'',antecedentes:'',justificacion:'',metodos:'',resultados:'',discusion:'',conclusion:''},
+    abstract:'',referencias:[],cei:'',consentimiento:'',eticaNotas:'',fechaInicio:'',fechaFin:'',declaracionIA:''};
+}
+
+function nuevoProyecto(){
+  if(!confirm('¿Empezar un proyecto nuevo? Se limpiará el proyecto actual.\n(Los proyectos ya guardados en 📁 Proyectos NO se borran.)'))return;
+  TS.proyecto=proyectoVacio();
+  TS.versions=[]; TS.qualityChecks=[]; TS.fotoB64=''; TS.fotoMime=''; TS.aiLog=[];
+  sincronizarFormulario();
+  goTo('builder',document.querySelector('[data-mod="builder"]'));
+  cerrarPanelProyectos();
+}
+
+function exportarProyectoPDF(i){
+  const r=PROJ_LIST[i]; if(!r)return;
+  const p=r.proyecto, area=document.getElementById('proj-print-area');
+  const row=function(l,v){return v&&String(v).trim()
+    ?'<tr><td style="padding:4px 12px 4px 0;color:#7a8d99;vertical-align:top;white-space:nowrap">'+esc(l)+'</td><td style="padding:4px 0">'+esc(v)+'</td></tr>':'';};
+  const secLabels={intro:'Introducción',antecedentes:'Antecedentes',justificacion:'Justificación',metodos:'Métodos',resultados:'Resultados',discusion:'Discusión',conclusion:'Conclusión'};
+  const secs=Object.keys(secLabels).map(function(k){
+    const t=((p.secciones&&p.secciones[k])||'').trim();
+    return t?'<h3 style="font-family:Georgia,serif;color:#1a5276;font-size:1rem;margin:14px 0 4px;border-bottom:1px solid #dce3e8;padding-bottom:3px">'+esc(secLabels[k])+'</h3><div style="font-size:.82rem;line-height:1.6;white-space:pre-wrap">'+esc(t)+'</div>':'';
+  }).join('');
+  const vars=(p.variables&&p.variables.length)
+    ?'<h3 style="font-family:Georgia,serif;color:#1a5276;font-size:1rem;margin:14px 0 4px;border-bottom:1px solid #dce3e8;padding-bottom:3px">Variables ('+p.variables.length+')</h3><div style="font-size:.82rem;line-height:1.6">'+p.variables.map(function(v){return esc(v.nombre)+' — '+esc(v.tipo)+(v.unidad?' ('+esc(v.unidad)+')':'');}).join('<br>')+'</div>':'';
+  area.innerHTML=
+    '<div style="font-family:Georgia,serif;color:#0f1923;max-width:720px;margin:0 auto;padding:10px 14px">'
+    +'<div style="border-bottom:3px solid #c9a84c;padding-bottom:8px;margin-bottom:12px">'
+    +'<div style="font-size:1.5rem;font-weight:700">'+esc(projNombre(p))+'</div>'
+    +'<div style="font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:#b7770d;margin-top:3px">ThesiSmart · CeiboMed · Resumen de proyecto</div></div>'
+    +'<table style="border-collapse:collapse;font-size:.85rem;width:100%">'
+    +row('Investigador',p.investigador)+row('Institución',p.institucion)+row('Carrera',p.carrera)+row('Tutor',p.tutor)
+    +row('Tema',p.tema)+row('Población',p.poblacion)+row('Período',p.periodo)+row('Lugar',p.lugar)
+    +row('Tipo de estudio',p.tipoEstudio)+row('Temporalidad',p.temporalidad)+row('N',p.n)
+    +row('Objetivo general',p.objetivoGeneral)+row('Objetivos específicos',p.objetivosEspecificos)+row('Hipótesis',p.hipotesis)
+    +row('Progreso estimado',(parseInt(r.progreso,10)||0)+'%')+row('Última edición',r.updatedLabel||'')
+    +'</table>'+vars+secs
+    +'<div style="margin-top:18px;font-size:.68rem;color:#7a8d99;border-top:1px solid #dce3e8;padding-top:6px">Generado con ThesiSmart (CeiboMed). Documento de apoyo; el contenido es responsabilidad del autor.</div>'
+    +'</div>';
+  window.print();
+  setTimeout(function(){ area.innerHTML=''; },800);
 }
 async function generarArquitectura(){
   guardarBuilder();
@@ -1282,10 +1651,12 @@ function setSection(sec,el){
   const wg = document.getElementById('writer-guide');
   if(wg) wg.textContent = SECTION_GUIDES[sec]||'';
   updateWC();
+  refsScanAdditive();
 }
 function updateWC(){const t=document.getElementById('writer-text').value;document.getElementById('writer-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
 function updateAbstractWC(){const t=document.getElementById('abstract-text').value;document.getElementById('abstract-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
 function guardarSeccion(){
+  refsSync(); // normalizar numeración de referencias por orden de aparición
   TS.proyecto.secciones[TS.sectionActiva]=document.getElementById('writer-text').value;
   const secs=['intro','antecedentes','justificacion','metodos','resultados','discusion','conclusion'];
   document.querySelectorAll('.section-pill').forEach((p,i)=>{if(secs[i]===TS.sectionActiva&&TS.proyecto.secciones[TS.sectionActiva].trim())p.classList.add('done');});
@@ -1299,6 +1670,143 @@ async function mejorarSeccion(){
   const txt=document.getElementById('writer-text').value;
   if(!txt.trim()){alert('Escribí algo primero.');return;}
   await callIA('ia-writer',ctx()+'\n\nSección: '+TS.sectionActiva.toUpperCase()+'\nGuía: '+SECTION_GUIDES[TS.sectionActiva]+'\n\nTEXTO ESCRITO POR EL AUTOR:\n'+txt+'\n\nMejorá este texto manteniendo las ideas del autor. Corregí: claridad, estructura lógica, terminología técnica, gramática. Devolvé el texto mejorado completo listo para copiar.',2000);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// REFERENCIAS — extracción de [n] del texto, renumeración por orden,
+// verificación (DOI/PMID) y bibliografía. Se guardan en TS.proyecto.referencias
+// ══════════════════════════════════════════════════════════════════
+const REF_SEC_ORDER=['intro','antecedentes','justificacion','metodos','resultados','discusion','conclusion'];
+let REF_SEQ=0;
+function refNuevoId(){ return 'r'+(new Date().getTime()).toString(36)+(REF_SEQ++).toString(36); }
+function refsById(id){ return (TS.proyecto.referencias||[]).filter(function(r){return r.id===id;})[0]; }
+function refsByNum(n){ return (TS.proyecto.referencias||[]).filter(function(r){return r.num===n;})[0]; }
+
+// Números [n] presentes, en orden de primera aparición (todas las secciones)
+function refsNumsEnTexto(){
+  const ta=document.getElementById('writer-text');
+  if(ta&&TS.sectionActiva) TS.proyecto.secciones[TS.sectionActiva]=ta.value;
+  const seq=[];
+  REF_SEC_ORDER.forEach(function(s){ String(TS.proyecto.secciones&&TS.proyecto.secciones[s]||'').replace(/\[(\d+)\]/g,function(m,d){seq.push(parseInt(d,10));return m;}); });
+  const uniq=[]; seq.forEach(function(n){ if(uniq.indexOf(n)<0)uniq.push(n); });
+  return uniq;
+}
+
+// Al escribir: sólo AGREGA referencias nuevas (no borra ni renumera → no pierde datos ni mueve el cursor)
+function refsScanAdditive(){
+  if(!TS.proyecto.referencias) TS.proyecto.referencias=[];
+  refsNumsEnTexto().forEach(function(n){ if(!refsByNum(n)) TS.proyecto.referencias.push({id:refNuevoId(),num:n,desc:'',doi:'',estado:'pendiente'}); });
+  refsRender();
+}
+
+// Al perder foco / guardar / abrir card: renumera por orden de aparición, reescribe [n] en el texto y descarta las no citadas
+function refsSync(){
+  const ta=document.getElementById('writer-text');
+  if(ta&&TS.sectionActiva) TS.proyecto.secciones[TS.sectionActiva]=ta.value;
+  const uniq=refsNumsEnTexto();               // números viejos, en orden de aparición
+  const map={}; uniq.forEach(function(old,i){ map[old]=i+1; });
+  // reescribir marcadores [viejo] → [nuevo] en todas las secciones (delimitador PUA para evitar colisiones)
+  REF_SEC_ORDER.forEach(function(s){
+    let t=String(TS.proyecto.secciones&&TS.proyecto.secciones[s]||'');
+    t=t.replace(/\[(\d+)\]/g,function(m,d){ const nn=map[parseInt(d,10)]; return nn?(''+nn+''):m; }).replace(/(\d+)/g,'[$1]');
+    if(TS.proyecto.secciones) TS.proyecto.secciones[s]=t;
+  });
+  if(ta) ta.value=String(TS.proyecto.secciones&&TS.proyecto.secciones[TS.sectionActiva]||'');
+  // remapear referencias por número viejo, conservando desc/doi/estado; descartar las que ya no aparecen
+  const prev=TS.proyecto.referencias||[]; const byNum={}; prev.forEach(function(r){ byNum[r.num]=r; });
+  TS.proyecto.referencias=uniq.map(function(old){
+    const r=byNum[old]||{id:refNuevoId(),desc:'',doi:'',estado:'pendiente'};
+    return {id:r.id,desc:r.desc||'',doi:r.doi||'',estado:r.estado||'pendiente',num:map[old]};
+  });
+  refsRender();
+  updateWC();
+}
+
+// Enlace a PubMed / DOI según lo cargado
+function refPubmedUrl(r){
+  const q=String(r.doi||'').trim();
+  if(q){
+    if(/^\d{5,9}$/.test(q)) return 'https://pubmed.ncbi.nlm.nih.gov/'+q+'/';       // PMID
+    if(/^10\.\S+$/.test(q)) return 'https://doi.org/'+encodeURIComponent(q);         // DOI
+  }
+  return 'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(String(r.desc||q||'').trim());
+}
+function refSetDesc(id,v){ const r=refsById(id); if(r){ r.desc=v; } }
+function refSetDoi(id,v){ const r=refsById(id); if(r){ r.doi=v; } }
+function refToggleVerif(id){
+  const r=refsById(id); if(!r)return;
+  if(r.estado!=='verificada'){
+    if(!String(r.doi||'').trim()){ alert('Ingresá el DOI o PMID de la fuente antes de marcarla como verificada.'); return; }
+    r.estado='verificada';
+  } else r.estado='pendiente';
+  refsRender();
+}
+
+// Vista de la sección actual con los [n] resaltados (verde=verificada, ámbar=pendiente)
+function refsUpdatePreview(){
+  const prev=document.getElementById('refs-preview'); if(!prev)return;
+  const ta=document.getElementById('writer-text');
+  const text=ta?ta.value:String(TS.proyecto.secciones&&TS.proyecto.secciones[TS.sectionActiva]||'');
+  if(!/\[\d+\]/.test(text)){ prev.style.display='none'; prev.innerHTML=''; return; }
+  const html=esc(text).replace(/\[(\d+)\]/g,function(m,d){
+    const r=refsByNum(parseInt(d,10));
+    const cls=(r&&r.estado==='verificada')?'ref-tok ok':'ref-tok pend';
+    return '<span class="'+cls+'">['+d+']</span>';
+  });
+  prev.style.display='block';
+  prev.innerHTML='<div class="ref-prev-label">Vista con referencias resaltadas</div><div class="ref-prev-text">'+html+'</div>';
+}
+
+function refsRender(){
+  const refs=(TS.proyecto.referencias||[]).slice().sort(function(a,b){return a.num-b.num;});
+  const cnt=document.getElementById('refs-count'); if(cnt)cnt.textContent=refs.length;
+  refsUpdatePreview();
+  const card=document.getElementById('refs-card');
+  if(card && card.style.display!=='none') refsRenderList(refs);
+}
+
+function refsRenderList(refs){
+  const el=document.getElementById('refs-list'); if(!el)return;
+  if(!refs.length){
+    el.innerHTML='<div class="ref-empty">No hay referencias en el texto todavía.<br>Insertá <b>[1]</b>, <b>[2]</b>… donde cites una fuente y aparecerán acá.</div>';
+    return;
+  }
+  // Datos de usuario (desc/doi) escapados con esc(); los handlers usan el id generado (sin interpolar datos)
+  el.innerHTML=refs.map(function(r){
+    const ok=r.estado==='verificada';
+    return '<div class="ref-row'+(ok?' ok':'')+'">'
+      +'<span class="ref-num">['+r.num+']</span>'
+      +'<div class="ref-body">'
+        +'<input class="ref-desc" placeholder="Descripción de la fuente (autor, título, año, revista)" value="'+esc(r.desc)+'" oninput="refSetDesc(\''+r.id+'\',this.value)">'
+        +'<div class="ref-controls">'
+          +'<span class="ref-badge '+(ok?'ok':'pend')+'">'+(ok?'✅ Verificada':'⏳ Pendiente')+'</span>'
+          +'<a class="ref-link" href="'+esc(refPubmedUrl(r))+'" target="_blank" rel="noopener">🔍 PubMed</a>'
+          +'<input class="ref-doi" placeholder="DOI o PMID" value="'+esc(r.doi)+'" oninput="refSetDoi(\''+r.id+'\',this.value)">'
+          +'<button class="ref-verif" onclick="refToggleVerif(\''+r.id+'\')">'+(ok?'↩ Marcar pendiente':'✅ Verificar')+'</button>'
+        +'</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function refsToggleCard(){
+  const card=document.getElementById('refs-card'); if(!card)return;
+  const abierto=(card.style.display && card.style.display!=='none');
+  if(abierto){ card.style.display='none'; return; }
+  refsSync(); // renumerar antes de mostrar
+  card.style.display='block';
+  refsRenderList((TS.proyecto.referencias||[]).slice().sort(function(a,b){return a.num-b.num;}));
+}
+
+// Cargar el writer al entrar al módulo (texto de la sección activa + pill + guía + refs)
+function initWriter(){
+  const ta=document.getElementById('writer-text'); if(!ta)return;
+  const sec=TS.sectionActiva||'intro';
+  ta.value=String(TS.proyecto.secciones&&TS.proyecto.secciones[sec]||'');
+  const pills=document.querySelectorAll('#mod-writer .section-pill');
+  pills.forEach(function(p,i){ p.classList.toggle('active', REF_SEC_ORDER[i]===sec); });
+  const wg=document.getElementById('writer-guide'); if(wg)wg.textContent=SECTION_GUIDES[sec]||'';
+  updateWC();
+  refsScanAdditive();
 }
 
 // ── ABSTRACT ──
@@ -1449,6 +1957,14 @@ function exportarTXT(){
   lineas.push('─'.repeat(60));lineas.push('DECLARACIÓN DE USO DE IA');lineas.push('─'.repeat(60));
   lineas.push(p.declaracionIA&&p.declaracionIA.trim()?p.declaracionIA:generarDeclaracionIA());
   lineas.push('');
+  const refs=(p.referencias||[]).slice().sort(function(a,b){return a.num-b.num;});
+  if(refs.length){
+    lineas.push('─'.repeat(60));lineas.push('BIBLIOGRAFÍA');lineas.push('─'.repeat(60));
+    refs.forEach(function(r){
+      lineas.push('['+r.num+'] '+(r.desc||'(sin descripción)')+(r.doi?' — '+r.doi:'')+(r.estado==='verificada'?' [verificada]':' [PENDIENTE de verificar]'));
+    });
+    lineas.push('');
+  }
   lineas.push('═'.repeat(60));lineas.push('Generado con ThesiSmart — CeiboMed');
   const blob=new Blob([lineas.join('\n')],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ThesiSmart_'+(p.investigador||'tesis').replace(/\s/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.txt';a.click();URL.revokeObjectURL(a.href);
