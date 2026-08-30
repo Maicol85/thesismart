@@ -3656,6 +3656,34 @@ function grDecimales(paso){
   }
   return 6;
 }
+/* Escala logarítmica con cortes 1·2·5 por década: … 0,1 · 0,2 · 0,5 · 1 · 2 · 5 · 10 …
+   Es la que se usa en los forest plot de razones, donde el 1 (la nulidad) tiene que
+   quedar en el medio y 0,5 y 2 a la misma distancia de él. Sólo tiene sentido con
+   valores estrictamente positivos: el logaritmo de 0 o de un negativo no existe. */
+function grEscalaLog(min,max){
+  if(!(min>0)||!(max>0)||!isFinite(min)||!isFinite(max))return null;
+  if(min>max){const t=min;min=max;max=t;}
+  if(min===max){min/=2;max*=2;}
+  const base=[1,2,5];
+  const e0=Math.floor(Math.log10(min)), e1=Math.ceil(Math.log10(max));
+  const todos=[];
+  for(let e=e0-1;e<=e1+1;e++) base.forEach(b=>todos.push(b*Math.pow(10,e)));
+  todos.sort((a,b)=>a-b);
+  // El límite es el corte "lindo" inmediatamente por fuera del dato, a cada lado.
+  let lo=todos.filter(v=>v<=min).pop();
+  let hi=todos.filter(v=>v>=max)[0];
+  if(!(lo>0))lo=min/2;
+  if(!(hi>0))hi=max*2;
+  const ticks=todos.filter(v=>v>=lo&&v<=hi);
+  return {lo:lo,hi:hi,ticks:ticks,log:true,paso:null};
+}
+/* Formato para un eje logarítmico: cada corte lleva los decimales que necesita él, no
+   los del "paso" (que en log no existe). */
+function grFmtLog(v){
+  if(!isFinite(v))return '—';
+  const s=(v>=1?String(Math.round(v*1000)/1000):v.toFixed(Math.max(0,Math.ceil(-Math.log10(v))+1)));
+  return String(s).replace('.',',').replace(/,0+$/,'').replace(/(,\d*[1-9])0+$/,'$1');
+}
 function grFmt(v,paso){
   if(!isFinite(v))return '—';
   const dec=paso?grDecimales(paso):2;
@@ -3675,7 +3703,13 @@ function grEjes(L,o){
   const x0=mIzq, x1=L.w-mDer, y0=L.h-mAba, y1=mArr;
   if(o.titulo) grTexto(L,o.titulo,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
   const ex=o.ex, ey=o.ey;
-  const px=v=>x0+(v-ex.lo)/(ex.hi-ex.lo)*(x1-x0);
+  /* Con ex.log el eje X es logarítmico. Hace falta para las medidas de razón (OR, HR,
+     RR): en escala lineal, un IC de 0,5 a 2,0 —perfectamente simétrico alrededor de 1 en
+     lo que mide— se dibuja con el brazo derecho el doble de largo que el izquierdo, y la
+     figura sugiere un efecto corrido hacia el lado del aumento. */
+  const px=ex.log
+    ? (v=>x0+(Math.log(Math.max(v,ex.lo))-Math.log(ex.lo))/(Math.log(ex.hi)-Math.log(ex.lo))*(x1-x0))
+    : (v=>x0+(v-ex.lo)/(ex.hi-ex.lo)*(x1-x0));
   const py=v=>y0-(v-ey.lo)/(ey.hi-ey.lo)*(y0-y1);
   // Rejilla horizontal tenue: ayuda a leer valores sin competir con los datos.
   ctx.strokeStyle='#e6eaee'; ctx.lineWidth=Math.max(1,L.mm(0.15));
@@ -3687,9 +3721,13 @@ function grEjes(L,o){
     ctx.beginPath(); ctx.moveTo(x0-L.mm(1),y); ctx.lineTo(x0,y); ctx.stroke();
     grTexto(L,grFmt(t,ey.paso),x0-L.mm(1.6),y,7,'#333','right',null,'middle');
   });
+  /* Los rótulos de los ejes se achican hasta entrar en el largo disponible. El del eje Y
+     va rotado, así que su límite es el ALTO del área de trazado: a 90 mm —una columna—
+     un rótulo como «Supervivencia acumulada» era más largo que el gráfico y se salía por
+     arriba del lienzo, apareciendo cortado en el PNG. */
   if(o.ejeY) { ctx.save(); ctx.translate(L.mm(4),(y0+y1)/2); ctx.rotate(-Math.PI/2);
-    grTexto(L,o.ejeY,0,0,8,'#111','center','bold','middle'); ctx.restore(); }
-  if(o.ejeX) grTexto(L,o.ejeX,(x0+x1)/2,L.h-L.mm(3),8,'#111','center','bold','bottom');
+    grTextoAjustado(L,o.ejeY,0,0,8,(y0-y1)*0.95,'#111','center'); ctx.restore(); }
+  if(o.ejeX) grTextoAjustado(L,o.ejeX,(x0+x1)/2,L.h-L.mm(3.6),8,(x1-x0)*0.98,'#111','center');
   return {x0:x0,x1:x1,y0:y0,y1:y1,px:px,py:py};
 }
 /* Leyenda que SE PARTE EN RENGLONES cuando no entra a lo ancho. En Kaplan-Meier cada
@@ -4222,8 +4260,19 @@ function grElegir(id){
   // Mapeo de roles
   const mp=document.getElementById('gr-mapeo');
   if(d.manual){
+    const meta=(id==='forest'||id==='funnel');
+    const fmt={forest:'nombre | efecto | IC inferior | IC superior',
+               funnel:'nombre | efecto | error estándar (en la MISMA escala en que se combina: si el efecto es una razón, el EE es el del logaritmo)',
+               consort:'texto | n', prisma:'texto | n',
+               nomograma:'variable | mínimo | máximo | coeficiente'}[id]||'texto | n';
     mp.innerHTML='<div class="alert alert-info" style="font-size:.78rem">Esta figura no sale de los datos: se completa a mano. Editá el contenido abajo y la vista previa se actualiza.</div>'+
-      '<label class="form-label">Contenido (una línea por caja: <code>texto | n</code>)</label>'+
+      (meta?'<div class="gr-mapeo"><div><label class="form-label">Escala del eje</label>'+
+        '<select class="form-select" id="gr-escala" onchange="grRedibujar()">'+
+        '<option value="auto">Automática — logarítmica si todo es positivo</option>'+
+        '<option value="log">Logarítmica (razones: OR, HR, RR)</option>'+
+        '<option value="lin">Lineal (diferencias de medias, diferencias de riesgo)</option>'+
+        '</select></div></div>':'')+
+      '<label class="form-label">Contenido — una línea por fila: <code>'+esc(fmt)+'</code></label>'+
       '<textarea class="form-textarea" id="gr-manual" style="min-height:110px;font-family:ui-monospace,monospace;font-size:.76rem" oninput="grRedibujar()">'+esc(GR_MANUAL_DEF[id]||'')+'</textarea>';
   }else if(d.auto){
     mp.innerHTML='';
@@ -4492,17 +4541,38 @@ function grDibViolin(L,m){
     const v=g.res.vals, n=v.length, c=L.pal[i%L.pal.length], ctx=L.ctx;
     // Densidad por núcleo gaussiano con ancho de banda de Silverman.
     const sd=g.res.sd||1, iqr=g.res.iqr||sd;
-    const h=0.9*Math.min(sd,iqr/1.34)*Math.pow(n,-0.2)||1;
-    const P=40, ys=[], ds=[];
+    let h=0.9*Math.min(sd,iqr/1.34)*Math.pow(n,-0.2);
+    /* Respaldo de ancho de banda cuando la dispersión es cero (todos los valores
+       iguales). Se toma una fracción del RANGO del eje y no un 1 fijo: "1" significa
+       muy ancho para una variable en µg/L y un pico para una en miles, así que el mismo
+       grupo se dibujaba con formas distintas según las unidades. */
+    if(!(h>0)) h=(ey.hi-ey.lo)/100||1;
+
+    /* La densidad se evalúa sobre el SOPORTE PROPIO del grupo —de su mínimo a su máximo,
+       más tres anchos de banda a cada lado, que es donde el núcleo deja de aportar— y no
+       sobre la grilla del eje compartido. Con la grilla compartida, un tercer grupo con
+       un valor extremo estiraba el eje y a los demás les tocaban 3 o 4 puntos de muestreo
+       en toda su distribución: la silueta pasaba a depender de dónde caía la grilla, y
+       dos grupos con exactamente los mismos datos se dibujaban con formas distintas
+       según qué otro grupo hubiera en la figura.
+       120 puntos sobre el soporte propio dan un contorno suave a cualquier escala. */
+    const P=120, ys=[], ds=[];
+    /* El soporte NO se recorta contra el eje: recortándolo, el muestreo volvía a depender
+       del eje compartido —y con él la silueta— sólo que menos. Se muestrea el soporte
+       propio completo y el recorte se hace al DIBUJAR, sobre la coordenada de pantalla.
+       Así la forma es exactamente la misma esté quien esté al lado. */
+    const lo=g.res.min-3*h, hi=g.res.max+3*h;
+    const span=(hi>lo)?(hi-lo):(h||1);
     for(let k=0;k<=P;k++){
-      const y=ey.lo+(ey.hi-ey.lo)*k/P;
+      const y=lo+span*k/P;
       let s=0; v.forEach(function(x){ const z=(y-x)/h; s+=Math.exp(-0.5*z*z); });
       ys.push(y); ds.push(s/(n*h*Math.sqrt(2*Math.PI)));
     }
     const dmax=Math.max.apply(null,ds)||1;
+    const cy=y=>Math.max(G.y1,Math.min(G.y0,G.py(y)));   // recorte al área de trazado
     ctx.beginPath();
-    ys.forEach(function(y,k){ const x=cx-(ds[k]/dmax)*bw/2; k?ctx.lineTo(x,G.py(y)):ctx.moveTo(x,G.py(y)); });
-    for(let k=ys.length-1;k>=0;k--) ctx.lineTo(cx+(ds[k]/dmax)*bw/2,G.py(ys[k]));
+    ys.forEach(function(y,k){ const x=cx-(ds[k]/dmax)*bw/2; k?ctx.lineTo(x,cy(y)):ctx.moveTo(x,cy(y)); });
+    for(let k=ys.length-1;k>=0;k--) ctx.lineTo(cx+(ds[k]/dmax)*bw/2,cy(ys[k]));
     ctx.closePath(); ctx.fillStyle=c+'44'; ctx.fill(); ctx.strokeStyle=c; ctx.lineWidth=Math.max(1,L.mm(0.3)); ctx.stroke();
     ctx.strokeStyle='#111'; ctx.lineWidth=Math.max(1,L.mm(0.45));
     ctx.beginPath(); ctx.moveTo(cx-bw*0.22,G.py(g.res.med)); ctx.lineTo(cx+bw*0.22,G.py(g.res.med)); ctx.stroke();
@@ -4960,13 +5030,19 @@ function grDibROC(L,m){
   if(roc.youden){
     ctx.beginPath(); ctx.arc(G.px(roc.youden.fpr),G.py(roc.youden.tpr),L.mm(1.1),0,7);
     ctx.fillStyle=L.pal[1]; ctx.fill();
-    grTexto(L,'Corte '+grFmt(roc.youden.umbral,0.01)+' · S '+(100*roc.youden.tpr).toFixed(0)+'% · E '+(100*(1-roc.youden.fpr)).toFixed(0)+'%',
-      G.px(roc.youden.fpr)+L.mm(2),G.py(roc.youden.tpr),6,'#333','left',null,'middle');
+    /* La etiqueta se pone a la izquierda del punto si a la derecha no entra. A 90 mm —el
+       ancho de una columna— con el punto de Youden hacia el centro del eje, el texto se
+       salía del lienzo y en el PNG aparecía cortado. */
+    const et='Corte '+grFmt(roc.youden.umbral,0.01)+' · S '+(100*roc.youden.tpr).toFixed(0)+'% · E '+(100*(1-roc.youden.fpr)).toFixed(0)+'%';
+    L.fuente(6);
+    const anchoEt=ctx.measureText(et).width, xPto=G.px(roc.youden.fpr);
+    const cabeDer=(xPto+L.mm(2)+anchoEt)<=(L.w-L.mm(2));
+    grTexto(L,et,xPto+(cabeDer?L.mm(2):-L.mm(2)),G.py(roc.youden.tpr),6,'#333',cabeDer?'left':'right',null,'middle');
   }
   ex.ticks.forEach(t=>grTexto(L,grFmt(t,0.2),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
   grTexto(L,'AUC = '+roc.auc.toFixed(3).replace('.',','),G.px(0.55),G.py(0.22),10,'#111','left','bold','middle');
-  grTexto(L,roc.nP+' con la condición («'+bin.positivo+'») · '+roc.nN+' sin ella («'+bin.negativo+'»)',
-    G.px(0.55),G.py(0.12),6.2,'#666','left',null,'middle');
+  grTextoAjustado(L,roc.nP+' con la condición («'+bin.positivo+'») · '+roc.nN+' sin ella («'+bin.negativo+'»)',
+    G.px(0.55),G.py(0.12),6.2,L.w-L.mm(2)-G.px(0.55),'#666','left');
   grTexto(L,'Punto de Youden',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
   return roc.auc<0.5
     ?{tipo:'info',txt:'La AUC es '+roc.auc.toFixed(3).replace('.',',')+', menor que 0,5: con estos datos la variable separa al revés. Se tomó «'+bin.positivo+'» como la condición presente — si el positivo es «'+bin.negativo+'», la curva está espejada.'}
@@ -5115,8 +5191,20 @@ function grDibForest(L,m){
   }).filter(f=>isFinite(f.e)&&isFinite(f.lo)&&isFinite(f.hi));
   if(!filas.length)return grSinDatos(L,'Formato: nombre | efecto | IC inferior | IC superior');
   const lo=Math.min.apply(null,filas.map(f=>f.lo)), hi=Math.max.apply(null,filas.map(f=>f.hi));
-  const ex=grEscala(Math.min(lo,1),Math.max(hi,1),5);
-  const G=grEjes(L,{ex:ex,ey:{lo:0,hi:1,ticks:[],paso:1},titulo:L.titulo,ejeX:L.ejex||'Medida de efecto (IC 95 %)',mIzq:36,mDer:24,mAba:16});
+  /* Escala del eje. Con razones (OR, HR, RR) tiene que ser LOGARÍTMICA: un IC de 0,5 a
+     2,0 es simétrico alrededor de 1 —los dos extremos son el mismo efecto en direcciones
+     opuestas— y en escala lineal se dibuja con el brazo derecho el doble de largo, de
+     modo que el estudio parece corrido hacia el aumento. Es la distorsión clásica del
+     forest plot y no la corrige ninguna nota al pie.
+     Automático: si todos los valores son positivos se asume razón. Es reversible desde
+     el selector, porque una diferencia de riesgo puede ser positiva y aun así lineal. */
+  const modo=document.getElementById('gr-escala')?.value||'auto';
+  const positivos=filas.every(f=>f.lo>0&&f.hi>0&&f.e>0);
+  const usarLog=(modo==='log'||(modo==='auto'&&positivos))&&positivos;
+  const ex=usarLog?grEscalaLog(Math.min(lo,1),Math.max(hi,1)):grEscala(Math.min(lo,1),Math.max(hi,1),5);
+  const fmtX=usarLog?grFmtLog:(t=>grFmt(t,ex.paso));
+  const G=grEjes(L,{ex:ex,ey:{lo:0,hi:1,ticks:[],paso:1},titulo:L.titulo,
+    ejeX:L.ejex||('Medida de efecto (IC 95 %)'+(usarLog?' — escala logarítmica':'')),mIzq:36,mDer:24,mAba:16});
   const ctx=L.ctx, alto=(G.y0-G.y1)/filas.length;
   if(ex.lo<=1&&ex.hi>=1){
     ctx.strokeStyle='#999'; ctx.setLineDash([L.mm(1),L.mm(1)]); ctx.lineWidth=Math.max(1,L.mm(0.2));
@@ -5130,14 +5218,18 @@ function grDibForest(L,m){
     ctx.moveTo(G.px(f.hi),y-L.mm(0.9)); ctx.lineTo(G.px(f.hi),y+L.mm(0.9)); ctx.stroke();
     ctx.fillStyle=L.pal[0]; const s=L.mm(1.5);
     ctx.fillRect(G.px(f.e)-s/2,y-s/2,s,s);
-    grTexto(L,f.nom,G.x0-L.mm(1.6),y,6.5,'#333','right',null,'middle');
+    grTextoAjustado(L,f.nom,G.x0-L.mm(1.6),y,6.5,G.x0-L.mm(3),'#333','right');
     grTexto(L,grFmt(f.e,0.01)+' ('+grFmt(f.lo,0.01)+'–'+grFmt(f.hi,0.01)+')',G.x1+L.mm(1.4),y,6,'#333','left',null,'middle');
   });
-  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  ex.ticks.forEach(t=>grTexto(L,fmtX(t),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
   // Sin diamante de efecto combinado: mezclar estudios exige elegir modelo (fijo o
   // aleatorios) y estimar la heterogeneidad. Dibujar un diamante sin ese cálculo sería
   // inventar el resultado central del metaanálisis.
-  return {tipo:'info',txt:'Se dibujan los estudios individuales. NO se calcula el efecto combinado: eso exige elegir modelo (fijo o aleatorios) y estimar la heterogeneidad — hacelo en el software de metaanálisis y agregá el diamante ahí.'};
+  const av=['Se dibujan los estudios individuales. NO se calcula el efecto combinado: eso exige elegir modelo (fijo o aleatorios) y estimar la heterogeneidad — hacelo en el software de metaanálisis y agregá el diamante ahí.'];
+  if(usarLog) av.push('Eje logarítmico: los intervalos de una razón quedan simétricos alrededor de 1.');
+  else if(positivos) av.push('Eje lineal por elección tuya. Si los valores son razones (OR, HR, RR), en lineal los intervalos se ven asimétricos y el efecto parece corrido hacia el aumento.');
+  else av.push('Eje lineal: hay valores ≤ 0, así que no puede ser logarítmico. Correcto para diferencias de medias o de riesgo.');
+  return {tipo:'info',txt:av.join(' ')};
 }
 function grDibFunnel(L,m){
   const filas=grLineasManual(m.texto).map(function(f){
@@ -5145,8 +5237,23 @@ function grDibFunnel(L,m){
   }).filter(f=>isFinite(f.e)&&isFinite(f.se)&&f.se>0);
   if(!filas.length)return grSinDatos(L,'Formato: nombre | efecto | error estándar');
   const seMax=Math.max.apply(null,filas.map(f=>f.se));
-  const centro=filas.reduce((a,f)=>a+f.e,0)/filas.length;
-  const ex=grEscala(Math.min.apply(null,filas.map(f=>f.e-1.96*f.se)),Math.max.apply(null,filas.map(f=>f.e+1.96*f.se)),5);
+  /* Con razones, TODO el funnel vive en la escala logarítmica: el error estándar que se
+     informa es el de log(razón), y el pseudo-IC —efecto ± 1,96·EE— sólo es simétrico ahí.
+     Dibujándolo en escala lineal, las dos guías del embudo salen asimétricas y la
+     asimetría que se está buscando evaluar queda mezclada con la que introduce el eje.
+     `t` lleva el efecto al espacio donde se hacen las cuentas, `inv` lo trae de vuelta. */
+  const modo=document.getElementById('gr-escala')?.value||'auto';
+  const positivos=filas.every(f=>f.e>0);
+  const usarLog=(modo==='log'||(modo==='auto'&&positivos))&&positivos;
+  const t=v=>usarLog?Math.log(v):v, inv=v=>usarLog?Math.exp(v):v;
+  const centroT=filas.reduce((a,f)=>a+t(f.e),0)/filas.length;
+  const centro=inv(centroT);
+  const bordes=filas.map(f=>[inv(t(f.e)-1.96*f.se),inv(t(f.e)+1.96*f.se)]).flat()
+    .concat([inv(centroT-1.96*seMax*1.1),inv(centroT+1.96*seMax*1.1)]).filter(isFinite);
+  const ex=usarLog
+    ? grEscalaLog(Math.min.apply(null,bordes),Math.max.apply(null,bordes))
+    : grEscala(Math.min.apply(null,bordes),Math.max.apply(null,bordes),5);
+  const fmtX=usarLog?grFmtLog:(v=>grFmt(v,ex.paso));
   const ey={lo:0,hi:seMax*1.1,paso:grNiceStep(seMax/4),ticks:[]};
   for(let v=0;v<=ey.hi;v+=ey.paso)ey.ticks.push(v);
   // El eje Y va INVERTIDO (0 arriba): los estudios más precisos van arriba, que es lo
@@ -5156,25 +5263,33 @@ function grDibFunnel(L,m){
      valor de error estándar aparecía DOS veces, a alturas espejadas y en la misma
      columna, y el eje se leía como una lista de números que sube y baja. */
   const G=grEjes(L,{ex:ex,ey:{lo:ey.lo,hi:ey.hi,paso:ey.paso,ticks:[]},titulo:L.titulo,
-    ejeX:L.ejex||'Medida de efecto',ejeY:L.ejey||'Error estándar',mAba:16});
+    ejeX:L.ejex||('Medida de efecto'+(usarLog?' — escala logarítmica':'')),
+    ejeY:L.ejey||('Error estándar'+(usarLog?' de log(efecto)':'')),mAba:16});
   const py=v=>G.y1+(v-ey.lo)/(ey.hi-ey.lo)*(G.y0-G.y1);
   L.ctx.strokeStyle='#333'; L.ctx.lineWidth=Math.max(1,L.mm(0.25));
   ey.ticks.forEach(function(t){ const y=py(t);
     L.ctx.beginPath(); L.ctx.moveTo(G.x0-L.mm(1),y); L.ctx.lineTo(G.x0,y); L.ctx.stroke(); });
   const ctx=L.ctx;
   ctx.strokeStyle='#999'; ctx.setLineDash([L.mm(1.2),L.mm(1)]); ctx.lineWidth=Math.max(1,L.mm(0.22));
-  ctx.beginPath(); ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(centro-1.96*ey.hi),py(ey.hi));
-  ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(centro+1.96*ey.hi),py(ey.hi));
+  ctx.beginPath();
+  ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(inv(centroT-1.96*ey.hi)),py(ey.hi));
+  ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(inv(centroT+1.96*ey.hi)),py(ey.hi));
   ctx.stroke(); ctx.setLineDash([]);
   ctx.strokeStyle='#666'; ctx.beginPath(); ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(centro),py(ey.hi)); ctx.stroke();
   filas.forEach(function(f){
     ctx.beginPath(); ctx.arc(G.px(f.e),py(f.se),L.mm(1),0,7);
     ctx.fillStyle=L.pal[0]; ctx.globalAlpha=.8; ctx.fill(); ctx.globalAlpha=1;
   });
-  ey.ticks.forEach(t=>grTexto(L,grFmt(t,ey.paso),G.x0-L.mm(1.6),py(t),6.5,'#333','right',null,'middle'));
-  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
-  grTexto(L,'Líneas: pseudo IC 95 % · centro en la media simple de los efectos',G.x0,G.y1+L.mm(2),6,'#666','left',null,'top');
-  return filas.length<10?{tipo:'info',txt:'Con '+filas.length+' estudios el funnel plot no es interpretable: Cochrane recomienda al menos 10 para evaluar asimetría.'}:null;
+  ey.ticks.forEach(v=>grTexto(L,grFmt(v,ey.paso),G.x0-L.mm(1.6),py(v),6.5,'#333','right',null,'middle'));
+  ex.ticks.forEach(v=>grTexto(L,fmtX(v),G.px(v),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grTexto(L,'Líneas: pseudo IC 95 % · centro en la media '+(usarLog?'de los log(efecto)':'simple de los efectos'),
+    G.x0,G.y1+L.mm(2),6,'#666','left',null,'top');
+  const av=[];
+  if(filas.length<10) av.push('Con '+filas.length+' estudios el funnel plot no es interpretable: Cochrane recomienda al menos 10 para evaluar asimetría.');
+  if(usarLog) av.push('Eje logarítmico: el pseudo-IC de una razón sólo es simétrico en log, así que el error estándar que cargues tiene que ser el de log(efecto) — es el que devuelve el software de metaanálisis.');
+  else if(positivos) av.push('Eje lineal por elección tuya. Si los efectos son razones, las guías del embudo salen asimétricas y esa asimetría se confunde con la que se quiere evaluar.');
+  else av.push('Eje lineal: hay efectos ≤ 0, así que no puede ser logarítmico. Correcto para diferencias de medias.');
+  return av.length?{tipo:'info',txt:av.join(' ')}:null;
 }
 function grDibNomograma(L,m){
   const filas=grLineasManual(m.texto).map(function(f){
@@ -5185,7 +5300,10 @@ function grDibNomograma(L,m){
   // Puntos de cada predictor, escalados a 100 para el de mayor efecto absoluto.
   const rangos=filas.map(f=>Math.abs(f.coef*(f.max-f.min)));
   const maxR=Math.max.apply(null,rangos)||1;
-  const x0=L.mm(34), x1=L.w-L.mm(8), top=L.mm(L.titulo?14:8);
+  /* Márgenes proporcionales al ancho y no fijos en milímetros: con x0=34 mm y x1=ancho−8,
+     a 90 mm —el ancho de una columna— quedaban 48 mm de eje y las etiquetas de los
+     extremos, centradas sobre el primer y el último corte, se salían del lienzo. */
+  const x0=Math.min(L.mm(30),L.w*0.3), x1=L.w-Math.max(L.mm(5),L.w*0.045), top=L.mm(L.titulo?14:8);
   const paso=L.mm(9.5), ctx=L.ctx;
   const eje=function(y,etq,lo,hi,n){
     ctx.strokeStyle='#333'; ctx.lineWidth=Math.max(1,L.mm(0.25));
@@ -5193,9 +5311,11 @@ function grDibNomograma(L,m){
     for(let k=0;k<=n;k++){
       const x=x0+(x1-x0)*k/n, v=lo+(hi-lo)*k/n;
       ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y-L.mm(1.2)); ctx.stroke();
-      grTexto(L,grFmt(v,(hi-lo)/n),x,y-L.mm(1.8),5.8,'#333','center',null,'bottom');
+      // Los dos extremos se alinean hacia adentro para no sobresalir del lienzo.
+      grTexto(L,grFmt(v,(hi-lo)/n),x,y-L.mm(1.8),5.8,'#333',
+        k===0?'left':(k===n?'right':'center'),null,'bottom');
     }
-    grTexto(L,etq,x0-L.mm(1.6),y,6.5,'#111','right','bold','middle');
+    grTextoAjustado(L,etq,x0-L.mm(1.6),y,6.5,x0-L.mm(2.6),'#111','right');
   };
   eje(top+paso*0.4,'Puntos',0,100,10);
   filas.forEach(function(f,i){
@@ -5205,7 +5325,8 @@ function grDibNomograma(L,m){
   });
   const yTot=top+paso*(filas.length+1.9);
   eje(yTot,'Puntos totales',0,Math.round(100*rangos.reduce((a,b)=>a+b,0)/maxR),5);
-  grTexto(L,'Escala relativa: 100 puntos = el predictor de mayor efecto en su rango.',x0,L.h-L.mm(6),6,'#666','left',null,'middle');
+  grEnvolver(L,'Escala relativa: 100 puntos = el predictor de mayor efecto en su rango.',L.w-x0-L.mm(3),6)
+    .forEach(function(ln,k){ grTexto(L,ln,x0,L.h-L.mm(7)+k*L.mm(2.6),6,'#666','left',null,'middle'); });
   return {tipo:'info',txt:'El nomograma dibuja la escala de puntos a partir de los coeficientes que cargaste. NO ajusta el modelo ni calcula probabilidades: la conversión de puntos totales a riesgo sale del modelo original y hay que agregarla desde el software donde se ajustó.'};
 }
 
