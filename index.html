@@ -187,6 +187,28 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
 .trad-panel{border:1px solid var(--border);border-left:3px solid var(--goldMid);border-radius:0 10px 10px 0;padding:12px 14px;margin-top:14px;background:var(--bg)}
 .trad-panel-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:8px}
 .trad-panel-txt{font-size:.83rem;line-height:1.75;white-space:pre-wrap;color:var(--ink);background:#fff;border:1px solid var(--border);border-radius:7px;padding:11px 13px;max-height:420px;overflow:auto}
+/* ── Módulo Gráficas ── */
+.gr-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.gr-tab{background:var(--bg);border:1px solid var(--border);color:var(--inkSoft);font-family:inherit;font-size:.8rem;font-weight:600;padding:7px 14px;border-radius:7px;cursor:pointer;min-height:38px}
+.gr-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.gr-cols{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.gr-col{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 11px;font-size:.74rem;color:var(--inkSoft)}
+.gr-col b{color:var(--ink);font-weight:600}
+.gr-col i{font-style:normal;font-size:.68rem;opacity:.8}
+.gr-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:10px}
+.gr-item{text-align:left;background:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;font-family:inherit;transition:border-color .15s}
+.gr-item:hover{border-color:var(--goldMid)}
+.gr-item.sug{border-left:3px solid var(--success,#1e8449)}
+.gr-item.no{opacity:.5;cursor:not-allowed}
+.gr-item-t{font-size:.83rem;font-weight:700;color:var(--ink);display:block}
+.gr-item-d{font-size:.72rem;color:var(--inkSoft);display:block;margin-top:3px;line-height:1.45}
+.gr-item-r{font-size:.71rem;color:var(--success,#1e8449);display:block;margin-top:4px;line-height:1.4}
+.gr-item.no .gr-item-r{color:var(--danger,#c0392b)}
+.gr-nivel{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--inkMuted);margin:12px 0 2px}
+.gr-lienzo-wrap{margin:12px 0;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:9px;overflow:auto;text-align:center}
+#gr-canvas{max-width:100%;height:auto;background:#fff;box-shadow:0 1px 6px rgba(15,25,35,.12)}
+.gr-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:6px}
+.gr-mapeo{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px}
 .form-label{font-size:.72rem;font-weight:700;color:var(--inkSoft);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
 .form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:.85rem;font-family:inherit;outline:none;background:var(--bg);color:var(--ink);transition:border .2s}
 .form-input:focus{border-color:var(--accentMid)}
@@ -399,6 +421,7 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
   <div class="nav-item" data-mod="samplesize" onclick="goTo('samplesize',this)"><span>🧮</span> Tamaño muestral</div>
   <div class="nav-item" data-mod="data" onclick="goTo('data',this)"><span>📊</span> Recolección <span id="nb-data" class="nav-badge">✓</span></div>
   <div class="nav-item" data-mod="stats" onclick="goTo('stats',this)"><span>📈</span> Análisis estadístico</div>
+  <div class="nav-item" data-mod="graficas" onclick="goTo('graficas',this)"><span>📊</span> Gráficas</div>
   <div class="nav-sep"></div>
   <div class="nav-group">Escritura</div>
   <div class="nav-item" data-mod="litsearch" onclick="goTo('litsearch',this)"><span>🔎</span> Bibliografía</div>
@@ -646,6 +669,90 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
       </div>
       <div class="alert alert-warn" style="margin-top:8px;font-size:.82rem">Esta función envía las estadísticas descriptivas a la IA para interpretación orientativa. <b>NO ejecuta tests estadísticos</b> (t-test, chi-cuadrado, Mann-Whitney, regresión, etc.). Para análisis inferencial usar R, SPSS, Stata o Python.</div>
       <div id="ia-stats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GRÁFICAS -->
+<div id="mod-graficas" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">📊</span><span class="title">Gráficas científicas</span></div>
+    <div class="card-desc">25 figuras listas para publicar, con exportación a PNG de 300 DPI reales.</div>
+
+    <div class="gr-tabs">
+      <button class="gr-tab active" id="gr-tab-proy" onclick="grFuente('proyecto',this)">📋 Datos del proyecto</button>
+      <button class="gr-tab" id="gr-tab-pegar" onclick="grFuente('pegar',this)">📋 Pegar / escribir</button>
+    </div>
+
+    <div id="gr-panel-proyecto">
+      <div id="gr-proy-estado"></div>
+    </div>
+
+    <div id="gr-panel-pegar" style="display:none">
+      <!-- El aviso NO es decorativo: estos datos quedan fuera del proyecto, así que ni el
+           Análisis estadístico ni la Auditoría numérica los ven. Una figura dibujada acá
+           puede contradecir la tabla de resultados sin que nada lo detecte. -->
+      <div class="alert alert-warn" style="font-size:.78rem">⚠️ Lo que pegues acá <b>no entra al proyecto</b>: no lo usa el Análisis estadístico ni lo revisa la Auditoría numérica. Sirve para una figura suelta. Si estos datos son los de tu tesis, cargalos en <b>📊 Recolección</b> y usá la otra pestaña.</div>
+      <label class="form-label">Pegá desde Excel (o escribí). Primera fila = nombres de columna, separadas por tabulación, coma o punto y coma.</label>
+      <textarea class="form-textarea" id="gr-pegado" style="min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem" placeholder="grupo	fevi	edad&#10;Control	58,2	64&#10;Control	61,0	71&#10;Intervención	47,5	68" oninput="grLeerPegado()"></textarea>
+      <div id="gr-pegado-estado" style="margin-top:6px"></div>
+    </div>
+
+    <div id="gr-resumen" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" id="gr-card-sug" style="display:none">
+    <div class="card-title"><span class="icon">💡</span><span class="title">Qué gráfica conviene</span></div>
+    <div class="card-desc">Según el N, el tipo de cada variable y el diseño del estudio.</div>
+    <div class="form-row">
+      <label class="form-label">Diseño del estudio</label>
+      <select class="form-select" id="gr-diseno" onchange="grSugerir()">
+        <option value="transversal">Transversal / descriptivo</option>
+        <option value="grupos">Comparación entre grupos</option>
+        <option value="antesdespues">Antes y después (mismo sujeto)</option>
+        <option value="longitudinal">Longitudinal / seguimiento</option>
+        <option value="supervivencia">Supervivencia / tiempo a evento</option>
+        <option value="diagnostico">Prueba diagnóstica</option>
+        <option value="concordancia">Concordancia entre métodos</option>
+        <option value="revision">Revisión sistemática / metaanálisis</option>
+        <option value="oncologia">Respuesta al tratamiento (oncología)</option>
+      </select>
+    </div>
+    <div id="gr-sugerencias"></div>
+    <div style="margin-top:10px">
+      <button class="btn btn-secondary btn-sm" onclick="grToggleTodas()" id="gr-btn-todas">Ver las 25 gráficas ▾</button>
+    </div>
+    <div id="gr-todas" style="display:none;margin-top:10px"></div>
+  </div>
+
+  <div class="card" id="gr-card-vista" style="display:none">
+    <div class="card-title"><span class="icon">🖼️</span><span class="title">Vista previa</span></div>
+    <div id="gr-mapeo"></div>
+    <div id="gr-aviso"></div>
+    <div class="gr-lienzo-wrap"><canvas id="gr-canvas"></canvas></div>
+    <div id="gr-datos-leyenda" style="font-size:.75rem;color:var(--inkSoft);margin:-4px 0 10px;line-height:1.5"></div>
+    <div class="gr-opts">
+      <div><label class="form-label">Título de la figura</label><input class="form-input" id="gr-titulo" oninput="grRedibujar()" placeholder="(sin título)"></div>
+      <div><label class="form-label">Eje X</label><input class="form-input" id="gr-ejex" oninput="grRedibujar()"></div>
+      <div><label class="form-label">Eje Y</label><input class="form-input" id="gr-ejey" oninput="grRedibujar()"></div>
+      <div><label class="form-label">Paleta</label>
+        <select class="form-select" id="gr-paleta" onchange="grRedibujar()">
+          <option value="ceibo">CeiboMed (azul/dorado)</option>
+          <option value="gris">Escala de grises (impresión B/N)</option>
+          <option value="daltonico">Segura para daltonismo (Okabe-Ito)</option>
+          <option value="vivos">Colores vivos</option>
+        </select></div>
+      <div><label class="form-label">Ancho de figura</label>
+        <select class="form-select" id="gr-ancho" onchange="grRedibujar()">
+          <option value="90">90 mm — una columna</option>
+          <option value="140" selected>140 mm — columna y media</option>
+          <option value="180">180 mm — página completa</option>
+        </select></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="grDescargar()">📥 Descargar PNG (300 DPI)</button>
+      <button class="btn btn-secondary btn-sm" onclick="grCerrarVista()">Cerrar</button>
+      <span id="gr-tam" style="align-self:center;font-size:.72rem;color:var(--inkMuted)"></span>
     </div>
   </div>
 </div>
@@ -1108,6 +1215,9 @@ function goTo(mod,el){
   if(mod==='writer')initWriter();
   if(mod==='references')renderRevistas();
   if(mod==='consistencia')auditarConsistencia();
+  // Se relee al entrar: si se cargaron datos en Recolección después de haber visitado
+  // Gráficas, el resumen y las sugerencias tienen que reflejarlos.
+  if(mod==='graficas')grCargar();
 }
 
 function ctx(){
@@ -3135,6 +3245,15 @@ function resetEstadoNoProyecto(){
   /* El editor se vuelve a esconder: sólo debe verse cuando el abstract que muestra es el
      del proyecto abierto. sincronizarFormulario lo repuebla y generarAbstract lo abre. */
   const ed=document.getElementById('abstract-editor'); if(ed) ed.style.display='none';
+  /* Las gráficas son del proyecto anterior: el pegado, la vista previa y el contador de
+     figuras. Sin esto, "Figura 3" del proyecto nuevo arranca en 4 y la vista previa
+     muestra la del anterior. */
+  if(typeof GR==='object'){ GR.datos=null; GR.pegado=null; GR.tipoActivo=null; }
+  TS.graficaN=0;
+  const gp=document.getElementById('gr-pegado'); if(gp) gp.value='';
+  const gpe=document.getElementById('gr-pegado-estado'); if(gpe) gpe.innerHTML='';
+  if(typeof grCerrarVista==='function') grCerrarVista();
+  if(typeof grCargar==='function') grCargar();
 }
 
 // ── QUALITY ──
@@ -3284,6 +3403,1810 @@ async function enviarDirector(){
     msgWrap.innerHTML+='<div class="msg msg-ai">'+esc(r)+'</div>';
     msgWrap.scrollTop=msgWrap.scrollHeight;
   }catch(e){document.getElementById('dir-loading').remove();msgWrap.innerHTML+='<div class="msg msg-ai">⚠️ Error: '+esc(e.message)+'</div>';}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MÓDULO GRÁFICAS — 25 figuras científicas con exportación a 300 DPI
+
+   POR QUÉ UN MOTOR PROPIO Y NO Chart.js
+   ThesiSmart no carga ninguna librería externa: tiene un solo <script> y es inline.
+   Chart.js cubriría unas 8 de las 25 (barras, torta, líneas, dispersión, burbujas);
+   CONSORT, PRISMA, Kaplan-Meier, Bland-Altman, nomograma, waterfall, dumbbell,
+   espagueti, violín, embudo y pirámide hay que dibujarlas a mano igual. Con dos
+   motores conviven dos tipografías, dos escalas y dos caminos de exportación, y lo
+   que se pide acá es un PNG parejo a 300 DPI en las 25.
+
+   QUÉ SIGNIFICA "300 DPI" ACÁ
+   Un PNG no tiene DPI por sí mismo: tiene píxeles. "300 DPI" en una revista quiere
+   decir «tantos píxeles como 300 por cada pulgada del ANCHO FÍSICO de la figura».
+   Por eso las figuras se definen en MILÍMETROS (90 / 140 / 180 mm, los anchos de
+   columna habituales) y al exportar se multiplica por 300/25,4. Además se le escribe
+   al PNG el chunk pHYs con la densidad, que es lo que hace que Word e InDesign la
+   coloquen al tamaño físico correcto en vez de tratarla como 96 DPI y mostrarla
+   gigante. Escalar «×3» y ya —lo que suele hacerse— da 288 DPI y un archivo que el
+   procesador de texto no sabe a qué tamaño poner.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+const GR = {
+  fuente:'proyecto',      // 'proyecto' | 'pegar'
+  datos:null,             // { cols:[{nombre,tipo,vals}], filas:n, origen }
+  pegado:null,
+  tipoActivo:null,        // id de la gráfica en vista previa
+  mapeo:{},               // qué columna va a qué rol
+  ultimoCanvas:null
+};
+
+/* ── Tipado por VALORES, no por lo declarado ──
+   El proyecto guarda un tipo elegido a mano en Variables ('cuantitativa', 'dicotomica'…)
+   y el importador de Excel usa otro vocabulario ('cuantitativa continua', 'dicotómica'…).
+   Dos vocabularios para lo mismo, y encima ninguno describe lo que hay REALMENTE en la
+   columna después de importar. Se infiere de los valores: es lo único que vale igual para
+   los datos del proyecto y para los pegados, y no puede contradecir lo que se va a
+   dibujar. El tipo declarado se usa sólo como pista para el nombre. */
+/* Convención decimal de una COLUMNA entera, no de cada valor por separado.
+   «1.240» es mil doscientos cuarenta en español y uno coma dos cuatro en inglés, y
+   mirando ese valor solo no hay forma de saberlo. Mirando la columna casi siempre sí:
+   si en algún lado aparece una coma decimal, es español; si aparece un punto seguido de
+   una cantidad de dígitos distinta de tres («1.5», «0.8567»), es inglés y todos los
+   puntos son decimales. Decidiendo valor por valor, una columna inglesa de precios o
+   mediciones con tres decimales —1.240, 2.500, 3.750— se leía entera multiplicada por
+   mil, y la figura salía con un eje entre 1000 y 4000 en vez de entre 1 y 4. */
+function grConvencion(vals){
+  let coma=false, puntoNoMil=false;
+  for(const v of vals){
+    const s=String(v==null?'':v).trim();
+    if(!s)continue;
+    if(/\d,\d/.test(s)) coma=true;
+    if(/\.\d{1,2}(?!\d)/.test(s)||/\.\d{4,}/.test(s)) puntoNoMil=true;
+  }
+  if(coma)return 'es';
+  if(puntoNoMil)return 'en';
+  return 'amb';    // sólo puntos con grupos de 3: ambigua, se asume separador de miles
+}
+function grNum(v,conv){
+  if(v===null||v===undefined)return NaN;
+  let s=String(v).trim();
+  if(!s)return NaN;
+  s=s.replace(/\s/g,'').replace(/[<>≤≥~]/g,'');
+  if(conv==='en'){
+    s=s.replace(/,/g,'');                                   // la coma es de miles
+  }else if(/,/.test(s)){
+    s=s.replace(/\./g,'').replace(',','.');                 // "1.240,5" → 1240.5
+  }else if(/^[+-]?[1-9]\d{0,2}(\.\d{3})+$/.test(s)){
+    s=s.replace(/\./g,'');                                  // "1.240" → 1240
+  }
+  const n=parseFloat(s);
+  return isFinite(n)?n:NaN;
+}
+function grTipoCol(vals){
+  const v=vals.map(x=>String(x==null?'':x).trim()).filter(x=>x!=='');
+  if(!v.length)return 'vacia';
+  const uniq=[...new Set(v)];
+  // Arrow explícita y no `v.map(grNum)`: map pasa el ÍNDICE como segundo argumento, que
+  // en grNum es la convención decimal. Funcionaba por casualidad; ahora sería un bug.
+  const conv=grConvencion(v);
+  const nums=v.map(x=>grNum(x,conv)).filter(x=>!isNaN(x));
+  const propNum=nums.length/v.length;
+  if(/^\d{4}-\d{2}-\d{2}/.test(v[0])&&v.every(x=>/^\d{4}-\d{2}-\d{2}/.test(x)))return 'fecha';
+  /* Una columna 0/1 es numérica pero se comporta como categórica: es el caso de
+     "evento sí/no" de una curva de supervivencia y de las dicotómicas del formulario.
+     Se marca aparte para que las reglas de sugerencia la puedan pedir explícitamente. */
+  if(propNum>=0.9&&uniq.length===2&&uniq.every(x=>x==='0'||x==='1'))return 'binaria';
+  if(propNum>=0.9&&uniq.length>8)return 'continua';
+  if(propNum>=0.9&&uniq.length<=8)return 'discreta';
+  if(uniq.length===2)return 'dicotomica';
+  if(uniq.length<=12)return 'categorica';
+  return 'texto';
+}
+const GR_TIPO_ETIQ={continua:'continua',discreta:'numérica (pocos valores)',binaria:'binaria 0/1',
+  dicotomica:'dicotómica',categorica:'categórica',fecha:'fecha',texto:'texto libre',vacia:'vacía'};
+const grEsNum=t=>t==='continua'||t==='discreta'||t==='binaria';
+const grEsCat=t=>t==='categorica'||t==='dicotomica'||t==='binaria'||t==='discreta';
+
+function grLeerProyecto(){
+  const pacs=(TS.proyecto&&TS.proyecto.pacientes)||[];
+  if(!pacs.length)return null;
+  const nombres=[...new Set(pacs.flatMap(p=>Object.keys(p||{})))];
+  const cols=nombres.map(function(n){
+    const vals=pacs.map(p=>(p&&p[n]!==undefined)?p[n]:'');
+    return {nombre:n,vals:vals,tipo:grTipoCol(vals),conv:grConvencion(vals)};
+  }).filter(c=>c.tipo!=='vacia');
+  if(!cols.length)return null;
+  return {cols:cols,filas:pacs.length,origen:'proyecto'};
+}
+function grParsear(texto){
+  const lineas=String(texto||'').split(/\r?\n/).filter(l=>l.trim()!=='');
+  if(lineas.length<2)return null;
+  /* El separador se elige por el que MÁS aparece en el encabezado, no por prioridad
+     fija: pegando desde Excel viene tabulación, pero un CSV latino usa punto y coma y
+     además tiene comas adentro de los decimales. Eligiendo "coma" ahí se parte "58,2"
+     en dos columnas y el N de la figura sale al doble. */
+  const cand=['\t',';',','];
+  const sep=cand.map(s=>({s:s,n:lineas[0].split(s).length})).sort((a,b)=>b.n-a.n)[0];
+  if(sep.n<2)return null;
+  /* Partición que RESPETA las comillas. Con un simple split, un encabezado como
+     id,"Peso, kg",edad se rompía en cuatro campos y todas las columnas a la derecha
+     quedaban corridas un lugar: la figura salía graficando otra variable, con otro
+     nombre, y el resumen decía "4 columnas" sin que nada delatara el corrimiento. */
+  const parte=function(l){
+    const out=[]; let campo='', dentro=false;
+    for(let i=0;i<l.length;i++){
+      const c=l[i];
+      if(c==='"'){
+        if(dentro&&l[i+1]==='"'){ campo+='"'; i++; }   // comilla escapada ""
+        else dentro=!dentro;
+      }else if(c===sep.s&&!dentro){ out.push(campo); campo=''; }
+      else campo+=c;
+    }
+    out.push(campo);
+    return out.map(x=>x.trim());
+  };
+  const cab=parte(lineas[0]);
+  const filas=lineas.slice(1).map(parte).filter(f=>f.some(x=>x!==''));
+  if(!filas.length)return null;
+  const cols=cab.map(function(n,i){
+    const vals=filas.map(f=>f[i]===undefined?'':f[i]);
+    return {nombre:n||('Columna '+(i+1)),vals:vals,tipo:grTipoCol(vals),conv:grConvencion(vals)};
+  }).filter(c=>c.tipo!=='vacia');
+  if(!cols.length)return null;
+  return {cols:cols,filas:filas.length,origen:'pegado'};
+}
+const grCol=n=>GR.datos?GR.datos.cols.find(c=>c.nombre===n):null;
+const grValsNum=n=>{const c=grCol(n);return c?c.vals.map(v=>grNum(v,c.conv)):[];};
+
+/* ══════════════ MOTOR DE DIBUJO ══════════════
+   Todo se especifica en MILÍMETROS y se dibuja en un canvas cuya escala se fija al
+   crear el lienzo. Así la misma función de dibujo sirve para la vista previa (baja
+   resolución) y para el PNG de 300 DPI, sin ningún tamaño en píxeles escrito a mano —
+   que es como se termina con una figura cuya tipografía no acompaña la escala. */
+const GR_PALETAS={
+  ceibo:['#1a5276','#c9a84c','#1e8449','#7b241c','#5b2c6f','#117a8b','#a04000','#4a5568'],
+  gris:['#222222','#666666','#999999','#bbbbbb','#444444','#888888','#aaaaaa','#dddddd'],
+  // Okabe-Ito: la paleta estándar para daltonismo, distinguible en las tres deuteranopías.
+  daltonico:['#0072B2','#E69F00','#009E73','#CC79A7','#56B4E9','#D55E00','#F0E442','#000000'],
+  vivos:['#2563eb','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#64748b']
+};
+function grPaleta(){return GR_PALETAS[document.getElementById('gr-paleta')?.value||'ceibo']||GR_PALETAS.ceibo;}
+function grAnchoMM(){return parseFloat(document.getElementById('gr-ancho')?.value||'140');}
+
+/* Crea el lienzo. `mm` es el ancho físico; `rel` la relación alto/ancho.
+   pxPorMM sale de la resolución pedida: 300/25,4 para el archivo final. */
+function grLienzo(canvas,anchoMM,rel,dpi){
+  const pxPorMM=dpi/25.4;
+  const w=Math.round(anchoMM*pxPorMM), h=Math.round(anchoMM*rel*pxPorMM);
+  canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  // Fondo blanco OPACO: un PNG transparente sobre el fondo oscuro de una presentación
+  // deja el texto negro invisible, y muchas revistas rechazan el canal alfa.
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
+  ctx.lineJoin='round'; ctx.lineCap='butt';
+  const u=anchoMM/100;            // 1 unidad = 1% del ancho, para medidas relativas
+  return {
+    ctx:ctx, w:w, h:h, dpi:dpi, pxPorMM:pxPorMM, anchoMM:anchoMM, altoMM:anchoMM*rel, u:u,
+    mm:v=>v*pxPorMM,
+    // Tipografía en PUNTOS tipográficos reales (1 pt = 1/72"), como pide una revista.
+    fuente:(pt,peso)=>{ ctx.font=(peso||'')+' '+(pt*dpi/72)+'px Helvetica, Arial, sans-serif'; },
+    pt:pt=>pt*dpi/72
+  };
+}
+function grTexto(L,txt,x,y,pt,color,align,peso,baseline){
+  L.fuente(pt,peso); L.ctx.fillStyle=color||'#111';
+  L.ctx.textAlign=align||'left'; L.ctx.textBaseline=baseline||'alphabetic';
+  L.ctx.fillText(String(txt),x,y);
+}
+/* Corta un texto en líneas que entran en `maxW` px. Sin esto una etiqueta larga se
+   sale del lienzo y en el PNG aparece cortada al medio. */
+function grEnvolver(L,txt,maxW,pt,peso){
+  L.fuente(pt,peso);
+  const pal=String(txt).split(/\s+/); const out=[]; let linea='';
+  pal.forEach(function(p){
+    const t=linea?linea+' '+p:p;
+    if(L.ctx.measureText(t).width>maxW&&linea){out.push(linea);linea=p;}else linea=t;
+  });
+  if(linea)out.push(linea);
+  return out;
+}
+/* Envuelve y, si no entra en `maxL` renglones, corta el último con puntos suspensivos.
+   Cortando con slice() sin marca, «Insuficiencia cardíaca con FE preservada» y
+   «… con FE reducida» se dibujan idénticas bajo dos barras distintas y la figura queda
+   sin poder distinguir las categorías que compara. */
+function grEnvolverCorte(L,txt,maxW,pt,maxL,peso){
+  const l=grEnvolver(L,txt,maxW,pt,peso);
+  if(l.length<=maxL)return l;
+  const out=l.slice(0,maxL);
+  let u=out[maxL-1];
+  L.fuente(pt,peso);
+  while(u.length>1&&L.ctx.measureText(u+'…').width>maxW) u=u.slice(0,-1);
+  out[maxL-1]=u+'…';
+  return out;
+}
+/* Escala numérica con cortes "lindos" (1, 2, 2.5, 5 × 10^k). */
+function grNiceStep(bruto){
+  const exp=Math.floor(Math.log10(bruto)), f=bruto/Math.pow(10,exp);
+  const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;
+  return n*Math.pow(10,exp);
+}
+function grEscala(min,max,nTicks){
+  if(!isFinite(min)||!isFinite(max)){min=0;max=1;}
+  // Rango invertido: se ordena en vez de devolver un eje vacío. Con min>max el bucle de
+  // ticks no ejecutaba ninguna vuelta y el eje salía sin marcas y sin límites —una
+  // figura con los datos dibujados sobre una escala que no existe.
+  if(min>max){const t=min;min=max;max=t;}
+  if(min===max){const d=Math.abs(min)||1;min-=d*0.5;max+=d*0.5;}
+  let paso=grNiceStep((max-min)/(nTicks||5));
+  // Un paso 0 o no finito deja el for de abajo girando para siempre y congela la pestaña.
+  if(!isFinite(paso)||paso<=0)paso=Math.abs(max-min)/5||1;
+  const lo=Math.floor(min/paso)*paso, hi=Math.ceil(max/paso)*paso;
+  const ticks=[];
+  for(let v=lo,i=0;v<=hi+paso*1e-9&&i<200;v+=paso,i++)ticks.push(Math.round(v/paso)*paso);
+  return {lo:lo,hi:hi,paso:paso,ticks:ticks};
+}
+/* Cuántos decimales hacen falta para escribir `paso` EXACTAMENTE.
+   Antes se sacaban del exponente (−floor(log10(paso))), que para 2,5 da 0 decimales:
+   los cortes "lindos" de la familia 2,5 —que grNiceStep genera para rangos tan comunes
+   como 0–14 con 6 marcas— quedaban dibujados en su posición correcta y ETIQUETADOS
+   redondeados. El eje decía 0 · 3 · 5 · 8 · 10 · 13 · 15 sobre marcas que estaban en
+   0 · 2,5 · 5 · 7,5 · 10 · 12,5 · 15, y quien leía una mediana del eje la leía medio
+   punto corrida. Afectaba a las 25 figuras. */
+function grDecimales(paso){
+  if(!isFinite(paso)||paso<=0)return 2;
+  for(let d=0;d<=6;d++){
+    const r=Math.round(paso*Math.pow(10,d))/Math.pow(10,d);
+    if(Math.abs(r-paso)<=Math.abs(paso)*1e-10)return d;
+  }
+  return 6;
+}
+function grFmt(v,paso){
+  if(!isFinite(v))return '—';
+  const dec=paso?grDecimales(paso):2;
+  const s=(Math.abs(v)>=1e5?v.toExponential(1):v.toFixed(dec)).replace('.',',');
+  /* Los ceros sobrantes se sacan DESPUÉS de redondear con la cantidad correcta de
+     decimales, así que es una operación de presentación y no de precisión: "0,0"→"0" y
+     "0,50"→"0,5", pero "2,5" y "7,5" se conservan enteros. El error anterior no estaba
+     acá sino en calcular mal los decimales antes del toFixed. */
+  return s.replace(/,0+$/,'').replace(/(,\d*[1-9])0+$/,'$1');
+}
+
+/* Marco de ejes cartesianos. Devuelve las funciones de proyección. */
+function grEjes(L,o){
+  const ctx=L.ctx;
+  const mIzq=L.mm(o.mIzq!==undefined?o.mIzq:16), mDer=L.mm(o.mDer!==undefined?o.mDer:5);
+  const mArr=L.mm(o.mArr!==undefined?o.mArr:(o.titulo?12:6)), mAba=L.mm(o.mAba!==undefined?o.mAba:16);
+  const x0=mIzq, x1=L.w-mDer, y0=L.h-mAba, y1=mArr;
+  if(o.titulo) grTexto(L,o.titulo,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
+  const ex=o.ex, ey=o.ey;
+  const px=v=>x0+(v-ex.lo)/(ex.hi-ex.lo)*(x1-x0);
+  const py=v=>y0-(v-ey.lo)/(ey.hi-ey.lo)*(y0-y1);
+  // Rejilla horizontal tenue: ayuda a leer valores sin competir con los datos.
+  ctx.strokeStyle='#e6eaee'; ctx.lineWidth=Math.max(1,L.mm(0.15));
+  ey.ticks.forEach(function(t){ const y=py(t); ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); });
+  ctx.strokeStyle='#333'; ctx.lineWidth=Math.max(1,L.mm(0.25));
+  ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke();
+  ey.ticks.forEach(function(t){
+    const y=py(t);
+    ctx.beginPath(); ctx.moveTo(x0-L.mm(1),y); ctx.lineTo(x0,y); ctx.stroke();
+    grTexto(L,grFmt(t,ey.paso),x0-L.mm(1.6),y,7,'#333','right',null,'middle');
+  });
+  if(o.ejeY) { ctx.save(); ctx.translate(L.mm(4),(y0+y1)/2); ctx.rotate(-Math.PI/2);
+    grTexto(L,o.ejeY,0,0,8,'#111','center','bold','middle'); ctx.restore(); }
+  if(o.ejeX) grTexto(L,o.ejeX,(x0+x1)/2,L.h-L.mm(3),8,'#111','center','bold','bottom');
+  return {x0:x0,x1:x1,y0:y0,y1:y1,px:px,py:py};
+}
+/* Leyenda que SE PARTE EN RENGLONES cuando no entra a lo ancho. En Kaplan-Meier cada
+   entrada lleva n, eventos y mediana, así que dos grupos ya se pasan del lienzo: la
+   leyenda se montaba encima de la nota del margen derecho y las dos quedaban ilegibles.
+   Devuelve el alto ocupado, para que quien la llama sepa desde dónde seguir. */
+function grLeyenda(L,items,x,y,maxX){
+  const ctx=L.ctx, lim=(maxX||L.w-L.mm(4));
+  let cx=x, cy=y, alto=L.mm(4.2), usado=0;
+  items.forEach(function(it){
+    L.fuente(7);
+    const w=L.mm(3.6)+ctx.measureText(it.txt).width+L.mm(4);
+    if(cx>x&&cx+w>lim){ cx=x; cy+=alto; usado++; }
+    ctx.fillStyle=it.color; ctx.fillRect(cx,cy-L.mm(1.4),L.mm(2.8),L.mm(2.8));
+    grTexto(L,it.txt,cx+L.mm(3.6),cy,7,'#333','left',null,'middle');
+    cx+=w;
+  });
+  return (usado+1)*alto;
+}
+/* Texto que se achica hasta entrar en `maxW`. Cortar con slice() produce "Intervenci",
+   que en la fila de sujetos en riesgo deja sin identificar a la curva. */
+function grTextoAjustado(L,txt,x,y,pt,maxW,color,align){
+  let p=pt;
+  L.fuente(p);
+  while(p>4.2&&L.ctx.measureText(String(txt)).width>maxW){ p-=0.3; L.fuente(p); }
+  grTexto(L,txt,x,y,p,color||'#333',align||'left',null,'middle');
+  return p;
+}
+
+/* ══════════════ EXPORTACIÓN PNG CON DENSIDAD REAL ══════════════
+   El canvas produce un PNG sin chunk pHYs, así que Word lo importa asumiendo 96 DPI y
+   una figura de 140 mm entra midiendo 437 mm: el usuario la achica a mano y cree que la
+   exportación "salió mal". Se inserta el chunk pHYs (píxeles por metro) después de IHDR,
+   con su CRC. Es lo que hace que el archivo se comporte como una figura de 300 DPI. */
+function _grCRC32(buf){
+  let c, tabla=_grCRC32.t;
+  if(!tabla){ tabla=_grCRC32.t=new Uint32Array(256);
+    for(let n=0;n<256;n++){ c=n; for(let k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); tabla[n]=c>>>0; } }
+  let crc=0xFFFFFFFF;
+  for(let i=0;i<buf.length;i++) crc=tabla[(crc^buf[i])&0xFF]^(crc>>>8);
+  return (crc^0xFFFFFFFF)>>>0;
+}
+function grPngConDPI(bytes,dpi){
+  /* Se verifica la firma PNG y que el primer chunk sea IHDR de 13 bytes antes de
+     insertar nada en el offset 33. Si algún día esto recibe otra cosa —un JPEG de
+     respaldo, un buffer vacío—, devolver los bytes intactos produce un archivo sin
+     densidad; escribir a ciegas produce un archivo corrupto que igual se descarga. */
+  if(bytes.length<45)return bytes;
+  const firma=[137,80,78,71,13,10,26,10];
+  for(let i=0;i<8;i++) if(bytes[i]!==firma[i])return bytes;
+  const dvIn=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+  if(dvIn.getUint32(8)!==13)return bytes;
+  if(String.fromCharCode(bytes[12],bytes[13],bytes[14],bytes[15])!=='IHDR')return bytes;
+  // pixels per metre = dpi / 0.0254
+  const ppm=Math.round(dpi/0.0254);
+  const datos=new Uint8Array(13);
+  datos.set([0x70,0x48,0x59,0x73],0);              // "pHYs"
+  const dv=new DataView(datos.buffer);
+  dv.setUint32(4,ppm); dv.setUint32(8,ppm); datos[12]=1;   // unidad 1 = metro
+  const crc=_grCRC32(datos);
+  const chunk=new Uint8Array(12+9);
+  const dv2=new DataView(chunk.buffer);
+  dv2.setUint32(0,9);                                // longitud de datos
+  chunk.set(datos,4);
+  dv2.setUint32(17,crc);
+  // Se inserta después del IHDR: firma (8) + longitud (4) + tipo (4) + datos (13) + CRC (4) = 33
+  const out=new Uint8Array(bytes.length+chunk.length);
+  out.set(bytes.subarray(0,33),0);
+  out.set(chunk,33);
+  out.set(bytes.subarray(33),33+chunk.length);
+  return out;
+}
+
+/* ══════════════ ESTADÍSTICA DE LAS FIGURAS ══════════════
+   Todo lo que produce un NÚMERO que después se lee en una figura publicada vive acá,
+   junto y con la convención declarada. Una figura con un cuartil calculado con otra
+   convención, una AUC mal integrada o unos límites de concordancia a ±2 DE en vez de
+   ±1,96 no da error: da una figura creíble y equivocada, firmada por el autor. */
+
+/* Cuantil por interpolación lineal — el "tipo 7", que es el de R por defecto, el de
+   numpy y el de Excel (PERCENTIL). Se deja dicho porque las bisagras de Tukey dan otro
+   valor con N par y dos box plots del mismo dato pueden no coincidir. */
+function grCuantil(ordenados,p){
+  const n=ordenados.length;
+  if(!n)return NaN;
+  if(n===1)return ordenados[0];
+  const h=(n-1)*p, lo=Math.floor(h), frac=h-lo;
+  return lo+1<n ? ordenados[lo]+frac*(ordenados[lo+1]-ordenados[lo]) : ordenados[lo];
+}
+function grResumen(vals){
+  const v=vals.filter(x=>isFinite(x)).slice().sort((a,b)=>a-b);
+  const n=v.length; if(!n)return null;
+  const q1=grCuantil(v,0.25), med=grCuantil(v,0.5), q3=grCuantil(v,0.75);
+  const iqr=q3-q1;
+  // Bigotes de Tukey: el dato más extremo DENTRO de 1,5·IQR, no el límite en sí.
+  const linf=q1-1.5*iqr, lsup=q3+1.5*iqr;
+  const dentro=v.filter(x=>x>=linf&&x<=lsup);
+  const media=v.reduce((a,b)=>a+b,0)/n;
+  const sd=n>1?Math.sqrt(v.reduce((a,b)=>a+(b-media)*(b-media),0)/(n-1)):null;
+  return {n:n,vals:v,min:v[0],max:v[n-1],q1:q1,med:med,q3:q3,iqr:iqr,
+          bajo:dentro.length?dentro[0]:v[0], alto:dentro.length?dentro[dentro.length-1]:v[n-1],
+          out:v.filter(x=>x<linf||x>lsup), media:media, sd:sd};
+}
+/* IC 95% de la media con t de Student, no con 1,96: con n=10 el multiplicador es 2,262
+   y usar 1,96 achica la barra un 13 %. Con n grande converge al z, así que no hay razón
+   para usar el atajo. */
+function grMediaIC(vals){
+  const v=vals.filter(x=>isFinite(x)); const n=v.length;
+  if(!n)return null;
+  const m=v.reduce((a,b)=>a+b,0)/n;
+  if(n<2)return {n:n,media:m,sd:null,se:null,lo:m,hi:m};
+  const sd=Math.sqrt(v.reduce((a,b)=>a+(b-m)*(b-m),0)/(n-1));
+  const se=sd/Math.sqrt(n), t=tValue95(n-1);
+  return {n:n,media:m,sd:sd,se:se,lo:m-t*se,hi:m+t*se,t:t};
+}
+/* Kaplan-Meier (producto-límite). `evento` 1 = ocurrió, 0 = censurado.
+   Los censurados NO bajan la curva: permanecen en el denominador hasta su tiempo y
+   salen después. Tratarlos como eventos —el error clásico— hace caer la supervivencia
+   y da una mediana más corta que la real. */
+function grKM(tiempos,eventos){
+  const d=[];
+  for(let i=0;i<tiempos.length;i++){
+    const t=tiempos[i], e=eventos[i];
+    if(isFinite(t)&&t>=0&&(e===0||e===1)) d.push({t:t,e:e});
+  }
+  if(!d.length)return null;
+  d.sort((a,b)=>a.t-b.t||b.e-a.e);
+  const nTot=d.length;
+  const pasos=[{t:0,s:1,enRiesgo:nTot,eventos:0,cens:0}];
+  let s=1, i=0, varAcum=0;
+  const censTicks=[];
+  while(i<d.length){
+    const t=d[i].t;
+    let ev=0, cn=0;
+    const enRiesgo=d.length-i;
+    while(i<d.length&&d[i].t===t){ if(d[i].e===1)ev++; else cn++; i++; }
+    if(ev>0){
+      s*=(1-ev/enRiesgo);
+      // Greenwood, para el IC de la curva
+      varAcum+=ev/(enRiesgo*(enRiesgo-ev));
+      pasos.push({t:t,s:s,enRiesgo:enRiesgo,eventos:ev,cens:cn,ee:s*Math.sqrt(varAcum)});
+    }
+    if(cn>0) censTicks.push({t:t,s:s});
+  }
+  // Mediana: primer tiempo con S(t) ≤ 0,5. Si la curva no baja de 0,5, NO hay mediana
+  // —no se devuelve el último tiempo, que sería subestimarla groseramente.
+  let mediana=null;
+  for(const p of pasos){ if(p.s<=0.5){ mediana=p.t; break; } }
+  return {pasos:pasos,cens:censTicks,n:nTot,eventos:d.filter(x=>x.e===1).length,
+          mediana:mediana,tMax:d[d.length-1].t,
+          // Los tiempos crudos ordenados. Los necesita la tabla de "en riesgo": ver grEnRiesgo.
+          tiempos:d.map(x=>x.t)};
+}
+/* ROC empírica + AUC.
+   La AUC se calcula por trapecios sobre los puntos de la curva, que con empates es
+   equivalente al estadístico de Mann-Whitney (los empates aportan medio punto: es
+   justo lo que hace el lado trapezoidal frente al escalón). Redondear el umbral o
+   contar los empates como aciertos infla la AUC. */
+function grROC(scores,positivos){
+  const d=[];
+  for(let i=0;i<scores.length;i++){
+    const s=scores[i], p=positivos[i];
+    if(isFinite(s)&&(p===0||p===1)) d.push({s:s,p:p});
+  }
+  const nP=d.filter(x=>x.p===1).length, nN=d.length-nP;
+  if(!nP||!nN)return null;
+  d.sort((a,b)=>b.s-a.s);
+  const pts=[{fpr:0,tpr:0,umbral:Infinity}];
+  let tp=0, fp=0, i=0;
+  while(i<d.length){
+    const s=d[i].s;
+    while(i<d.length&&d[i].s===s){ if(d[i].p===1)tp++; else fp++; i++; }
+    pts.push({fpr:fp/nN,tpr:tp/nP,umbral:s});
+  }
+  let auc=0;
+  for(let k=1;k<pts.length;k++) auc+=(pts[k].fpr-pts[k-1].fpr)*(pts[k].tpr+pts[k-1].tpr)/2;
+  // Punto de Youden (máx. sensibilidad+especificidad−1)
+  let mejor=null;
+  pts.forEach(function(p){ const j=p.tpr-p.fpr; if(!mejor||j>mejor.j) mejor={j:j,...p}; });
+  return {pts:pts,auc:auc,nP:nP,nN:nN,youden:mejor};
+}
+/* Bland-Altman: diferencia media ± 1,96·DE de las diferencias (Bland & Altman 1986).
+   1,96 y no 2: con 2 los límites salen un 2 % más anchos y el método parece concordar
+   mejor de lo que concuerda. */
+function grBA(a,b){
+  const pares=[];
+  for(let i=0;i<Math.min(a.length,b.length);i++)
+    if(isFinite(a[i])&&isFinite(b[i])) pares.push({m:(a[i]+b[i])/2,d:a[i]-b[i]});
+  const n=pares.length; if(n<2)return null;
+  const dif=pares.map(p=>p.d);
+  const md=dif.reduce((x,y)=>x+y,0)/n;
+  const sd=Math.sqrt(dif.reduce((x,y)=>x+(y-md)*(y-md),0)/(n-1));
+  const se=sd/Math.sqrt(n), t=tValue95(n-1);
+  return {pares:pares,n:n,md:md,sd:sd,loa:[md-1.96*sd,md+1.96*sd],
+          icMedia:[md-t*se,md+t*se]};
+}
+/* Regresión por mínimos cuadrados + banda de confianza 95 % de la MEDIA de la respuesta
+   (no de una predicción individual, que es más ancha). Se dice cuál es en la figura. */
+function grOLS(xs,ys){
+  const p=[];
+  for(let i=0;i<Math.min(xs.length,ys.length);i++)
+    if(isFinite(xs[i])&&isFinite(ys[i])) p.push([xs[i],ys[i]]);
+  const n=p.length; if(n<3)return null;
+  const mx=p.reduce((a,q)=>a+q[0],0)/n, my=p.reduce((a,q)=>a+q[1],0)/n;
+  let sxx=0,syy=0,sxy=0;
+  p.forEach(function(q){ sxx+=(q[0]-mx)**2; syy+=(q[1]-my)**2; sxy+=(q[0]-mx)*(q[1]-my); });
+  if(sxx===0)return null;
+  const b=sxy/sxx, a=my-b*mx;
+  const r=(sxx&&syy)?sxy/Math.sqrt(sxx*syy):NaN;
+  const sse=p.reduce((acc,q)=>acc+(q[1]-(a+b*q[0]))**2,0);
+  const s=Math.sqrt(sse/(n-2)), t=tValue95(n-2);
+  return {n:n,a:a,b:b,r:r,r2:r*r,s:s,mx:mx,sxx:sxx,t:t,pts:p,
+          banda:x=>t*s*Math.sqrt(1/n+((x-mx)**2)/sxx)};
+}
+function grPearson(xs,ys){
+  const o=grOLS(xs,ys); return o?o.r:NaN;
+}
+function grAgrupar(nomGrupo,nomValor){
+  const g=grCol(nomGrupo), v=grCol(nomValor);
+  if(!g||!v)return [];
+  const m=new Map();
+  for(let i=0;i<g.vals.length;i++){
+    const k=String(g.vals[i]==null?'':g.vals[i]).trim(); if(k==='')continue;
+    const x=grNum(v.vals[i],v.conv); if(!isFinite(x))continue;
+    if(!m.has(k))m.set(k,[]);
+    m.get(k).push(x);
+  }
+  return [...m.entries()].map(e=>({nombre:e[0],vals:e[1]}));
+}
+function grFrecuencias(nom){
+  const c=grCol(nom); if(!c)return [];
+  const m=new Map();
+  c.vals.forEach(function(v){ const k=String(v==null?'':v).trim(); if(k==='')return; m.set(k,(m.get(k)||0)+1); });
+  return [...m.entries()].map(e=>({nombre:e[0],n:e[1]})).sort((a,b)=>b.n-a.n);
+}
+
+/* ══════════════ CATÁLOGO DE LAS 25 GRÁFICAS ══════════════
+   Cada entrada declara los ROLES que necesita (qué columna cumple qué función) y con
+   qué tipos se puede llenar cada rol. De ahí sale sola la aptitud —si no hay ninguna
+   columna candidata para un rol obligatorio, la gráfica no se ofrece y se dice por
+   qué— y el formulario de mapeo. Sin esto la sugerencia y el dibujo se desincronizan:
+   se ofrece una gráfica que después no se puede dibujar. */
+const GR_CAT=[
+ // ── BÁSICO ────────────────────────────────────────────────────────────────────
+ {id:'barras',nivel:'Básico',nom:'Barras',desc:'Proporciones y comparaciones simples entre categorías.',
+  roles:[{k:'cat',etiq:'Categoría',tipos:['categorica','dicotomica','discreta','binaria']}],dib:grDibBarras},
+ {id:'torta',nivel:'Básico',nom:'Torta',desc:'Distribución de una variable categórica. Conviene sólo con pocas categorías.',
+  roles:[{k:'cat',etiq:'Categoría',tipos:['categorica','dicotomica','discreta','binaria']}],dib:grDibTorta},
+ {id:'histograma',nivel:'Básico',nom:'Histograma',desc:'Forma de la distribución de una variable continua.',
+  roles:[{k:'x',etiq:'Variable continua',tipos:['continua','discreta']}],dib:grDibHistograma},
+ {id:'box',nivel:'Básico',nom:'Box plot',desc:'Mediana, cuartiles y atípicos, comparando grupos.',
+  roles:[{k:'grupo',etiq:'Grupo',tipos:['categorica','dicotomica','discreta','binaria']},
+         {k:'y',etiq:'Variable continua',tipos:['continua','discreta']}],dib:grDibBox},
+ {id:'consort',nivel:'Básico',nom:'Diagrama CONSORT',desc:'Flujo de pacientes de un ensayo. Se completa a mano, no sale de los datos.',
+  roles:[],manual:true,dib:grDibConsort},
+ {id:'errorbar',nivel:'Básico',nom:'Error bar (media ± IC 95%)',desc:'Media con intervalo de confianza por grupo.',
+  roles:[{k:'grupo',etiq:'Grupo',tipos:['categorica','dicotomica','discreta','binaria']},
+         {k:'y',etiq:'Variable continua',tipos:['continua','discreta']}],dib:grDibErrorBar},
+ // ── INTERMEDIO ────────────────────────────────────────────────────────────────
+ {id:'scatter',nivel:'Intermedio',nom:'Dispersión con regresión e IC 95%',desc:'Relación entre dos variables continuas.',
+  roles:[{k:'x',etiq:'Variable X',tipos:['continua','discreta']},{k:'y',etiq:'Variable Y',tipos:['continua','discreta']}],dib:grDibScatter},
+ {id:'dotplot',nivel:'Intermedio',nom:'Dotplot',desc:'Muestra cada observación. Es lo correcto con N chico, donde un box plot dibuja cuartiles sobre 6 datos.',
+  roles:[{k:'grupo',etiq:'Grupo',tipos:['categorica','dicotomica','discreta','binaria']},
+         {k:'y',etiq:'Variable continua',tipos:['continua','discreta']}],dib:grDibDotplot},
+ {id:'antesdespues',nivel:'Intermedio',nom:'Before-after',desc:'Antes y después de una intervención, uniendo cada sujeto.',
+  roles:[{k:'antes',etiq:'Antes',tipos:['continua','discreta']},{k:'despues',etiq:'Después',tipos:['continua','discreta']}],dib:grDibAntesDespues},
+ {id:'spaghetti',nivel:'Intermedio',nom:'Spaghetti plot',desc:'Trayectoria individual de cada sujeto a lo largo del seguimiento.',
+  roles:[{k:'id',etiq:'Identificador del sujeto',tipos:['categorica','discreta','texto','dicotomica']},
+         {k:'t',etiq:'Tiempo',tipos:['continua','discreta','fecha']},
+         {k:'y',etiq:'Medición',tipos:['continua','discreta']}],dib:grDibSpaghetti},
+ {id:'lineas',nivel:'Intermedio',nom:'Líneas temporales por grupo',desc:'Evolución de la media de cada grupo en el tiempo.',
+  roles:[{k:'t',etiq:'Tiempo',tipos:['continua','discreta','fecha']},{k:'y',etiq:'Medición',tipos:['continua','discreta']},
+         {k:'grupo',etiq:'Grupo (opcional)',tipos:['categorica','dicotomica','discreta','binaria'],opt:true}],dib:grDibLineas},
+ {id:'apiladas',nivel:'Intermedio',nom:'Barras apiladas',desc:'Composición porcentual dentro de cada grupo.',
+  roles:[{k:'grupo',etiq:'Grupo (eje X)',tipos:['categorica','dicotomica','discreta','binaria']},
+         {k:'cat',etiq:'Subcategoría',tipos:['categorica','dicotomica','discreta','binaria']}],dib:grDibApiladas},
+ {id:'violin',nivel:'Intermedio',nom:'Violín',desc:'Forma completa de la distribución con la mediana. Necesita N razonable por grupo.',
+  roles:[{k:'grupo',etiq:'Grupo',tipos:['categorica','dicotomica','discreta','binaria']},
+         {k:'y',etiq:'Variable continua',tipos:['continua','discreta']}],dib:grDibViolin},
+ {id:'dumbbell',nivel:'Intermedio',nom:'Dumbbell chart',desc:'Comparación pareada por individuo, ordenada por magnitud del cambio.',
+  roles:[{k:'id',etiq:'Etiqueta',tipos:['categorica','discreta','texto','dicotomica']},
+         {k:'antes',etiq:'Antes',tipos:['continua','discreta']},{k:'despues',etiq:'Después',tipos:['continua','discreta']}],dib:grDibDumbbell},
+ // ── AVANZADO ──────────────────────────────────────────────────────────────────
+ {id:'km',nivel:'Avanzado',nom:'Kaplan-Meier',desc:'Supervivencia y tiempo a evento, con censurados y tabla de sujetos en riesgo.',
+  roles:[{k:'t',etiq:'Tiempo hasta evento o censura',tipos:['continua','discreta'],pref:/tiempo|time|seguim|follow|dias|días|meses|month|survi/i},
+         {k:'ev',etiq:'Evento (1 = ocurrió, 0 = censurado)',tipos:['binaria','dicotomica'],pref:/event|status|muert|death|fallec|desenlace|censur/i,evita:/grupo|group|brazo|sexo|sex/i},
+         {k:'grupo',etiq:'Grupo (opcional)',tipos:['dicotomica','categorica','discreta','binaria'],opt:true,pref:/grupo|group|brazo|arm|trat|rama/i}],dib:grDibKM},
+ {id:'roc',nivel:'Avanzado',nom:'Curva ROC con AUC',desc:'Rendimiento diagnóstico de una variable continua frente a un estándar.',
+  roles:[{k:'score',etiq:'Variable diagnóstica',tipos:['continua','discreta']},
+         {k:'clase',etiq:'Condición real (positivo = presente)',tipos:['binaria','dicotomica'],pref:/diag|enferm|caso|event|patolog|positiv|gold|estandar|estándar|status/i,evita:/grupo|group|sexo|sex/i}],dib:grDibROC},
+ {id:'ba',nivel:'Avanzado',nom:'Bland-Altman',desc:'Concordancia entre dos métodos de medición.',
+  roles:[{k:'a',etiq:'Método A',tipos:['continua','discreta']},{k:'b',etiq:'Método B',tipos:['continua','discreta']}],dib:grDibBA},
+ {id:'forest',nivel:'Avanzado',nom:'Forest plot',desc:'Efectos e intervalos de varios estudios. Se cargan a mano.',
+  roles:[],manual:true,dib:grDibForest},
+ {id:'funnel',nivel:'Avanzado',nom:'Funnel plot',desc:'Sesgo de publicación en un metaanálisis. Se carga a mano.',
+  roles:[],manual:true,dib:grDibFunnel},
+ {id:'heatmap',nivel:'Avanzado',nom:'Matriz de correlaciones',desc:'Correlación de Pearson entre todas las variables continuas.',
+  roles:[],auto:'multi',dib:grDibHeatmap},
+ {id:'prisma',nivel:'Avanzado',nom:'Diagrama PRISMA',desc:'Flujo de selección de una revisión sistemática. Se completa a mano.',
+  roles:[],manual:true,dib:grDibPrisma},
+ {id:'nomograma',nivel:'Avanzado',nom:'Nomograma',desc:'Predicción individual de riesgo a partir de coeficientes. Se cargan a mano.',
+  roles:[],manual:true,dib:grDibNomograma},
+ {id:'waterfall',nivel:'Avanzado',nom:'Waterfall',desc:'Respuesta individual ordenada, con los cortes RECIST.',
+  roles:[{k:'y',etiq:'Cambio respecto del basal (%)',tipos:['continua','discreta']},
+         {k:'id',etiq:'Etiqueta (opcional)',tipos:['categorica','discreta','texto','dicotomica'],opt:true}],dib:grDibWaterfall},
+ {id:'bubble',nivel:'Avanzado',nom:'Bubble chart',desc:'Tres variables a la vez: X, Y y tamaño.',
+  roles:[{k:'x',etiq:'Eje X',tipos:['continua','discreta']},{k:'y',etiq:'Eje Y',tipos:['continua','discreta']},
+         {k:'r',etiq:'Tamaño',tipos:['continua','discreta']}],dib:grDibBubble},
+ {id:'piramide',nivel:'Avanzado',nom:'Pirámide poblacional',desc:'Distribución por edad y sexo.',
+  roles:[{k:'edad',etiq:'Edad',tipos:['continua','discreta']},{k:'sexo',etiq:'Sexo',tipos:['dicotomica','categorica','binaria']}],dib:grDibPiramide}
+];
+const grDef=id=>GR_CAT.find(g=>g.id===id);
+
+/* Columnas candidatas para un rol, ORDENADAS por lo bien que encajan.
+   El orden importa porque la primera queda seleccionada por defecto: con las columnas
+   en su orden original, Kaplan-Meier abría con «grupo» (Control/Intervención) en el rol
+   de evento y la figura salía con el cartel «el evento debe ser 0 o 1», teniendo la
+   columna correcta a dos ítems de distancia en el mismo desplegable. Se puntúa por el
+   nombre y por el tipo: `tipos` está escrito con el tipo más apropiado primero. */
+function grCandidatas(rol){
+  if(!GR.datos)return [];
+  const cs=GR.datos.cols.filter(c=>rol.tipos.indexOf(c.tipo)>=0);
+  const puntaje=function(c){
+    let p=(rol.tipos.length-rol.tipos.indexOf(c.tipo));   // el tipo preferido pesa más
+    if(rol.pref&&rol.pref.test(c.nombre)) p+=20;
+    if(rol.evita&&rol.evita.test(c.nombre)) p-=10;
+    return p;
+  };
+  return cs.slice().sort((a,b)=>puntaje(b)-puntaje(a));
+}
+/* Lleva una columna dicotómica a 0/1 diciendo QUÉ valor tomó como 1.
+   Una columna «Sí/No» o «Vivo/Muerto» es perfectamente válida para una curva de
+   supervivencia o una ROC; lo que no se puede es elegir en silencio cuál de los dos
+   niveles es el positivo, porque elegir al revés invierte la curva entera. */
+const GR_POSITIVO=/^(1|si|sí|s|yes|y|true|v|verdadero|evento|muerte|fallecido|muerto|positivo|pos|presente|enfermo|caso)$/i;
+function grBinaria(nom){
+  const c=grCol(nom); if(!c)return null;
+  const crudos=c.vals.map(v=>String(v==null?'':v).trim());
+  const niveles=[...new Set(crudos.filter(v=>v!==''))];
+  if(niveles.length!==2)return null;
+  let pos=niveles.find(v=>GR_POSITIVO.test(v));
+  // Sin palabra reconocible: gana el mayor en orden natural (así "1" > "0", "B" > "A").
+  if(pos===undefined) pos=niveles.slice().sort((a,b)=>{
+    const na=grNum(a), nb=grNum(b);
+    return (isFinite(na)&&isFinite(nb))?na-nb:String(a).localeCompare(String(b));
+  })[1];
+  return {vals:crudos.map(v=>v===''?null:(v===pos?1:0)),positivo:pos,negativo:niveles.find(v=>v!==pos)};
+}
+/* ¿Se puede dibujar con los datos que hay? Devuelve null si sí, o el motivo si no. */
+function grFalta(def){
+  if(def.manual)return null;
+  if(!GR.datos)return 'no hay datos cargados';
+  if(def.auto==='multi'){
+    const n=GR.datos.cols.filter(c=>c.tipo==='continua'||c.tipo==='discreta').length;
+    return n>=3?null:'necesita al menos 3 variables numéricas (hay '+n+')';
+  }
+  for(const r of def.roles){
+    if(r.opt)continue;
+    if(!grCandidatas(r).length) return 'falta una columna «'+r.etiq.toLowerCase()+'»';
+  }
+  return null;
+}
+
+/* ══════════════ SUGERENCIA ══════════════
+   No ordena por "popularidad" sino por lo que el DATO admite. La regla que más importa
+   es la del N: un box plot con 6 observaciones por grupo dibuja cuartiles calculados
+   sobre 6 números y se lee como si resumiera una distribución. Con N chico se muestran
+   los puntos. */
+function grAnalisis(){
+  if(!GR.datos)return null;
+  const cols=GR.datos.cols;
+  const cont=cols.filter(c=>c.tipo==='continua'||c.tipo==='discreta');
+  const cat=cols.filter(c=>grEsCat(c.tipo));
+  const bin=cols.filter(c=>c.tipo==='binaria'||c.tipo==='dicotomica');
+  // Grupos del primer candidato categórico, para saber cuántos hay
+  let nGrupos=0;
+  if(cat.length) nGrupos=new Set(cat[0].vals.map(v=>String(v).trim()).filter(v=>v!=='')).size;
+  return {n:GR.datos.filas,cont:cont,cat:cat,bin:bin,nGrupos:nGrupos,
+          diseno:document.getElementById('gr-diseno')?.value||'transversal'};
+}
+function grSugerir(){
+  const cont=document.getElementById('gr-sugerencias'); if(!cont)return;
+  const an=grAnalisis();
+  if(!an){cont.innerHTML='';return;}
+  const S=[], add=(id,razon)=>{ if(!S.some(s=>s.id===id)) S.push({id:id,razon:razon}); };
+  const N=an.n, chico=N<30;
+
+  switch(an.diseno){
+    case 'supervivencia':
+      add('km','Hay tiempo hasta el evento: la curva de Kaplan-Meier es la única que usa bien a los censurados.');
+      break;
+    case 'diagnostico':
+      add('roc','Una variable continua contra un estándar de referencia: la ROC con su AUC es la forma estándar de mostrar rendimiento diagnóstico.');
+      add('box','Complementa la ROC mostrando cómo se separan los valores entre enfermos y sanos.');
+      break;
+    case 'concordancia':
+      add('ba','Dos métodos midiendo lo mismo: Bland-Altman muestra el sesgo y los límites de concordancia. Un scatter con r no responde si los métodos son intercambiables.');
+      add('scatter','Útil como acompañamiento, pero la correlación NO mide concordancia.');
+      break;
+    case 'revision':
+      add('prisma','Toda revisión sistemática necesita el diagrama de flujo PRISMA.');
+      add('forest','Los efectos de los estudios incluidos con su intervalo.');
+      add('funnel','Explora el sesgo de publicación cuando hay 10 estudios o más.');
+      break;
+    case 'oncologia':
+      add('waterfall','Respuesta individual ordenada, con los cortes de −30 % y +20 % de RECIST.');
+      add('km','Si además hay tiempo hasta progresión o muerte.');
+      break;
+    case 'antesdespues':
+      add(chico?'antesdespues':'dumbbell', chico
+        ? 'Con N='+N+' conviene unir cada sujeto y mostrar todos los pares: se ve quién mejoró y quién no.'
+        : 'Ordenado por magnitud del cambio, deja ver la dispersión de las respuestas individuales.');
+      add(chico?'dumbbell':'antesdespues','La otra forma de mostrar lo mismo; elegí la que se lea mejor con tu N.');
+      add('errorbar','Para la media del cambio con su intervalo de confianza.');
+      break;
+    case 'longitudinal':
+      add('spaghetti','Trayectoria de cada sujeto: muestra la variabilidad individual que una media de grupo esconde.');
+      add('lineas','La media de cada grupo en el tiempo, para la lectura de conjunto.');
+      break;
+    case 'grupos':
+      if(an.cont.length){
+        if(chico){ add('dotplot','Con N='+N+' se muestran todos los puntos: un box plot dibujaría cuartiles calculados sobre muy pocos datos.');
+                   add('errorbar','Media e IC 95 % por grupo, honesto con muestras chicas.'); }
+        else { add('box','Mediana, cuartiles y atípicos por grupo, con N='+N+' suficiente para resumir.');
+               add('violin','Muestra además la forma de la distribución, no sólo los cuartiles.');
+               add('errorbar','Si lo que se quiere comparar es la media con su intervalo.'); }
+      }
+      if(an.cat.length) add('barras','Para las variables categóricas: proporciones por grupo.');
+      if(an.cat.length>=2) add('apiladas','Composición porcentual de una categoría dentro de cada grupo.');
+      break;
+    default:
+      if(an.cat.length) add('barras','Distribución de la variable categórica.');
+      if(an.cat.length&&an.nGrupos<=5) add('torta','Alternativa a barras con pocas categorías. Barras se lee mejor.');
+      if(an.cont.length) add('histograma','Forma de la distribución de la variable continua.');
+      if(an.cont.length>=2) add('scatter','Relación entre dos variables continuas, con recta e IC 95 %.');
+  }
+  // Reglas transversales, se suman a cualquier diseño
+  if(an.cont.length>=2&&!S.some(s=>s.id==='scatter')) add('scatter','Hay dos o más variables continuas: la dispersión muestra si se relacionan.');
+  if(an.cont.length>=3) add('heatmap','Con '+an.cont.length+' variables numéricas, la matriz de correlaciones da el panorama de una sola vez.');
+  if(an.cont.length>=3) add('bubble','Tres variables a la vez: dos en los ejes y una en el tamaño.');
+  const edad=an.cont.find(c=>/edad|age|años/i.test(c.nombre)), sexo=an.bin.find(c=>/sexo|sex|género|genero/i.test(c.nombre));
+  if(edad&&sexo) add('piramide','Hay edad y sexo: la pirámide describe la estructura de la población.');
+
+  const html=S.map(function(s){
+    const d=grDef(s.id); if(!d)return '';
+    const falta=grFalta(d);
+    return '<button class="gr-item '+(falta?'no':'sug')+'" '+(falta?'disabled':'onclick="grElegir(\''+d.id+'\')"')+'>'+
+      '<span class="gr-item-t">'+esc(d.nom)+'</span>'+
+      '<span class="gr-item-d">'+esc(d.desc)+'</span>'+
+      '<span class="gr-item-r">'+(falta?'No se puede: '+esc(falta):'✓ '+esc(s.razon))+'</span></button>';
+  }).join('');
+  cont.innerHTML=S.length
+    ? '<div class="gr-lista">'+html+'</div>'
+    : '<div class="alert alert-info" style="font-size:.8rem">Con estos datos no hay una sugerencia clara. Mirá las 25 opciones abajo.</div>';
+}
+function grToggleTodas(){
+  const c=document.getElementById('gr-todas'), b=document.getElementById('gr-btn-todas');
+  const abrir=c.style.display==='none';
+  c.style.display=abrir?'block':'none';
+  b.textContent=abrir?'Ocultar las 25 gráficas ▴':'Ver las 25 gráficas ▾';
+  if(!abrir)return;
+  let html='';
+  ['Básico','Intermedio','Avanzado'].forEach(function(niv){
+    html+='<div class="gr-nivel">'+niv+'</div><div class="gr-lista">';
+    GR_CAT.filter(g=>g.nivel===niv).forEach(function(d){
+      const falta=grFalta(d);
+      html+='<button class="gr-item'+(falta?' no':'')+'" '+(falta?'disabled':'onclick="grElegir(\''+d.id+'\')"')+'>'+
+        '<span class="gr-item-t">'+esc(d.nom)+'</span>'+
+        '<span class="gr-item-d">'+esc(d.desc)+'</span>'+
+        (falta?'<span class="gr-item-r">No se puede: '+esc(falta)+'</span>':'')+'</button>';
+    });
+    html+='</div>';
+  });
+  c.innerHTML=html;
+}
+
+/* ══════════════ INTERFAZ ══════════════ */
+function grFuente(f,el){
+  GR.fuente=f;
+  document.querySelectorAll('.gr-tab').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('gr-panel-proyecto').style.display=f==='proyecto'?'block':'none';
+  document.getElementById('gr-panel-pegar').style.display=f==='pegar'?'block':'none';
+  grCargar();
+}
+function grLeerPegado(){
+  GR.pegado=grParsear(document.getElementById('gr-pegado').value);
+  const e=document.getElementById('gr-pegado-estado');
+  e.innerHTML=GR.pegado
+    ? '<span style="font-size:.75rem;color:var(--success,#1e8449)">✓ '+GR.pegado.filas+' filas · '+GR.pegado.cols.length+' columnas</span>'
+    : (document.getElementById('gr-pegado').value.trim()
+        ? '<span style="font-size:.75rem;color:var(--danger,#c0392b)">No se pudo leer: hacen falta al menos una fila de encabezados y una de datos, separadas por tabulación, coma o punto y coma.</span>':'');
+  grCargar();
+}
+function grCargar(){
+  GR.datos = GR.fuente==='pegar' ? GR.pegado : grLeerProyecto();
+  const est=document.getElementById('gr-proy-estado');
+  if(est) est.innerHTML = GR.fuente!=='proyecto' ? '' : (grLeerProyecto()
+    ? '<div class="alert" style="background:var(--successLt,#eafaf1);border-color:var(--success,#1e8449);color:var(--success,#1e8449);font-size:.78rem">✓ Usando los datos del proyecto — los mismos que el Análisis estadístico.</div>'
+    : '<div class="alert alert-warn" style="font-size:.8rem">Todavía no hay datos cargados. Cargalos en <b>📊 Recolección</b>, o usá la pestaña de pegado para una figura suelta.</div>');
+  const res=document.getElementById('gr-resumen');
+  if(GR.datos){
+    res.innerHTML='<div style="font-size:.8rem;color:var(--inkSoft)"><b>'+GR.datos.filas+'</b> observaciones · <b>'+GR.datos.cols.length+'</b> columnas</div>'+
+      '<div class="gr-cols">'+GR.datos.cols.map(c=>'<span class="gr-col"><b>'+esc(c.nombre)+'</b><i>'+esc(GR_TIPO_ETIQ[c.tipo]||c.tipo)+'</i></span>').join('')+'</div>'+
+      (GR.datos.filas<10?'<div class="alert alert-warn" style="margin-top:8px;font-size:.78rem">⚠️ Con '+GR.datos.filas+' observaciones casi ninguna figura resume nada: mostrá los puntos individuales (dotplot) en vez de cuartiles o medias.</div>':'');
+    document.getElementById('gr-card-sug').style.display='block';
+    grSugerir();
+    /* Si hay una vista previa abierta se REHACE con los datos nuevos. Antes no: cambiando
+       el texto pegado, la pantalla seguía mostrando el dibujo del conjunto anterior —y
+       los desplegables de mapeo seguían listando sus columnas—, pero grDescargar vuelve a
+       leer GR.datos en el momento de exportar. O sea: se aprobaba una figura en pantalla
+       y se descargaba otra. Es el único caso donde la vista previa y el archivo podían
+       diferir de verdad. */
+    if(GR.tipoActivo){ const t=GR.tipoActivo; if(grFalta(grDef(t))) grCerrarVista(); else grElegir(t); }
+    // Si la lista completa estaba abierta se vuelve a pintar: la aptitud de cada gráfica
+    // depende de los datos y con otro conjunto cambia cuáles se pueden dibujar.
+    const t=document.getElementById('gr-todas');
+    if(t&&t.style.display!=='none'){ t.style.display='none'; grToggleTodas(); }
+  }else{
+    res.innerHTML='';
+    document.getElementById('gr-card-sug').style.display='none';
+    grCerrarVista();
+  }
+}
+function grElegir(id){
+  GR.tipoActivo=id; GR.mapeo={};
+  const d=grDef(id); if(!d)return;
+  document.getElementById('gr-card-vista').style.display='block';
+  const ti=document.getElementById('gr-titulo'); if(!ti.value)ti.value='';
+  // Mapeo de roles
+  const mp=document.getElementById('gr-mapeo');
+  if(d.manual){
+    mp.innerHTML='<div class="alert alert-info" style="font-size:.78rem">Esta figura no sale de los datos: se completa a mano. Editá el contenido abajo y la vista previa se actualiza.</div>'+
+      '<label class="form-label">Contenido (una línea por caja: <code>texto | n</code>)</label>'+
+      '<textarea class="form-textarea" id="gr-manual" style="min-height:110px;font-family:ui-monospace,monospace;font-size:.76rem" oninput="grRedibujar()">'+esc(GR_MANUAL_DEF[id]||'')+'</textarea>';
+  }else if(d.auto){
+    mp.innerHTML='';
+  }else{
+    mp.innerHTML='<div class="gr-mapeo">'+d.roles.map(function(r){
+      const cands=grCandidatas(r);
+      const sel=cands.map(c=>'<option value="'+esc(c.nombre)+'">'+esc(c.nombre)+'</option>').join('');
+      return '<div><label class="form-label">'+esc(r.etiq)+'</label>'+
+        '<select class="form-select" data-rol="'+r.k+'" onchange="grRedibujar()">'+
+        (r.opt?'<option value="">(ninguno)</option>':'')+sel+'</select></div>';
+    }).join('')+'</div>';
+  }
+  const ex=document.getElementById('gr-ejex'), ey=document.getElementById('gr-ejey');
+  ex.value=''; ey.value='';
+  grRedibujar();
+  document.getElementById('gr-card-vista').scrollIntoView({block:'start',behavior:'smooth'});
+}
+function grMapeoActual(){
+  const m={};
+  document.querySelectorAll('#gr-mapeo select[data-rol]').forEach(s=>{m[s.dataset.rol]=s.value;});
+  return m;
+}
+function grCerrarVista(){
+  const c=document.getElementById('gr-card-vista'); if(c)c.style.display='none';
+  GR.tipoActivo=null;
+}
+/* Dibuja en el canvas de pantalla. La MISMA función se usa para exportar, con otro dpi:
+   si el dibujo de la vista previa y el del archivo fueran dos caminos distintos, lo que
+   se aprueba en pantalla no es lo que se descarga. */
+function grPintar(canvas,dpi){
+  const d=grDef(GR.tipoActivo); if(!d)return null;
+  const anchoMM=grAnchoMM(), rel=d.rel||0.68;
+  const L=grLienzo(canvas,anchoMM,rel,dpi);
+  L.pal=grPaleta();
+  L.titulo=(document.getElementById('gr-titulo')?.value||'').trim();
+  L.ejex=(document.getElementById('gr-ejex')?.value||'').trim();
+  L.ejey=(document.getElementById('gr-ejey')?.value||'').trim();
+  const m=d.manual?{texto:(document.getElementById('gr-manual')?.value||'')}:grMapeoActual();
+  let aviso=null;
+  try{ aviso=d.dib(L,m)||null; }
+  catch(e){ aviso={tipo:'error',txt:'No se pudo dibujar: '+e.message}; console.warn('gr:',e); }
+  return aviso;
+}
+function grRedibujar(){
+  if(!GR.tipoActivo)return;
+  const c=document.getElementById('gr-canvas');
+  // Vista previa a 150 DPI: se ve nítido en pantallas Retina sin generar un canvas de
+  // 1650 px que haga saltar el dibujo con cada tecla del título.
+  const aviso=grPintar(c,150);
+  const av=document.getElementById('gr-aviso');
+  av.innerHTML=aviso
+    ? '<div class="alert '+(aviso.tipo==='error'?'alert-warn':'alert-info')+'" style="font-size:.78rem">'+(aviso.tipo==='error'?'⚠️ ':'ⓘ ')+esc(aviso.txt)+'</div>'
+    : '';
+  const mm=grAnchoMM(), d=grDef(GR.tipoActivo);
+  const px=Math.round(mm*300/25.4), py=Math.round(mm*(d.rel||0.68)*300/25.4);
+  document.getElementById('gr-tam').textContent=mm+' × '+Math.round(mm*(d.rel||0.68))+' mm → '+px+' × '+py+' px a 300 DPI';
+  /* Qué columna alimenta cada rol, escrito debajo del dibujo.
+     El título y las etiquetas de los ejes los escribe el usuario y NO tienen por qué
+     coincidir con la columna mapeada: se puede titular «FEVI según grupo» una figura
+     cuyo rol Y quedó en `edad` —el desplegable toma la primera columna del tipo pedido—
+     y el gráfico sale prolijo, creíble y de otra variable. Esta línea es lo único que
+     lo delata sin tener que mirar los desplegables de arriba. */
+  const leyenda=document.getElementById('gr-datos-leyenda');
+  if(leyenda){
+    const dd=grDef(GR.tipoActivo);
+    if(dd.manual){ leyenda.innerHTML='<b>Contenido cargado a mano</b> — no sale de los datos del proyecto.'; }
+    else if(dd.auto){ leyenda.innerHTML='Usa <b>todas</b> las variables numéricas del conjunto.'; }
+    else{
+      const m=grMapeoActual();
+      const partes=dd.roles.filter(r=>m[r.k]).map(r=>r.etiq.replace(/ \(opcional\)/,'')+': <b>'+esc(m[r.k])+'</b>');
+      /* «sobre un conjunto de N» y no «N observaciones»: todas las figuras descartan
+         registros incompletos, así que el N del conjunto NO es el de la figura. El n que
+         vale está impreso dentro de cada gráfica. */
+      leyenda.innerHTML='Se está graficando — '+partes.join(' · ')+
+        ' · sobre un conjunto de <b>'+(GR.datos?GR.datos.filas:0)+'</b> registros ('+(GR.datos&&GR.datos.origen==='pegado'?'datos pegados, fuera del proyecto':'datos del proyecto')+
+        '). El <b>n</b> de la figura está impreso dentro del dibujo.';
+    }
+  }
+}
+function grDescargar(){
+  const d=grDef(GR.tipoActivo); if(!d)return;
+  const c=document.createElement('canvas');
+  const aviso=grPintar(c,300);
+  if(aviso&&aviso.tipo==='error'){ alert('No se puede exportar: '+aviso.txt); return; }
+  c.toBlob(function(blob){
+    if(!blob){ alert('El navegador no pudo generar el PNG.'); return; }
+    blob.arrayBuffer().then(function(buf){
+      const png=grPngConDPI(new Uint8Array(buf),300);
+      const url=URL.createObjectURL(new Blob([png],{type:'image/png'}));
+      const a=document.createElement('a');
+      a.href=url; a.download=grNombreArchivo(d); a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+  },'image/png');
+}
+/* Nombre descriptivo: Figura1_BoxPlot_FEVI_grupo.png — lo que pide una revista al
+   subir figuras sueltas, y lo que permite reconocerlas en la carpeta seis meses después. */
+function grNombreArchivo(d){
+  const limpia=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^A-Za-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,28);
+  const m=grMapeoActual();
+  const cols=Object.keys(m).map(k=>limpia(m[k])).filter(Boolean);
+  const tit=limpia(document.getElementById('gr-titulo')?.value);
+  const n=(TS.graficaN=(TS.graficaN||0)+1);
+  /* Las COLUMNAS van siempre en el nombre, aunque haya título. Poniendo sólo el título,
+     una figura titulada «FEVI según grupo» que en realidad graficó `edad` se archiva con
+     el nombre equivocado y ya no hay forma de notarlo desde el archivo. */
+  return ['Figura'+n,limpia(d.nom)].concat(tit?[tit]:[]).concat(cols).filter(Boolean).join('_')+'.png';
+}
+
+/* ══════════════ LAS 25 GRÁFICAS ══════════════
+   Cada función recibe el lienzo `L` (ya con fondo blanco y escala fijada) y el mapeo `m`.
+   Devuelve null, o {tipo,txt} con una advertencia que se muestra bajo la vista previa:
+   la advertencia es parte de la figura, no un adorno — «N=4 por grupo» al lado de un
+   box plot es lo que evita que se publique. */
+
+function grAvisoN(n,minimo,que){
+  return n<minimo?{tipo:'info',txt:'N = '+n+' '+que+'. Con menos de '+minimo+' esta figura resume muy pocos datos; considerá mostrar los puntos individuales.'}:null;
+}
+function grSinDatos(L,txt){
+  grTexto(L,txt||'Sin datos suficientes',L.w/2,L.h/2,9,'#999','center',null,'middle');
+  return {tipo:'error',txt:txt||'Sin datos suficientes para esta figura'};
+}
+
+function grDibBarras(L,m){
+  const f=grFrecuencias(m.cat); if(!f.length)return grSinDatos(L);
+  const tot=f.reduce((a,b)=>a+b.n,0);
+  /* Los porcentajes se calculan sobre los NO vacíos, que casi nunca es el N del conjunto.
+     Sin decir el denominador, un "42 (28,6%)" implica 147 mientras la línea de abajo del
+     lienzo dice 210 observaciones, y los dos números no se pueden reconciliar. */
+  const vacios=(grCol(m.cat)?grCol(m.cat).vals.length:tot)-tot;
+  const ey=grEscala(0,Math.max.apply(null,f.map(x=>x.n)),5);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||m.cat,ejeY:L.ejey||'Frecuencia (n)',mAba:22});
+  const w=(G.x1-G.x0)/f.length, bw=w*0.62;
+  f.forEach(function(d,i){
+    const cx=G.x0+w*(i+0.5), y=G.py(d.n);
+    L.ctx.fillStyle=L.pal[i%L.pal.length];
+    L.ctx.fillRect(cx-bw/2,y,bw,G.y0-y);
+    grTexto(L,d.n+' ('+(100*d.n/tot).toFixed(1).replace('.',',')+'%)',cx,y-L.mm(1.4),6.5,'#333','center',null,'bottom');
+    grEnvolverCorte(L,d.nombre,w*0.95,6.5,2).forEach(function(ln,k){
+      grTexto(L,ln,cx,G.y0+L.mm(3)+k*L.mm(2.6),6.5,'#333','center',null,'middle');
+    });
+  });
+  grTexto(L,'n = '+tot+(vacios>0?' · '+vacios+' sin dato':'')+' · % sobre '+tot,
+    G.x1,G.y1+L.mm(2),6,'#666','right',null,'top');
+  return vacios>0?{tipo:'info',txt:vacios+' registro(s) no tienen valor en «'+m.cat+'» y no entran en la figura: los porcentajes son sobre '+tot+', no sobre el total del conjunto.'}:null;
+}
+function grDibTorta(L,m){
+  const f=grFrecuencias(m.cat); if(!f.length)return grSinDatos(L);
+  const tot=f.reduce((a,b)=>a+b.n,0);
+  const vacios=(grCol(m.cat)?grCol(m.cat).vals.length:tot)-tot;
+  if(L.titulo)grTexto(L,L.titulo,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
+  const cx=L.w*0.36, cy=L.h*0.55, r=Math.min(L.w*0.3,L.h*0.34);
+  let a0=-Math.PI/2;
+  f.forEach(function(d,i){
+    const ang=2*Math.PI*d.n/tot;
+    L.ctx.beginPath(); L.ctx.moveTo(cx,cy); L.ctx.arc(cx,cy,r,a0,a0+ang); L.ctx.closePath();
+    L.ctx.fillStyle=L.pal[i%L.pal.length]; L.ctx.fill();
+    L.ctx.strokeStyle='#fff'; L.ctx.lineWidth=Math.max(1,L.mm(0.3)); L.ctx.stroke();
+    a0+=ang;
+  });
+  let ly=L.h*0.28;
+  f.forEach(function(d,i){
+    L.ctx.fillStyle=L.pal[i%L.pal.length];
+    L.ctx.fillRect(L.w*0.68,ly-L.mm(1.4),L.mm(2.8),L.mm(2.8));
+    grTexto(L,d.nombre+' — '+d.n+' ('+(100*d.n/tot).toFixed(1).replace('.',',')+'%)',L.w*0.68+L.mm(3.8),ly,7,'#333','left',null,'middle');
+    ly+=L.mm(4.4);
+  });
+  grTexto(L,'n = '+tot+(vacios>0?' · '+vacios+' sin dato':''),L.w-L.mm(4),L.h-L.mm(3),6,'#666','right',null,'bottom');
+  const av=[];
+  if(f.length>6) av.push('Con '+f.length+' categorías la torta se vuelve difícil de leer: un gráfico de barras compara mejor.');
+  if(vacios>0) av.push(vacios+' registro(s) sin valor en «'+m.cat+'» quedaron fuera; los porcentajes son sobre '+tot+'.');
+  return av.length?{tipo:'info',txt:av.join(' ')}:null;
+}
+function grDibHistograma(L,m){
+  const v=grValsNum(m.x).filter(isFinite); if(v.length<3)return grSinDatos(L);
+  const r=grResumen(v);
+  // Regla de Freedman-Diaconis, que se adapta a la dispersión; si el IQR es 0 cae a Sturges.
+  let k;
+  if(r.iqr>0){ const h=2*r.iqr/Math.cbrt(v.length); k=Math.ceil((r.max-r.min)/h); }
+  else k=Math.ceil(Math.log2(v.length)+1);
+  k=Math.max(4,Math.min(30,k||10));
+  const lo=r.min, hi=r.max, ancho=(hi-lo)/k||1;
+  const bins=new Array(k).fill(0);
+  v.forEach(function(x){ let i=Math.floor((x-lo)/ancho); if(i>=k)i=k-1; if(i<0)i=0; bins[i]++; });
+  const ex=grEscala(lo,hi,6), ey=grEscala(0,Math.max.apply(null,bins),5);
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||m.x,ejeY:L.ejey||'Frecuencia'});
+  L.ctx.fillStyle=L.pal[0];
+  bins.forEach(function(c,i){
+    if(!c)return;
+    const xa=G.px(lo+i*ancho), xb=G.px(lo+(i+1)*ancho), y=G.py(c);
+    L.ctx.fillRect(xa,y,Math.max(1,xb-xa-1),G.y0-y);
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grTexto(L,'n = '+v.length+' · '+k+' intervalos',G.x1,G.y1+L.mm(2),6.5,'#666','right',null,'top');
+  return null;
+}
+function grCajas(L,G,grupos,ancho,dibujar){
+  const w=(G.x1-G.x0)/grupos.length;
+  grupos.forEach(function(g,i){
+    const cx=G.x0+w*(i+0.5);
+    dibujar(g,cx,w*ancho,i);
+    grEnvolverCorte(L,g.nombre,w*0.95,6.5,2).forEach(function(ln,k){
+      grTexto(L,ln,cx,G.y0+L.mm(3)+k*L.mm(2.6),6.5,'#333','center',null,'middle');
+    });
+    grTexto(L,'n='+(g.res?g.res.n:g.vals.length),cx,G.y0+L.mm(3)+L.mm(5.4),6,'#777','center',null,'middle');
+  });
+}
+function grDibBox(L,m){
+  const gs=grAgrupar(m.grupo,m.y).filter(g=>g.vals.length); if(!gs.length)return grSinDatos(L);
+  gs.forEach(g=>g.res=grResumen(g.vals));
+  const todos=gs.flatMap(g=>g.vals);
+  const ey=grEscala(Math.min.apply(null,todos),Math.max.apply(null,todos),5);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||m.grupo,ejeY:L.ejey||m.y,mAba:26});
+  grCajas(L,G,gs,0.5,function(g,cx,bw,i){
+    const r=g.res, c=L.pal[i%L.pal.length], ctx=L.ctx;
+    ctx.strokeStyle=c; ctx.lineWidth=Math.max(1,L.mm(0.35));
+    ctx.beginPath(); ctx.moveTo(cx,G.py(r.bajo)); ctx.lineTo(cx,G.py(r.q1));
+    ctx.moveTo(cx,G.py(r.q3)); ctx.lineTo(cx,G.py(r.alto));
+    ctx.moveTo(cx-bw*0.25,G.py(r.bajo)); ctx.lineTo(cx+bw*0.25,G.py(r.bajo));
+    ctx.moveTo(cx-bw*0.25,G.py(r.alto)); ctx.lineTo(cx+bw*0.25,G.py(r.alto));
+    ctx.stroke();
+    ctx.fillStyle=c+'33'; ctx.fillRect(cx-bw/2,G.py(r.q3),bw,G.py(r.q1)-G.py(r.q3));
+    ctx.strokeRect(cx-bw/2,G.py(r.q3),bw,G.py(r.q1)-G.py(r.q3));
+    ctx.lineWidth=Math.max(1,L.mm(0.55));
+    ctx.beginPath(); ctx.moveTo(cx-bw/2,G.py(r.med)); ctx.lineTo(cx+bw/2,G.py(r.med)); ctx.stroke();
+    r.out.forEach(function(o){ ctx.beginPath(); ctx.arc(cx,G.py(o),L.mm(0.7),0,7); ctx.fillStyle=c; ctx.fill(); });
+  });
+  grTexto(L,'Mediana, cuartiles 25–75, bigotes a 1,5·RIC',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
+  const min=Math.min.apply(null,gs.map(g=>g.res.n));
+  return min<10?{tipo:'info',txt:'El grupo más chico tiene n='+min+'. Un box plot dibuja cuartiles sobre esos pocos datos: un dotplot sería más honesto.'}:null;
+}
+function grDibDotplot(L,m){
+  const gs=grAgrupar(m.grupo,m.y).filter(g=>g.vals.length); if(!gs.length)return grSinDatos(L);
+  const todos=gs.flatMap(g=>g.vals);
+  const ey=grEscala(Math.min.apply(null,todos),Math.max.apply(null,todos),5);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||m.grupo,ejeY:L.ejey||m.y,mAba:26});
+  grCajas(L,G,gs,0.6,function(g,cx,bw,i){
+    const c=L.pal[i%L.pal.length], ctx=L.ctx, res=grResumen(g.vals);
+    // Desplazamiento lateral determinista para los valores repetidos: sin esto los
+    // puntos iguales se superponen y N=12 se ve como N=5.
+    const cuenta={};
+    g.vals.forEach(function(v){
+      const key=v.toFixed(6); cuenta[key]=(cuenta[key]||0)+1;
+      const k=cuenta[key]-1, lado=(k%2?1:-1)*Math.ceil(k/2);
+      ctx.beginPath(); ctx.arc(cx+lado*L.mm(1.1),G.py(v),L.mm(0.75),0,7);
+      ctx.fillStyle=c; ctx.globalAlpha=0.75; ctx.fill(); ctx.globalAlpha=1;
+    });
+    ctx.strokeStyle='#111'; ctx.lineWidth=Math.max(1,L.mm(0.45));
+    ctx.beginPath(); ctx.moveTo(cx-bw/2,G.py(res.med)); ctx.lineTo(cx+bw/2,G.py(res.med)); ctx.stroke();
+  });
+  grTexto(L,'Cada punto es una observación · la línea es la mediana',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
+  return null;
+}
+function grDibViolin(L,m){
+  const todosG=grAgrupar(m.grupo,m.y);
+  const gs=todosG.filter(g=>g.vals.length>=3); if(!gs.length)return grSinDatos(L,'Cada grupo necesita al menos 3 observaciones');
+  /* Los grupos con menos de 3 datos no se pueden suavizar, pero DESAPARECER del eje sin
+     decirlo convierte un ensayo de tres ramas en una figura de dos ramas. */
+  const fuera=todosG.filter(g=>g.vals.length<3);
+  const todos=gs.flatMap(g=>g.vals);
+  const ey=grEscala(Math.min.apply(null,todos),Math.max.apply(null,todos),5);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||m.grupo,ejeY:L.ejey||m.y,mAba:26});
+  gs.forEach(g=>g.res=grResumen(g.vals));
+  grCajas(L,G,gs,0.7,function(g,cx,bw,i){
+    const v=g.res.vals, n=v.length, c=L.pal[i%L.pal.length], ctx=L.ctx;
+    // Densidad por núcleo gaussiano con ancho de banda de Silverman.
+    const sd=g.res.sd||1, iqr=g.res.iqr||sd;
+    const h=0.9*Math.min(sd,iqr/1.34)*Math.pow(n,-0.2)||1;
+    const P=40, ys=[], ds=[];
+    for(let k=0;k<=P;k++){
+      const y=ey.lo+(ey.hi-ey.lo)*k/P;
+      let s=0; v.forEach(function(x){ const z=(y-x)/h; s+=Math.exp(-0.5*z*z); });
+      ys.push(y); ds.push(s/(n*h*Math.sqrt(2*Math.PI)));
+    }
+    const dmax=Math.max.apply(null,ds)||1;
+    ctx.beginPath();
+    ys.forEach(function(y,k){ const x=cx-(ds[k]/dmax)*bw/2; k?ctx.lineTo(x,G.py(y)):ctx.moveTo(x,G.py(y)); });
+    for(let k=ys.length-1;k>=0;k--) ctx.lineTo(cx+(ds[k]/dmax)*bw/2,G.py(ys[k]));
+    ctx.closePath(); ctx.fillStyle=c+'44'; ctx.fill(); ctx.strokeStyle=c; ctx.lineWidth=Math.max(1,L.mm(0.3)); ctx.stroke();
+    ctx.strokeStyle='#111'; ctx.lineWidth=Math.max(1,L.mm(0.45));
+    ctx.beginPath(); ctx.moveTo(cx-bw*0.22,G.py(g.res.med)); ctx.lineTo(cx+bw*0.22,G.py(g.res.med)); ctx.stroke();
+  });
+  const min=Math.min.apply(null,gs.map(g=>g.res.n));
+  const av=[];
+  if(fuera.length) av.push('No se dibujaron '+fuera.length+' grupo(s) con menos de 3 observaciones ('+fuera.map(g=>g.nombre+': n='+g.vals.length).join(', ')+'): no están en la figura.');
+  if(min<15) av.push('El grupo más chico dibujado tiene n='+min+'. La forma del violín con tan pocos datos depende más del suavizado que de la distribución real.');
+  return av.length?{tipo:'info',txt:av.join(' ')}:null;
+}
+function grDibErrorBar(L,m){
+  const gs=grAgrupar(m.grupo,m.y).filter(g=>g.vals.length); if(!gs.length)return grSinDatos(L);
+  gs.forEach(g=>g.ic=grMediaIC(g.vals));
+  const lo=Math.min.apply(null,gs.map(g=>g.ic.lo)), hi=Math.max.apply(null,gs.map(g=>g.ic.hi));
+  const ey=grEscala(lo,hi,5);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||m.grupo,ejeY:L.ejey||m.y,mAba:26});
+  grCajas(L,G,gs,0.4,function(g,cx,bw,i){
+    const c=L.pal[i%L.pal.length], ctx=L.ctx, ic=g.ic;
+    ctx.strokeStyle=c; ctx.lineWidth=Math.max(1,L.mm(0.4));
+    ctx.beginPath(); ctx.moveTo(cx,G.py(ic.lo)); ctx.lineTo(cx,G.py(ic.hi));
+    ctx.moveTo(cx-bw/2,G.py(ic.lo)); ctx.lineTo(cx+bw/2,G.py(ic.lo));
+    ctx.moveTo(cx-bw/2,G.py(ic.hi)); ctx.lineTo(cx+bw/2,G.py(ic.hi)); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,G.py(ic.media),L.mm(1.1),0,7); ctx.fillStyle=c; ctx.fill();
+  });
+  // Se DICE qué representa la barra. "Media ± algo" sin decir qué es la ambigüedad más
+  // común de la literatura: DE, EE e IC 95 % se ven iguales y miden cosas distintas.
+  grTexto(L,'Media ± IC 95 % (t de Student)',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
+  return null;
+}
+function grDibScatter(L,m){
+  const xs=grValsNum(m.x), ys=grValsNum(m.y);
+  const o=grOLS(xs,ys); if(!o)return grSinDatos(L,'Hacen falta al menos 3 pares completos');
+  const px=o.pts.map(p=>p[0]), py=o.pts.map(p=>p[1]);
+  const ex=grEscala(Math.min.apply(null,px),Math.max.apply(null,px),6);
+  const ey=grEscala(Math.min.apply(null,py),Math.max.apply(null,py),5);
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||m.x,ejeY:L.ejey||m.y});
+  const ctx=L.ctx, c=L.pal[0];
+  // Banda de confianza de la MEDIA
+  ctx.beginPath();
+  for(let i=0;i<=60;i++){ const x=ex.lo+(ex.hi-ex.lo)*i/60; const y=o.a+o.b*x+o.banda(x);
+    i?ctx.lineTo(G.px(x),G.py(y)):ctx.moveTo(G.px(x),G.py(y)); }
+  for(let i=60;i>=0;i--){ const x=ex.lo+(ex.hi-ex.lo)*i/60; const y=o.a+o.b*x-o.banda(x);
+    ctx.lineTo(G.px(x),G.py(y)); }
+  ctx.closePath(); ctx.fillStyle=c+'22'; ctx.fill();
+  ctx.strokeStyle=c; ctx.lineWidth=Math.max(1,L.mm(0.4));
+  ctx.beginPath(); ctx.moveTo(G.px(ex.lo),G.py(o.a+o.b*ex.lo)); ctx.lineTo(G.px(ex.hi),G.py(o.a+o.b*ex.hi)); ctx.stroke();
+  o.pts.forEach(function(p){ ctx.beginPath(); ctx.arc(G.px(p[0]),G.py(p[1]),L.mm(0.8),0,7);
+    ctx.fillStyle='#333'; ctx.globalAlpha=.75; ctx.fill(); ctx.globalAlpha=1; });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  const sg=o.b>=0?'+':'−';
+  grTexto(L,'y = '+grFmt(o.a,0.01)+' '+sg+' '+grFmt(Math.abs(o.b),0.01)+'x · r = '+grFmt(o.r,0.001)+' · R² = '+grFmt(o.r2,0.001)+' · n = '+o.n,
+    G.x0+L.mm(2),G.y1+L.mm(2),6.5,'#333','left',null,'top');
+  grTexto(L,'Banda: IC 95 % de la media',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
+  return null;
+}
+function grDibAntesDespues(L,m){
+  const a=grValsNum(m.antes), b=grValsNum(m.despues);
+  const pares=[]; for(let i=0;i<Math.min(a.length,b.length);i++) if(isFinite(a[i])&&isFinite(b[i]))pares.push([a[i],b[i]]);
+  if(!pares.length)return grSinDatos(L,'No hay pares completos antes/después');
+  const todos=pares.flat();
+  const ey=grEscala(Math.min.apply(null,todos),Math.max.apply(null,todos),5);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||'',ejeY:L.ejey||m.antes,mAba:22});
+  const xA=G.x0+(G.x1-G.x0)*0.3, xB=G.x0+(G.x1-G.x0)*0.7, ctx=L.ctx;
+  pares.forEach(function(p){
+    const sube=p[1]>p[0];
+    ctx.strokeStyle=sube?L.pal[2]:L.pal[3]; ctx.globalAlpha=.6;
+    ctx.lineWidth=Math.max(1,L.mm(0.22));
+    ctx.beginPath(); ctx.moveTo(xA,G.py(p[0])); ctx.lineTo(xB,G.py(p[1])); ctx.stroke(); ctx.globalAlpha=1;
+    [[xA,p[0]],[xB,p[1]]].forEach(function(q){ ctx.beginPath(); ctx.arc(q[0],G.py(q[1]),L.mm(0.65),0,7); ctx.fillStyle='#444'; ctx.fill(); });
+  });
+  [[xA,'Antes'],[xB,'Después']].forEach(q=>grTexto(L,q[1],q[0],G.y0+L.mm(3.5),7.5,'#111',
+    'center','bold','middle'));
+  const dif=pares.map(p=>p[1]-p[0]), ic=grMediaIC(dif);
+  const sube=dif.filter(d=>d>0).length, baja=dif.filter(d=>d<0).length;
+  grTexto(L,'n = '+pares.length+' pares · suben '+sube+' · bajan '+baja+' · cambio medio '+grFmt(ic.media,0.01)+' (IC 95 % '+grFmt(ic.lo,0.01)+' a '+grFmt(ic.hi,0.01)+')',
+    G.x0,G.y1+L.mm(2),6.3,'#333','left',null,'top');
+  return null;
+}
+function grDibDumbbell(L,m){
+  const idc=grCol(m.id), a=grValsNum(m.antes), b=grValsNum(m.despues);
+  if(!idc)return grSinDatos(L);
+  const filas=[];
+  for(let i=0;i<a.length;i++) if(isFinite(a[i])&&isFinite(b[i]))
+    filas.push({id:String(idc.vals[i]||('#'+(i+1))),a:a[i],b:b[i],d:b[i]-a[i]});
+  if(!filas.length)return grSinDatos(L,'No hay pares completos');
+  /* Se ordena por MAGNITUD del cambio, no por el cambio con signo. Ordenando por
+     `y.d-x.d` y cortando la cabeza se quedaban los 28 más positivos: en un estudio donde
+     el tratamiento BAJA el marcador todas las diferencias son negativas, así que los 28
+     "primeros" eran los más cercanos a cero —los que no respondieron— y el cartel decía
+     que se mostraban los de mayor cambio. */
+  filas.sort((x,y)=>Math.abs(y.d)-Math.abs(x.d));
+  const recorte=filas.length>28;
+  const use=(recorte?filas.slice(0,28):filas).slice().sort((x,y)=>y.d-x.d);
+  const todos=use.flatMap(f=>[f.a,f.b]);
+  const ex=grEscala(Math.min.apply(null,todos),Math.max.apply(null,todos),5);
+  const mIzq=34;
+  const G=grEjes(L,{ex:ex,ey:{lo:0,hi:1,ticks:[],paso:1},titulo:L.titulo,ejeX:L.ejex||'Valor',mIzq:mIzq,mAba:14});
+  const ctx=L.ctx, alto=(G.y0-G.y1)/use.length;
+  use.forEach(function(f,i){
+    const y=G.y1+alto*(i+0.5);
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.max(1,L.mm(0.6));
+    ctx.beginPath(); ctx.moveTo(G.px(f.a),y); ctx.lineTo(G.px(f.b),y); ctx.stroke();
+    [[f.a,L.pal[3]],[f.b,L.pal[0]]].forEach(function(q){
+      ctx.beginPath(); ctx.arc(G.px(q[0]),y,Math.min(L.mm(1.1),alto*0.35),0,7); ctx.fillStyle=q[1]; ctx.fill(); });
+    grTexto(L,f.id,G.x0-L.mm(1.6),y,6,'#333','right',null,'middle');
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grLeyenda(L,[{color:L.pal[3],txt:'Antes'},{color:L.pal[0],txt:'Después'}],G.x0,G.y1-L.mm(2.5),G.x1);
+  const incompletos=Math.min(a.length,b.length)-filas.length;
+  grTexto(L,use.length+' de '+filas.length+' pares'+(incompletos>0?' · '+incompletos+' sin par completo':''),
+    G.x1,G.y0+L.mm(6),6,'#666','right',null,'middle');
+  const avisos=[];
+  if(recorte) avisos.push('Se muestran los 28 pares con mayor cambio en valor absoluto, de '+filas.length+': más filas no entran legibles. Los otros '+(filas.length-28)+' no están en la figura.');
+  if(incompletos>0) avisos.push(incompletos+' registro(s) quedaron fuera por no tener las dos mediciones.');
+  return avisos.length?{tipo:'info',txt:avisos.join(' ')}:null;
+}
+function grDibSpaghetti(L,m){
+  const idc=grCol(m.id), tc=grValsNum(m.t), yc=grValsNum(m.y);
+  if(!idc)return grSinDatos(L);
+  const suj=new Map();
+  for(let i=0;i<tc.length;i++){
+    if(!isFinite(tc[i])||!isFinite(yc[i]))continue;
+    const k=String(idc.vals[i]||'').trim(); if(!k)continue;
+    if(!suj.has(k))suj.set(k,[]);
+    suj.get(k).push([tc[i],yc[i]]);
+  }
+  if(!suj.size)return grSinDatos(L,'No hay series por sujeto');
+  const pts=[...suj.values()].flat();
+  const ex=grEscala(Math.min.apply(null,pts.map(p=>p[0])),Math.max.apply(null,pts.map(p=>p[0])),6);
+  const ey=grEscala(Math.min.apply(null,pts.map(p=>p[1])),Math.max.apply(null,pts.map(p=>p[1])),5);
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||m.t,ejeY:L.ejey||m.y});
+  const ctx=L.ctx; let i=0;
+  suj.forEach(function(serie){
+    serie.sort((a,b)=>a[0]-b[0]);
+    ctx.strokeStyle=L.pal[i%L.pal.length]; ctx.globalAlpha=.5; ctx.lineWidth=Math.max(1,L.mm(0.22));
+    ctx.beginPath(); serie.forEach((p,k)=>k?ctx.lineTo(G.px(p[0]),G.py(p[1])):ctx.moveTo(G.px(p[0]),G.py(p[1])));
+    ctx.stroke(); ctx.globalAlpha=1; i++;
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grTexto(L,suj.size+' sujetos',G.x1,G.y1+L.mm(2),6.5,'#666','right',null,'top');
+  return null;
+}
+function grDibLineas(L,m){
+  const tc=grValsNum(m.t), yc=grValsNum(m.y), gc=m.grupo?grCol(m.grupo):null;
+  const series=new Map();
+  for(let i=0;i<tc.length;i++){
+    if(!isFinite(tc[i])||!isFinite(yc[i]))continue;
+    const k=gc?String(gc.vals[i]||'—').trim():'Todos';
+    if(!series.has(k))series.set(k,new Map());
+    const porT=series.get(k);
+    if(!porT.has(tc[i]))porT.set(tc[i],[]);
+    porT.get(tc[i]).push(yc[i]);
+  }
+  if(!series.size)return grSinDatos(L);
+  const puntos=[];
+  series.forEach(function(porT,k){
+    [...porT.entries()].sort((a,b)=>a[0]-b[0]).forEach(function(e){
+      const ic=grMediaIC(e[1]); puntos.push({g:k,t:e[0],m:ic.media,lo:ic.lo,hi:ic.hi,n:ic.n});
+    });
+  });
+  const ex=grEscala(Math.min.apply(null,puntos.map(p=>p.t)),Math.max.apply(null,puntos.map(p=>p.t)),6);
+  const ey=grEscala(Math.min.apply(null,puntos.map(p=>p.lo)),Math.max.apply(null,puntos.map(p=>p.hi)),5);
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||m.t,ejeY:L.ejey||m.y,mAba:20});
+  const ctx=L.ctx; let i=0; const leg=[];
+  series.forEach(function(_,k){
+    const ps=puntos.filter(p=>p.g===k).sort((a,b)=>a.t-b.t), c=L.pal[i%L.pal.length];
+    ctx.strokeStyle=c; ctx.lineWidth=Math.max(1,L.mm(0.4));
+    ctx.beginPath(); ps.forEach((p,q)=>q?ctx.lineTo(G.px(p.t),G.py(p.m)):ctx.moveTo(G.px(p.t),G.py(p.m))); ctx.stroke();
+    ps.forEach(function(p){
+      ctx.beginPath(); ctx.moveTo(G.px(p.t),G.py(p.lo)); ctx.lineTo(G.px(p.t),G.py(p.hi)); ctx.stroke();
+      ctx.beginPath(); ctx.arc(G.px(p.t),G.py(p.m),L.mm(0.8),0,7); ctx.fillStyle=c; ctx.fill();
+    });
+    leg.push({color:c,txt:k}); i++;
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  if(gc)grLeyenda(L,leg,G.x0,L.h-L.mm(3.5),G.x1);
+  grTexto(L,'Media ± IC 95 % en cada tiempo',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
+  /* Un punto con n=1 no tiene intervalo: se dibuja sin bigote y queda pareciendo el MÁS
+     preciso de la serie, cuando es el que menos datos tiene. En un seguimiento con
+     abandono son justo los tiempos finales. */
+  const solos=puntos.filter(p=>p.n<2);
+  return solos.length?{tipo:'info',txt:solos.length+' punto(s) tienen n=1 y se dibujan sin intervalo: parecen los más precisos y son los que menos datos tienen ('+solos.slice(0,4).map(p=>(p.g!=='Todos'?p.g+' ':'')+'t='+grFmt(p.t,0.1)).join(', ')+(solos.length>4?'…':'')+').'}:null;
+}
+function grDibApiladas(L,m){
+  const g=grCol(m.grupo), c=grCol(m.cat); if(!g||!c)return grSinDatos(L);
+  const tabla=new Map(), cats=new Set();
+  for(let i=0;i<g.vals.length;i++){
+    const k=String(g.vals[i]||'').trim(), s=String(c.vals[i]||'').trim();
+    if(!k||!s)continue;
+    if(!tabla.has(k))tabla.set(k,new Map());
+    tabla.get(k).set(s,(tabla.get(k).get(s)||0)+1);
+    cats.add(s);
+  }
+  if(!tabla.size)return grSinDatos(L);
+  const listaCat=[...cats];
+  const ey={lo:0,hi:100,paso:20,ticks:[0,20,40,60,80,100]};
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||m.grupo,ejeY:L.ejey||'% dentro del grupo',mAba:24});
+  const ctx=L.ctx, grupos=[...tabla.keys()], w=(G.x1-G.x0)/grupos.length, bw=w*0.6;
+  grupos.forEach(function(k,i){
+    const porC=tabla.get(k), tot=[...porC.values()].reduce((a,b)=>a+b,0);
+    const cx=G.x0+w*(i+0.5); let acum=0;
+    listaCat.forEach(function(s,j){
+      const n=porC.get(s)||0; if(!n)return;
+      const pct=100*n/tot;
+      const y1=G.py(acum), y2=G.py(acum+pct);
+      ctx.fillStyle=L.pal[j%L.pal.length]; ctx.fillRect(cx-bw/2,y2,bw,y1-y2);
+      if(pct>=8) grTexto(L,pct.toFixed(0)+'%',cx,(y1+y2)/2,6.2,'#fff','center','bold','middle');
+      acum+=pct;
+    });
+    grEnvolverCorte(L,k,w*0.95,6.5,2).forEach(function(ln,q){
+      grTexto(L,ln,cx,G.y0+L.mm(3)+q*L.mm(2.6),6.5,'#333','center',null,'middle'); });
+    grTexto(L,'n='+tot,cx,G.y0+L.mm(8.4),6,'#777','center',null,'middle');
+  });
+  grLeyenda(L,listaCat.map((s,j)=>({color:L.pal[j%L.pal.length],txt:s})),G.x0,L.h-L.mm(3));
+  return null;
+}
+function grDibWaterfall(L,m){
+  const ys=grValsNum(m.y), idc=m.id?grCol(m.id):null;
+  const filas=[];
+  ys.forEach(function(v,i){ if(isFinite(v)) filas.push({v:v,id:idc?String(idc.vals[i]||''):''}); });
+  if(!filas.length)return grSinDatos(L);
+  filas.sort((a,b)=>b.v-a.v);
+  /* Los cortes de RECIST (−30 % y +20 %) son porcentajes de cambio respecto del basal.
+     El rol acepta cualquier columna continua y toma la primera candidata, así que
+     mapeando `edad` la figura dibujaba las dos líneas y coloreaba las barras como si
+     todos los pacientes hubieran progresado — una afirmación clínica sobre una columna
+     que no es un porcentaje de cambio. Si el rango no se parece a un cambio porcentual,
+     las líneas y los colores de RECIST no se dibujan. */
+  const vmin=Math.min.apply(null,filas.map(f=>f.v)), vmax=Math.max.apply(null,filas.map(f=>f.v));
+  const pareceCambioPct=(vmin>=-100&&vmax<=300&&vmin<0);
+  const ey=pareceCambioPct?grEscala(Math.min(-100,vmin),Math.max(20,vmax),6):grEscala(vmin,vmax,6);
+  const G=grEjes(L,{ex:{lo:0,hi:1},ey:ey,titulo:L.titulo,ejeX:L.ejex||'Pacientes ordenados por respuesta',
+    ejeY:L.ejey||(pareceCambioPct?'Cambio respecto del basal (%)':m.y),mAba:16});
+  const ctx=L.ctx, w=(G.x1-G.x0)/filas.length;
+  if(pareceCambioPct){
+    // −30 % respuesta parcial, +20 % progresión: la referencia con la que se lee esta
+    // figura en oncología. Sin ellas el lector no sabe dónde están los cortes.
+    [[-30,'#1e8449','Respuesta parcial (−30 %)'],[20,'#c0392b','Progresión (+20 %)']].forEach(function(r){
+      if(r[0]<ey.lo||r[0]>ey.hi)return;
+      ctx.strokeStyle=r[1]; ctx.setLineDash([L.mm(1.2),L.mm(1)]); ctx.lineWidth=Math.max(1,L.mm(0.25));
+      ctx.beginPath(); ctx.moveTo(G.x0,G.py(r[0])); ctx.lineTo(G.x1,G.py(r[0])); ctx.stroke(); ctx.setLineDash([]);
+      grTexto(L,r[2],G.x1-L.mm(1),G.py(r[0])-L.mm(1),5.8,r[1],'right',null,'bottom');
+    });
+  }
+  const y0=G.py(Math.max(ey.lo,Math.min(0,ey.hi)));
+  const etiq=filas.length<=40&&filas.some(f=>f.id);
+  filas.forEach(function(f,i){
+    const x=G.x0+w*i, y=G.py(f.v);
+    ctx.fillStyle=pareceCambioPct?(f.v<=-30?L.pal[2]:(f.v>=20?L.pal[3]:L.pal[0])):L.pal[0];
+    ctx.fillRect(x+w*0.1,Math.min(y,y0),w*0.8,Math.abs(y0-y));
+    // Las etiquetas del rol opcional se DIBUJAN. Antes se recogían y no se usaban, así
+    // que la línea "Se está graficando — Etiqueta: X" nombraba una columna sin efecto.
+    if(etiq&&f.id){ ctx.save(); ctx.translate(x+w*0.5,y0+(f.v>=0?L.mm(1.5):-L.mm(1.5)));
+      ctx.rotate(-Math.PI/2);
+      grTexto(L,f.id.slice(0,14),f.v>=0?0:0,0,5.2,'#555',f.v>=0?'left':'right',null,'middle');
+      ctx.restore(); }
+  });
+  ctx.strokeStyle='#333'; ctx.lineWidth=Math.max(1,L.mm(0.25));
+  ctx.beginPath(); ctx.moveTo(G.x0,y0); ctx.lineTo(G.x1,y0); ctx.stroke();
+  const perdidos=ys.length-filas.length;
+  grTexto(L,'n = '+filas.length+(perdidos>0?' (de '+ys.length+')':''),G.x1,G.y1+L.mm(2),6.5,'#666','right',null,'top');
+  return pareceCambioPct?null:{tipo:'info',txt:'Los valores de «'+m.y+'» no parecen cambios porcentuales respecto del basal (van de '+grFmt(vmin,0.1)+' a '+grFmt(vmax,0.1)+'), así que NO se dibujaron los cortes de RECIST ni se colorearon las barras por respuesta. Si es un porcentaje de cambio, revisá la columna.'};
+}
+function grDibBubble(L,m){
+  const xs=grValsNum(m.x), ys=grValsNum(m.y), rs=grValsNum(m.r);
+  const p=[]; for(let i=0;i<xs.length;i++) if(isFinite(xs[i])&&isFinite(ys[i])&&isFinite(rs[i]))p.push([xs[i],ys[i],rs[i]]);
+  if(!p.length)return grSinDatos(L);
+  const ex=grEscala(Math.min.apply(null,p.map(q=>q[0])),Math.max.apply(null,p.map(q=>q[0])),6);
+  const ey=grEscala(Math.min.apply(null,p.map(q=>q[1])),Math.max.apply(null,p.map(q=>q[1])),5);
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||m.x,ejeY:L.ejey||m.y,mAba:20});
+  const rmin=Math.min.apply(null,p.map(q=>q[2])), rmax=Math.max.apply(null,p.map(q=>q[2]));
+  const ctx=L.ctx;
+  /* El ÁREA es proporcional al VALOR, sin normalizar por el mínimo y sin piso aditivo.
+     Antes se hacía frac=(v−min)/(max−min) y rad=0,9mm+3,4mm·√frac, que no es
+     proporcional a nada: con valores 100 y 200 daba áreas de 2,5 y 58 mm² —una razón
+     visual de 23:1 para una razón real de 2:1— mientras el pie de figura afirmaba
+     «Área ∝ variable». Sólo se puede escribir esa leyenda si es cierta.
+     Requiere valores ≥ 0: con negativos la proporcionalidad de área no tiene sentido y
+     se cae a la escala relativa, diciéndolo. */
+  const hayNeg=rmin<0;
+  const base=hayNeg?null:Math.max(rmax,1e-12);
+  const Rmax=L.mm(4.2);
+  p.forEach(function(q){
+    const rad=hayNeg
+      ? L.mm(0.9)+Math.sqrt(rmax>rmin?(q[2]-rmin)/(rmax-rmin):0.5)*L.mm(3.4)
+      : Math.max(L.mm(0.35),Math.sqrt(q[2]/base)*Rmax);
+    ctx.beginPath(); ctx.arc(G.px(q[0]),G.py(q[1]),rad,0,7);
+    ctx.fillStyle=L.pal[0]+'66'; ctx.fill(); ctx.strokeStyle=L.pal[0]; ctx.lineWidth=Math.max(1,L.mm(0.2)); ctx.stroke();
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  // Escala de referencia: dos burbujas con su valor, para que el tamaño se pueda leer.
+  if(!hayNeg){
+    const refs=[rmax,rmax/4].filter(v=>v>0);
+    let lx=G.x0+L.mm(3);
+    refs.forEach(function(v){
+      const r=Math.max(L.mm(0.35),Math.sqrt(v/base)*Rmax);
+      ctx.beginPath(); ctx.arc(lx+r,G.y1+L.mm(5)+Rmax-r,r,0,7);
+      ctx.strokeStyle='#888'; ctx.lineWidth=Math.max(1,L.mm(0.18)); ctx.stroke();
+      grTexto(L,grFmt(v,rmax/50),lx+r,G.y1+L.mm(5)+Rmax+L.mm(2),5.6,'#666','center',null,'middle');
+      lx+=2*r+L.mm(4);
+    });
+  }
+  grTexto(L,(hayNeg?'Tamaño relativo (hay valores negativos: el área NO es proporcional) — '
+                  :'Área ∝ ')+m.r+' ('+grFmt(rmin,0.01)+' a '+grFmt(rmax,0.01)+') · n = '+p.length,
+    G.x0,G.y1+L.mm(2),6.2,'#666','left',null,'top');
+  return hayNeg?{tipo:'info',txt:'La variable de tamaño tiene valores negativos, así que el área no puede ser proporcional al valor: las burbujas usan una escala relativa entre el mínimo y el máximo. No leas los tamaños como razones.'}:null;
+}
+function grDibPiramide(L,m){
+  const ed=grValsNum(m.edad), sx=grCol(m.sexo);
+  if(!sx)return grSinDatos(L);
+  const niveles=[...new Set(sx.vals.map(v=>String(v||'').trim()).filter(Boolean))];
+  const sexos=niveles.slice(0,2);
+  if(sexos.length<2)return grSinDatos(L,'Hacen falta dos categorías de sexo');
+  const paso=10, bins=new Map();
+  for(let i=0;i<ed.length;i++){
+    if(!isFinite(ed[i]))continue;
+    const s=String(sx.vals[i]||'').trim(); if(sexos.indexOf(s)<0)continue;
+    const b=Math.floor(ed[i]/paso)*paso;
+    if(!bins.has(b))bins.set(b,{});
+    bins.get(b)[s]=(bins.get(b)[s]||0)+1;
+  }
+  if(!bins.size)return grSinDatos(L);
+  const grupos=[...bins.keys()].sort((a,b)=>a-b);
+  const maxN=Math.max.apply(null,grupos.map(b=>Math.max(bins.get(b)[sexos[0]]||0,bins.get(b)[sexos[1]]||0)));
+  const ex=grEscala(0,maxN,4);
+  if(L.titulo)grTexto(L,L.titulo,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
+  const x0=L.mm(8), x1=L.w-L.mm(5), y0=L.h-L.mm(16), y1=L.mm(L.titulo?12:6);
+  const cx=(x0+x1)/2, semi=(x1-x0)/2-L.mm(7);
+  const alto=(y0-y1)/grupos.length, ctx=L.ctx;
+  grupos.forEach(function(b,i){
+    const y=y0-alto*(i+1), fila=bins.get(b);
+    [[0,-1],[1,1]].forEach(function(s){
+      const n=fila[sexos[s[0]]]||0; if(!n)return;
+      const w=(n/ex.hi)*semi;
+      ctx.fillStyle=L.pal[s[0]];
+      ctx.fillRect(s[1]<0?cx-L.mm(6)-w:cx+L.mm(6),y+alto*0.12,w,alto*0.76);
+      grTexto(L,String(n),s[1]<0?cx-L.mm(6.8)-w:cx+L.mm(6.8)+w,y+alto/2,6,'#333',s[1]<0?'right':'left',null,'middle');
+    });
+    grTexto(L,b+'–'+(b+paso-1),cx,y+alto/2,6.2,'#333','center',null,'middle');
+  });
+  grLeyenda(L,[{color:L.pal[0],txt:sexos[0]},{color:L.pal[1],txt:sexos[1]}],x0,L.h-L.mm(4),L.w-L.mm(4));
+  grTexto(L,L.ejey||'Edad (años)',x0,y1-L.mm(1.5),6.5,'#666','left',null,'bottom');
+  let dibujados=0; grupos.forEach(function(b){ const f=bins.get(b);
+    dibujados+=(f[sexos[0]]||0)+(f[sexos[1]]||0); });
+  grTexto(L,'n = '+dibujados,x1,y1-L.mm(1.5),6.5,'#666','right',null,'bottom');
+  const av=[];
+  if(niveles.length>2) av.push('La columna «'+m.sexo+'» tiene '+niveles.length+' valores distintos ('+niveles.join(', ')+'). La pirámide sólo dibuja los dos primeros, «'+sexos[0]+'» y «'+sexos[1]+'»: el resto de los registros NO está en la figura. Suele ser un problema de mayúsculas o de escritura.');
+  if(dibujados<ed.filter(isFinite).length) av.push('Se graficaron '+dibujados+' de '+ed.filter(isFinite).length+' registros con edad.');
+  return av.length?{tipo:'info',txt:av.join(' ')}:null;
+}
+
+function grDibKM(L,m){
+  const bin=grBinaria(m.ev);
+  if(!bin)return grSinDatos(L,'La columna de evento debe tener exactamente dos valores distintos (por ejemplo 1/0 o Sí/No)');
+  const t=grValsNum(m.t), e=bin.vals, gc=m.grupo?grCol(m.grupo):null;
+  const grupos=new Map();
+  for(let i=0;i<t.length;i++){
+    const k=gc?String(gc.vals[i]||'—').trim():'Todos';
+    if(!grupos.has(k))grupos.set(k,{t:[],e:[]});
+    grupos.get(k).t.push(t[i]); grupos.get(k).e.push(e[i]);
+  }
+  const curvas=[];
+  grupos.forEach(function(d,k){ const km=grKM(d.t,d.e); if(km)curvas.push({nom:k,km:km}); });
+  if(!curvas.length)return grSinDatos(L,'La columna de evento debe ser 0 (censurado) o 1 (evento)');
+  const tMax=Math.max.apply(null,curvas.map(c=>c.km.tMax));
+  const ex=grEscala(0,tMax,6);
+  const ey={lo:0,hi:1,paso:0.2,ticks:[0,0.2,0.4,0.6,0.8,1]};
+  /* El margen inferior se calcula según cuántas curvas hay: abajo van el eje, la tabla
+     de sujetos en riesgo (una fila por grupo), la nota de qué se contó como evento y la
+     leyenda (que puede ocupar dos renglones). Con un margen fijo, tres grupos se salían
+     del lienzo y la última fila quedaba cortada por el borde del PNG. */
+  const nC=curvas.length;
+  const mAba=20+nC*3.2+5+4.6*Math.ceil(nC/2)+4;
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||'Tiempo',ejeY:L.ejey||'Supervivencia acumulada',mAba:mAba});
+  const ctx=L.ctx, leg=[];
+  curvas.forEach(function(c,i){
+    const col=L.pal[i%L.pal.length];
+    ctx.strokeStyle=col; ctx.lineWidth=Math.max(1,L.mm(0.45));
+    ctx.beginPath();
+    let px=G.px(0), py=G.py(1);
+    ctx.moveTo(px,py);
+    c.km.pasos.forEach(function(p){
+      // Escalonada: primero horizontal hasta el tiempo del evento, después la caída.
+      // Uniendo los puntos con rectas se dibuja una supervivencia que decrece entre
+      // eventos, que es exactamente lo que Kaplan-Meier NO dice.
+      ctx.lineTo(G.px(p.t),py);
+      py=G.py(p.s);
+      ctx.lineTo(G.px(p.t),py);
+    });
+    ctx.lineTo(G.px(c.km.tMax),py);
+    ctx.stroke();
+    // Marcas de censura: sin ellas no se distingue un seguimiento corto de un evento.
+    ctx.strokeStyle=col; ctx.lineWidth=Math.max(1,L.mm(0.3));
+    c.km.cens.forEach(function(q){
+      const x=G.px(q.t), y=G.py(q.s);
+      ctx.beginPath(); ctx.moveTo(x,y-L.mm(1)); ctx.lineTo(x,y+L.mm(1)); ctx.stroke();
+    });
+    leg.push({color:col,txt:c.nom+' (n='+c.km.n+', ev='+c.km.eventos+
+      (c.km.mediana!==null?', mediana '+grFmt(c.km.mediana,0.1):', mediana no alcanzada')+')'});
+  });
+  ex.ticks.forEach(t2=>grTexto(L,grFmt(t2,ex.paso),G.px(t2),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  // Tabla de sujetos en riesgo: es obligatoria en la mayoría de las revistas de cardiología.
+  const yTab=G.y0+L.mm(8);
+  grTexto(L,'En riesgo',G.x0-L.mm(1.6),yTab,6,'#333','right','bold','middle');
+  curvas.forEach(function(c,i){
+    const y=yTab+i*L.mm(3.2);
+    grTextoAjustado(L,c.nom,G.x0-L.mm(1.6),y+L.mm(3.2),6,G.x0-L.mm(3),L.pal[i%L.pal.length],'right');
+    ex.ticks.forEach(function(tt){
+      grTexto(L,String(grEnRiesgo(c.km,tt)),G.px(tt),y+L.mm(3.2),6,'#333','center',null,'middle');
+    });
+  });
+  /* Nota y leyenda DEBAJO de la tabla de en riesgo, no en el margen superior: ahí la
+     leyenda chocaba con la nota, porque en Kaplan-Meier cada entrada lleva n, eventos y
+     mediana y las dos juntas ocupan más que el ancho del lienzo. */
+  const yNota=yTab+nC*L.mm(3.2)+L.mm(4);
+  grTexto(L,'Evento = «'+bin.positivo+'» · censurado = «'+bin.negativo+'» (marcas verticales)',
+    G.x0,yNota,5.8,'#777','left',null,'middle');
+  grLeyenda(L,leg,G.x0,yNota+L.mm(4.4),G.x1);
+  const avisos=[];
+  if(curvas.some(c=>c.km.mediana===null))
+    avisos.push('Alguna curva no baja de 0,5: su mediana de supervivencia NO se alcanzó y no debe informarse como el último tiempo observado.');
+  if(!/^(1|si|sí|yes|true|evento|muerte|fallecido|muerto)$/i.test(bin.positivo))
+    avisos.push('Se tomó «'+bin.positivo+'» como el evento y «'+bin.negativo+'» como censurado. Si es al revés, la curva está invertida: cambiá la columna o los valores.');
+  return avisos.length?{tipo:'info',txt:avisos.join(' ')}:null;
+}
+/* Sujetos en riesgo en `tt`: los que siguen bajo observación, o sea los que tienen
+   tiempo ≥ tt. Se cuenta sobre los tiempos CRUDOS y no descontando desde km.pasos,
+   porque `pasos` sólo tiene una entrada cuando hubo al menos un evento: los tiempos de
+   censura pura no generan paso y sus sujetos nunca salían del denominador.
+   En el ejemplo de Freireich (n=21, 12 censurados) sólo 2 censurados compartían tiempo
+   con un evento, así que la fila decía 10 en riesgo a los 35 meses cuando quedaba 1.
+   La fila de "en riesgo" es obligatoria en casi toda revista de cardiología y es lo
+   primero que mira un revisor para juzgar si la cola de la curva significa algo. */
+function grEnRiesgo(km,tt){
+  const t=km.tiempos||[];
+  // Están ordenados: se busca el primer índice con t >= tt.
+  let lo=0, hi=t.length;
+  while(lo<hi){ const mid=(lo+hi)>>1; if(t[mid]<tt) lo=mid+1; else hi=mid; }
+  return t.length-lo;
+}
+function grDibROC(L,m){
+  const bin=grBinaria(m.clase);
+  if(!bin)return grSinDatos(L,'La condición real debe tener exactamente dos valores distintos (por ejemplo 1/0 o Sí/No)');
+  const s=grValsNum(m.score), c=bin.vals;
+  const roc=grROC(s,c);
+  if(!roc)return grSinDatos(L,'Hacen falta casos con la condición y casos sin ella');
+  const ex={lo:0,hi:1,paso:0.2,ticks:[0,0.2,0.4,0.6,0.8,1]};
+  const G=grEjes(L,{ex:ex,ey:ex,titulo:L.titulo,ejeX:L.ejex||'1 − Especificidad',ejeY:L.ejey||'Sensibilidad',mAba:18,mDer:8});
+  const ctx=L.ctx;
+  ctx.strokeStyle='#bbb'; ctx.setLineDash([L.mm(1),L.mm(1)]); ctx.lineWidth=Math.max(1,L.mm(0.2));
+  ctx.beginPath(); ctx.moveTo(G.px(0),G.py(0)); ctx.lineTo(G.px(1),G.py(1)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle=L.pal[0]; ctx.lineWidth=Math.max(1,L.mm(0.45));
+  ctx.beginPath(); roc.pts.forEach((p,i)=>i?ctx.lineTo(G.px(p.fpr),G.py(p.tpr)):ctx.moveTo(G.px(p.fpr),G.py(p.tpr)));
+  ctx.stroke();
+  if(roc.youden){
+    ctx.beginPath(); ctx.arc(G.px(roc.youden.fpr),G.py(roc.youden.tpr),L.mm(1.1),0,7);
+    ctx.fillStyle=L.pal[1]; ctx.fill();
+    grTexto(L,'Corte '+grFmt(roc.youden.umbral,0.01)+' · S '+(100*roc.youden.tpr).toFixed(0)+'% · E '+(100*(1-roc.youden.fpr)).toFixed(0)+'%',
+      G.px(roc.youden.fpr)+L.mm(2),G.py(roc.youden.tpr),6,'#333','left',null,'middle');
+  }
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,0.2),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grTexto(L,'AUC = '+roc.auc.toFixed(3).replace('.',','),G.px(0.55),G.py(0.22),10,'#111','left','bold','middle');
+  grTexto(L,roc.nP+' con la condición («'+bin.positivo+'») · '+roc.nN+' sin ella («'+bin.negativo+'»)',
+    G.px(0.55),G.py(0.12),6.2,'#666','left',null,'middle');
+  grTexto(L,'Punto de Youden',G.x1,G.y1+L.mm(2),6,'#777','right',null,'top');
+  return roc.auc<0.5
+    ?{tipo:'info',txt:'La AUC es '+roc.auc.toFixed(3).replace('.',',')+', menor que 0,5: con estos datos la variable separa al revés. Se tomó «'+bin.positivo+'» como la condición presente — si el positivo es «'+bin.negativo+'», la curva está espejada.'}
+    :null;
+}
+function grDibBA(L,m){
+  const a=grValsNum(m.a), b=grValsNum(m.b);
+  const ba=grBA(a,b); if(!ba)return grSinDatos(L,'Hacen falta al menos 2 pares completos');
+  const ms=ba.pares.map(p=>p.m), ds=ba.pares.map(p=>p.d);
+  const ex=grEscala(Math.min.apply(null,ms),Math.max.apply(null,ms),6);
+  const ey=grEscala(Math.min(ba.loa[0],Math.min.apply(null,ds)),Math.max(ba.loa[1],Math.max.apply(null,ds)),5);
+  const G=grEjes(L,{ex:ex,ey:ey,titulo:L.titulo,ejeX:L.ejex||'Media de los dos métodos',ejeY:L.ejey||'Diferencia (A − B)',mAba:18,mDer:16});
+  const ctx=L.ctx;
+  [[ba.md,L.pal[0],'Sesgo '+grFmt(ba.md,0.01)],
+   [ba.loa[0],L.pal[3],'−1,96 DE  '+grFmt(ba.loa[0],0.01)],
+   [ba.loa[1],L.pal[3],'+1,96 DE  '+grFmt(ba.loa[1],0.01)]].forEach(function(r,i){
+    ctx.strokeStyle=r[1]; ctx.lineWidth=Math.max(1,L.mm(0.3));
+    if(i)ctx.setLineDash([L.mm(1.4),L.mm(1)]);
+    ctx.beginPath(); ctx.moveTo(G.x0,G.py(r[0])); ctx.lineTo(G.x1,G.py(r[0])); ctx.stroke(); ctx.setLineDash([]);
+    grTexto(L,r[2],G.x1+L.mm(1),G.py(r[0]),5.8,r[1],'left',null,'middle');
+  });
+  ba.pares.forEach(function(p){
+    ctx.beginPath(); ctx.arc(G.px(p.m),G.py(p.d),L.mm(0.8),0,7);
+    ctx.fillStyle='#333'; ctx.globalAlpha=.7; ctx.fill(); ctx.globalAlpha=1;
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grTexto(L,'n = '+ba.n+' · límites de concordancia: media ± 1,96 DE',G.x0,G.y1+L.mm(2),6.2,'#666','left',null,'top');
+  return null;
+}
+function grDibHeatmap(L,m){
+  const cols=GR.datos.cols.filter(c=>c.tipo==='continua'||c.tipo==='discreta');
+  if(cols.length<3)return grSinDatos(L,'Hacen falta al menos 3 variables numéricas');
+  const use=cols.slice(0,12);
+  const M=use.map(a=>use.map(b=>grPearson(a.vals.map(v=>grNum(v,a.conv)),b.vals.map(v=>grNum(v,b.conv)))));
+  if(L.titulo)grTexto(L,L.titulo,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
+  const etiqW=L.mm(24), top=L.mm(L.titulo?14:8);
+  const lado=Math.min((L.w-etiqW-L.mm(14))/use.length,(L.h-top-L.mm(24))/use.length);
+  const ctx=L.ctx;
+  use.forEach(function(ra,i){
+    use.forEach(function(rb,j){
+      const r=M[i][j], x=etiqW+j*lado, y=top+i*lado;
+      // Divergente: azul negativo, blanco 0, rojo positivo. La intensidad es |r|.
+      const t=Math.max(-1,Math.min(1,isFinite(r)?r:0));
+      const c=t>=0?[26,82,118]:[123,36,28];
+      const al=Math.abs(t);
+      ctx.fillStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+(0.12+0.85*al).toFixed(3)+')';
+      ctx.fillRect(x,y,lado,lado);
+      if(lado>L.mm(6)) grTexto(L,isFinite(r)?r.toFixed(2).replace('.',','):'—',x+lado/2,y+lado/2,
+        Math.min(6.5,lado/L.pt(1)*0.32),al>0.55?'#fff':'#222','center',null,'middle');
+    });
+    grTextoAjustado(L,ra.nombre,etiqW-L.mm(1.4),top+i*lado+lado/2,6,etiqW-L.mm(2.6),'#333','right');
+    ctx.save(); ctx.translate(etiqW+i*lado+lado/2,top+use.length*lado+L.mm(1.4)); ctx.rotate(-Math.PI/4);
+    grTextoAjustado(L,ra.nombre,0,0,6,L.mm(22),'#333','right'); ctx.restore();
+  });
+  /* n POR CELDA: grOLS descarta los pares incompletos, así que cada correlación tiene su
+     propio n. Poner el N del conjunto al pie afirmaba 210 debajo de una celda calculada
+     sobre 11 pares. Se informa el rango. */
+  let nMin=Infinity,nMax=0;
+  use.forEach(function(a){ use.forEach(function(b){
+    let k=0; for(let i=0;i<a.vals.length;i++){
+      if(isFinite(grNum(a.vals[i],a.conv))&&isFinite(grNum(b.vals[i],b.conv)))k++; }
+    if(k<nMin)nMin=k; if(k>nMax)nMax=k; }); });
+  // Escala de color, sin la cual un campo de colores sin números no se puede leer.
+  const esc=L.mm(28), ex0=L.w-L.mm(6)-esc, ey0=L.h-L.mm(9);
+  for(let i=0;i<=40;i++){
+    const t=-1+2*i/40, c=t>=0?[26,82,118]:[123,36,28];
+    ctx.fillStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+(0.12+0.85*Math.abs(t)).toFixed(3)+')';
+    ctx.fillRect(ex0+esc*i/41,ey0,esc/40+1,L.mm(2.4));
+  }
+  ctx.strokeStyle='#999'; ctx.lineWidth=1; ctx.strokeRect(ex0,ey0,esc,L.mm(2.4));
+  ['−1','0','+1'].forEach(function(t,i){ grTexto(L,t,ex0+esc*i/2,ey0+L.mm(4),5.4,'#666','center',null,'middle'); });
+  grTexto(L,'r de Pearson · n por celda: '+(nMin===nMax?String(nMin):nMin+'–'+nMax)+' pares completos',
+    L.mm(4),L.h-L.mm(3),6,'#666','left',null,'bottom');
+  const av=[];
+  if(cols.length>12) av.push('Se muestran las primeras 12 de '+cols.length+' variables numéricas: más no entran legibles. Las otras '+(cols.length-12)+' no están en la figura.');
+  if(lado<=L.mm(6)) av.push('A este ancho no entran los coeficientes escritos en cada celda: sólo se ve el color. Exportá a 180 mm o usá menos variables si necesitás los números.');
+  if(nMin<nMax) av.push('Las correlaciones no usan todas el mismo n (van de '+nMin+' a '+nMax+' pares completos): cada celda descarta los registros sin valor en alguna de las dos variables.');
+  return av.length?{tipo:'info',txt:av.join(' ')}:null;
+}
+/* ── Figuras que NO salen de los datos ──
+   CONSORT, PRISMA, forest, funnel y nomograma describen el proceso del estudio o
+   resultados de otros trabajos, no la tabla de datos. Se cargan a mano en un formato de
+   texto simple y se dibujan. Fabricarlas a partir de `pacientes` sería inventar. */
+const GR_MANUAL_DEF={
+ consort:'Evaluados para elegibilidad | 240\nExcluidos | 62\nAleatorizados | 178\nAsignados a intervención | 89\nAsignados a control | 89\nPerdidos en el seguimiento | 11\nAnalizados | 167',
+ prisma:'Registros identificados en bases | 1240\nRegistros tras eliminar duplicados | 890\nCribados por título y resumen | 890\nExcluidos por título/resumen | 802\nTexto completo evaluado | 88\nExcluidos con motivo | 61\nEstudios incluidos | 27',
+ forest:'Estudio A | 0.82 | 0.61 | 1.10\nEstudio B | 1.15 | 0.88 | 1.51\nEstudio C | 0.74 | 0.55 | 0.99\nEstudio D | 0.91 | 0.70 | 1.18',
+ funnel:'Estudio A | 0.82 | 0.14\nEstudio B | 1.15 | 0.09\nEstudio C | 0.74 | 0.21\nEstudio D | 0.91 | 0.06\nEstudio E | 1.34 | 0.28',
+ nomograma:'Edad (años) | 40 | 80 | 0.9\nFEVI (%) | 20 | 65 | -1.4\nCreatinina (mg/dl) | 0.6 | 3.0 | 0.7'
+};
+function grLineasManual(txt){
+  return String(txt||'').split(/\r?\n/).map(l=>l.split('|').map(x=>x.trim())).filter(p=>p[0]);
+}
+function grCaja(L,x,y,w,h,txt,n,color){
+  const ctx=L.ctx;
+  ctx.fillStyle='#fff'; ctx.strokeStyle=color||'#333'; ctx.lineWidth=Math.max(1,L.mm(0.3));
+  ctx.fillRect(x,y,w,h); ctx.strokeRect(x,y,w,h);
+  const lineas=grEnvolver(L,txt,w-L.mm(3),6.5);
+  const total=lineas.length+(n?1:0);
+  let cy=y+h/2-(total-1)*L.mm(1.7);
+  lineas.forEach(function(ln){ grTexto(L,ln,x+w/2,cy,6.5,'#111','center',null,'middle'); cy+=L.mm(3.4); });
+  if(n) grTexto(L,'n = '+n,x+w/2,cy,7,'#111','center','bold','middle');
+}
+function grFlecha(L,x1,y1,x2,y2){
+  const ctx=L.ctx; ctx.strokeStyle='#333'; ctx.lineWidth=Math.max(1,L.mm(0.25));
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const a=Math.atan2(y2-y1,x2-x1), s=L.mm(1.4);
+  ctx.beginPath(); ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-s*Math.cos(a-0.4),y2-s*Math.sin(a-0.4));
+  ctx.lineTo(x2-s*Math.cos(a+0.4),y2-s*Math.sin(a+0.4));
+  ctx.closePath(); ctx.fillStyle='#333'; ctx.fill();
+}
+function grDibFlujo(L,m,titulo){
+  const filas=grLineasManual(m.texto);
+  if(!filas.length)return grSinDatos(L,'Escribí al menos una línea con el formato «texto | n»');
+  // `L.titulo||titulo` detrás de `if(L.titulo)` nunca alcanzaba el respaldo: un CONSORT
+  // exportado sin escribir título salía sin título.
+  const tit=L.titulo||titulo;
+  if(tit)grTexto(L,tit,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
+  const top=L.mm(tit?12:6), bot=L.h-L.mm(5);
+  const h=Math.min(L.mm(13),(bot-top)/filas.length-L.mm(3));
+  const gap=((bot-top)-h*filas.length)/Math.max(1,filas.length-1);
+  const w=L.w*0.56, x=(L.w-w)/2;
+  filas.forEach(function(f,i){
+    const y=top+i*(h+gap);
+    // Las filas de exclusión se dibujan a la derecha y con línea punteada, que es la
+    // convención de CONSORT y PRISMA: no son un paso del flujo, son una salida.
+    const esExcl=/exclu|perdid|no cumpl/i.test(f[0]);
+    if(esExcl){
+      const wx=w*0.72, xx=x+w*0.62;
+      grCaja(L,xx,y+h*0.1,wx,h*0.8,f[0],f[1],'#999');
+      grFlecha(L,x+w/2,y+h*0.5,xx,y+h*0.5);
+    }else{
+      grCaja(L,x,y,w,h,f[0],f[1]);
+      if(i&&!/exclu|perdid|no cumpl/i.test(filas[i-1][0])) grFlecha(L,L.w/2,y-gap,L.w/2,y);
+      else if(i) grFlecha(L,L.w/2,y-gap,L.w/2,y);
+    }
+  });
+  return null;
+}
+function grDibConsort(L,m){ return grDibFlujo(L,m,'Diagrama CONSORT'); }
+function grDibPrisma(L,m){ return grDibFlujo(L,m,'Diagrama PRISMA'); }
+function grDibForest(L,m){
+  const filas=grLineasManual(m.texto).map(function(f){
+    return {nom:f[0],e:grNum(f[1]),lo:grNum(f[2]),hi:grNum(f[3])};
+  }).filter(f=>isFinite(f.e)&&isFinite(f.lo)&&isFinite(f.hi));
+  if(!filas.length)return grSinDatos(L,'Formato: nombre | efecto | IC inferior | IC superior');
+  const lo=Math.min.apply(null,filas.map(f=>f.lo)), hi=Math.max.apply(null,filas.map(f=>f.hi));
+  const ex=grEscala(Math.min(lo,1),Math.max(hi,1),5);
+  const G=grEjes(L,{ex:ex,ey:{lo:0,hi:1,ticks:[],paso:1},titulo:L.titulo,ejeX:L.ejex||'Medida de efecto (IC 95 %)',mIzq:36,mDer:24,mAba:16});
+  const ctx=L.ctx, alto=(G.y0-G.y1)/filas.length;
+  if(ex.lo<=1&&ex.hi>=1){
+    ctx.strokeStyle='#999'; ctx.setLineDash([L.mm(1),L.mm(1)]); ctx.lineWidth=Math.max(1,L.mm(0.2));
+    ctx.beginPath(); ctx.moveTo(G.px(1),G.y1); ctx.lineTo(G.px(1),G.y0); ctx.stroke(); ctx.setLineDash([]);
+  }
+  filas.forEach(function(f,i){
+    const y=G.y1+alto*(i+0.5);
+    ctx.strokeStyle='#333'; ctx.lineWidth=Math.max(1,L.mm(0.28));
+    ctx.beginPath(); ctx.moveTo(G.px(f.lo),y); ctx.lineTo(G.px(f.hi),y);
+    ctx.moveTo(G.px(f.lo),y-L.mm(0.9)); ctx.lineTo(G.px(f.lo),y+L.mm(0.9));
+    ctx.moveTo(G.px(f.hi),y-L.mm(0.9)); ctx.lineTo(G.px(f.hi),y+L.mm(0.9)); ctx.stroke();
+    ctx.fillStyle=L.pal[0]; const s=L.mm(1.5);
+    ctx.fillRect(G.px(f.e)-s/2,y-s/2,s,s);
+    grTexto(L,f.nom,G.x0-L.mm(1.6),y,6.5,'#333','right',null,'middle');
+    grTexto(L,grFmt(f.e,0.01)+' ('+grFmt(f.lo,0.01)+'–'+grFmt(f.hi,0.01)+')',G.x1+L.mm(1.4),y,6,'#333','left',null,'middle');
+  });
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  // Sin diamante de efecto combinado: mezclar estudios exige elegir modelo (fijo o
+  // aleatorios) y estimar la heterogeneidad. Dibujar un diamante sin ese cálculo sería
+  // inventar el resultado central del metaanálisis.
+  return {tipo:'info',txt:'Se dibujan los estudios individuales. NO se calcula el efecto combinado: eso exige elegir modelo (fijo o aleatorios) y estimar la heterogeneidad — hacelo en el software de metaanálisis y agregá el diamante ahí.'};
+}
+function grDibFunnel(L,m){
+  const filas=grLineasManual(m.texto).map(function(f){
+    return {nom:f[0],e:grNum(f[1]),se:grNum(f[2])};
+  }).filter(f=>isFinite(f.e)&&isFinite(f.se)&&f.se>0);
+  if(!filas.length)return grSinDatos(L,'Formato: nombre | efecto | error estándar');
+  const seMax=Math.max.apply(null,filas.map(f=>f.se));
+  const centro=filas.reduce((a,f)=>a+f.e,0)/filas.length;
+  const ex=grEscala(Math.min.apply(null,filas.map(f=>f.e-1.96*f.se)),Math.max.apply(null,filas.map(f=>f.e+1.96*f.se)),5);
+  const ey={lo:0,hi:seMax*1.1,paso:grNiceStep(seMax/4),ticks:[]};
+  for(let v=0;v<=ey.hi;v+=ey.paso)ey.ticks.push(v);
+  // El eje Y va INVERTIDO (0 arriba): los estudios más precisos van arriba, que es lo
+  // que le da forma de embudo a la figura.
+  /* ticks:[] a propósito: el eje Y del funnel va INVERTIDO (0 arriba) y lo etiqueta esta
+     función con su propio `py`. Dejando que grEjes también lo etiquete con el suyo, cada
+     valor de error estándar aparecía DOS veces, a alturas espejadas y en la misma
+     columna, y el eje se leía como una lista de números que sube y baja. */
+  const G=grEjes(L,{ex:ex,ey:{lo:ey.lo,hi:ey.hi,paso:ey.paso,ticks:[]},titulo:L.titulo,
+    ejeX:L.ejex||'Medida de efecto',ejeY:L.ejey||'Error estándar',mAba:16});
+  const py=v=>G.y1+(v-ey.lo)/(ey.hi-ey.lo)*(G.y0-G.y1);
+  L.ctx.strokeStyle='#333'; L.ctx.lineWidth=Math.max(1,L.mm(0.25));
+  ey.ticks.forEach(function(t){ const y=py(t);
+    L.ctx.beginPath(); L.ctx.moveTo(G.x0-L.mm(1),y); L.ctx.lineTo(G.x0,y); L.ctx.stroke(); });
+  const ctx=L.ctx;
+  ctx.strokeStyle='#999'; ctx.setLineDash([L.mm(1.2),L.mm(1)]); ctx.lineWidth=Math.max(1,L.mm(0.22));
+  ctx.beginPath(); ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(centro-1.96*ey.hi),py(ey.hi));
+  ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(centro+1.96*ey.hi),py(ey.hi));
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#666'; ctx.beginPath(); ctx.moveTo(G.px(centro),py(0)); ctx.lineTo(G.px(centro),py(ey.hi)); ctx.stroke();
+  filas.forEach(function(f){
+    ctx.beginPath(); ctx.arc(G.px(f.e),py(f.se),L.mm(1),0,7);
+    ctx.fillStyle=L.pal[0]; ctx.globalAlpha=.8; ctx.fill(); ctx.globalAlpha=1;
+  });
+  ey.ticks.forEach(t=>grTexto(L,grFmt(t,ey.paso),G.x0-L.mm(1.6),py(t),6.5,'#333','right',null,'middle'));
+  ex.ticks.forEach(t=>grTexto(L,grFmt(t,ex.paso),G.px(t),G.y0+L.mm(3),6.5,'#333','center',null,'middle'));
+  grTexto(L,'Líneas: pseudo IC 95 % · centro en la media simple de los efectos',G.x0,G.y1+L.mm(2),6,'#666','left',null,'top');
+  return filas.length<10?{tipo:'info',txt:'Con '+filas.length+' estudios el funnel plot no es interpretable: Cochrane recomienda al menos 10 para evaluar asimetría.'}:null;
+}
+function grDibNomograma(L,m){
+  const filas=grLineasManual(m.texto).map(function(f){
+    return {nom:f[0],min:grNum(f[1]),max:grNum(f[2]),coef:grNum(f[3])};
+  }).filter(f=>isFinite(f.min)&&isFinite(f.max)&&isFinite(f.coef)&&f.max!==f.min);
+  if(!filas.length)return grSinDatos(L,'Formato: variable | mínimo | máximo | coeficiente');
+  if(L.titulo)grTexto(L,L.titulo,L.w/2,L.mm(6),9.5,'#111','center','bold','middle');
+  // Puntos de cada predictor, escalados a 100 para el de mayor efecto absoluto.
+  const rangos=filas.map(f=>Math.abs(f.coef*(f.max-f.min)));
+  const maxR=Math.max.apply(null,rangos)||1;
+  const x0=L.mm(34), x1=L.w-L.mm(8), top=L.mm(L.titulo?14:8);
+  const paso=L.mm(9.5), ctx=L.ctx;
+  const eje=function(y,etq,lo,hi,n){
+    ctx.strokeStyle='#333'; ctx.lineWidth=Math.max(1,L.mm(0.25));
+    ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+    for(let k=0;k<=n;k++){
+      const x=x0+(x1-x0)*k/n, v=lo+(hi-lo)*k/n;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y-L.mm(1.2)); ctx.stroke();
+      grTexto(L,grFmt(v,(hi-lo)/n),x,y-L.mm(1.8),5.8,'#333','center',null,'bottom');
+    }
+    grTexto(L,etq,x0-L.mm(1.6),y,6.5,'#111','right','bold','middle');
+  };
+  eje(top+paso*0.4,'Puntos',0,100,10);
+  filas.forEach(function(f,i){
+    const y=top+paso*(i+1.4);
+    const inv=f.coef<0;
+    eje(y,f.nom,inv?f.max:f.min,inv?f.min:f.max,4);
+  });
+  const yTot=top+paso*(filas.length+1.9);
+  eje(yTot,'Puntos totales',0,Math.round(100*rangos.reduce((a,b)=>a+b,0)/maxR),5);
+  grTexto(L,'Escala relativa: 100 puntos = el predictor de mayor efecto en su rango.',x0,L.h-L.mm(6),6,'#666','left',null,'middle');
+  return {tipo:'info',txt:'El nomograma dibuja la escala de puntos a partir de los coeficientes que cargaste. NO ajusta el modelo ni calcula probabilidades: la conversión de puntos totales a riesgo sale del modelo original y hay que agregarla desde el software donde se ajustó.'};
 }
 
 // ── INIT ──
