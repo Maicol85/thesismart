@@ -90,6 +90,52 @@ header{background:var(--dark);padding:11px 20px;display:flex;align-items:center;
 .proj-act:hover{background:rgba(255,255,255,.14)}
 .proj-act.danger{color:#eda29b;border-color:rgba(233,120,102,.38)}
 .proj-act.danger:hover{background:rgba(233,120,102,.16)}
+/* ── Auditoría de consistencia ── */
+#btn-consistencia{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.4);color:var(--goldMid);border-radius:6px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-weight:700;font-family:inherit;transition:all .15s;white-space:nowrap}
+#btn-consistencia:hover{background:rgba(201,168,76,.22)}
+.au-grupo{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.au-grupo.rojo{border-color:var(--danger);border-width:2px}
+.au-grupo.ambar{border-color:var(--warn)}
+.au-head{padding:10px 14px;font-size:.86rem;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.au-grupo.rojo .au-head{background:var(--dangerLt);color:var(--danger)}
+.au-grupo.ambar .au-head{background:var(--warnLt);color:var(--warn)}
+.au-grupo.info .au-head{background:var(--bg);color:var(--inkSoft)}
+.au-head .au-chip{margin-left:auto;font-size:.7rem;font-weight:600;background:rgba(255,255,255,.6);padding:2px 9px;border-radius:10px}
+.au-body{padding:4px 0}
+.au-fila{padding:9px 14px;border-top:1px solid var(--border);font-size:.8rem;line-height:1.6}
+.au-sec{display:inline-block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);background:var(--accentLt);padding:2px 8px;border-radius:9px;margin-right:8px}
+.au-val{font-weight:700;color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+.au-frag{display:block;margin-top:4px;color:var(--inkMuted);font-size:.76rem;border-left:2px solid var(--border);padding-left:8px;line-height:1.55}
+.au-frag mark{background:#ffe9a8;color:#5a4200;padding:0 2px;border-radius:2px;font-weight:700}
+.au-resumen{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.au-kpi{flex:1;min-width:110px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
+.au-kpi-n{font-size:1.6rem;font-weight:800;line-height:1}
+.au-kpi-l{font-size:.68rem;color:var(--inkMuted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Generador de Métodos/Estadística ── */
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin:10px 0}
+.st-chk{display:flex;gap:9px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 11px;cursor:pointer;transition:all .15s}
+.st-chk:hover{border-color:var(--goldMid)}
+.st-chk.on{background:var(--goldLt);border-color:var(--goldMid)}
+.st-chk input{margin-top:2px;flex-shrink:0}
+.st-chk-t{font-size:.81rem;font-weight:600;color:var(--ink)}
+.st-chk-d{font-size:.71rem;color:var(--inkMuted);line-height:1.45;margin-top:2px}
+
+/* ── Plantillas de revista ── */
+.rev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:9px;margin:10px 0}
+.rev-card{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;cursor:pointer;transition:all .15s}
+.rev-card:hover{border-color:var(--goldMid)}
+.rev-card.on{background:var(--goldLt);border-color:var(--goldMid)}
+.rev-card-t{font-size:.83rem;font-weight:700;color:var(--ink);line-height:1.3}
+.rev-card-s{font-size:.7rem;color:var(--inkMuted);margin-top:3px}
+.rev-spec{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:12px}
+.rev-spec dl{display:grid;grid-template-columns:150px 1fr;gap:7px 14px;font-size:.81rem;margin:0}
+.rev-spec dt{font-weight:700;color:var(--inkSoft)}
+.rev-spec dd{margin:0;color:var(--ink);line-height:1.55}
+.rev-verif{font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:9px;margin-left:6px;vertical-align:middle}
+.rev-verif.ok{background:var(--successLt);color:var(--success)}
+.rev-verif.no{background:var(--warnLt);color:var(--warn)}
+
 #proj-print-area{position:absolute;left:-99999px;top:0;width:100%}
 @media print{
   body *{visibility:hidden}
@@ -290,6 +336,8 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
   </div>
   <div class="header-right">
     <button id="btn-proyectos" onclick="abrirPanelProyectos()" title="Proyectos guardados">📁 Proyectos</button>
+    <button id="btn-consistencia" onclick="goTo('consistencia',document.querySelector('[data-mod=&quot;consistencia&quot;]'));auditarConsistencia()"
+      title="Compara los números que aparecen en más de una sección y marca los que no coinciden">🔍 Verificar consistencia</button>
     <div id="api-bar">
       <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off"/>
       <button onclick="conectarAPI()">Conectar</button>
@@ -341,6 +389,7 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
   <div class="nav-item" data-mod="bias" onclick="goTo('bias',this)"><span>⚖️</span> Sesgos</div>
   <div class="nav-item" data-mod="quality" onclick="goTo('quality',this)"><span>✅</span> Checklist</div>
   <div class="nav-item" data-mod="coherence" onclick="goTo('coherence',this)"><span>🔗</span> Coherencia</div>
+  <div class="nav-item" data-mod="consistencia" onclick="goTo('consistencia',this)"><span>🔍</span> Auditoría numérica</div>
   <div class="nav-sep"></div>
   <div class="nav-group">Defensa</div>
   <div class="nav-item" data-mod="defense" onclick="goTo('defense',this)"><span>🎓</span> Simulador defensa</div>
@@ -619,6 +668,43 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
       <button class="btn btn-gold" onclick="generarSeccion()">✦ Generar borrador con IA</button>
       <button class="btn btn-secondary" onclick="mejorarSeccion()">✦ Mejorar lo escrito</button>
       <button class="btn btn-primary" onclick="guardarSeccion()">💾 Guardar sección</button>
+      <!-- Sólo se muestra en Métodos: el párrafo de análisis estadístico no va en ninguna otra sección. -->
+      <button class="btn btn-secondary" id="btn-gen-stats" style="display:none" onclick="toggleGenStats()">📊 Generar análisis estadístico</button>
+    </div>
+
+    <div id="gen-stats-panel" style="display:none;margin-top:12px;background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:15px">
+      <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">📊 Párrafo de Análisis estadístico</div>
+      <div style="font-size:.75rem;color:var(--inkMuted);margin-bottom:10px">Marcá los tests que <b>efectivamente usaste</b>. El párrafo se arma con plantillas fijas, no con IA.</div>
+
+      <div class="alert alert-warn" style="font-size:.8rem">
+        Marcá sólo lo que corriste de verdad. Un método declarado y no ejecutado es un problema de integridad
+        —el tribunal va a preguntar por él— y esta app no tiene forma de saber qué análisis hiciste.
+      </div>
+
+      <div class="st-grid" id="st-grid"></div>
+
+      <div class="form-grid-2" style="margin-top:6px">
+        <div class="form-row"><label class="form-label">Herramienta usada</label>
+          <select class="form-select" id="st-tool" onchange="stInvalidar()">
+            <option value="ceibo">CeiboAnalytics</option>
+            <option value="ceibo-r">CeiboAnalytics + R</option>
+            <option value="r">R</option>
+            <option value="spss">SPSS</option>
+            <option value="stata">Stata</option>
+            <option value="otro">Otra / no especificar</option>
+          </select></div>
+        <div class="form-row"><label class="form-label">Nivel de significación</label>
+          <select class="form-select" id="st-alfa" onchange="stInvalidar()">
+            <option value="0,05">p &lt; 0,05 (bilateral)</option>
+            <option value="0,01">p &lt; 0,01 (bilateral)</option>
+          </select></div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-gold btn-sm" onclick="generarParrafoStats()">📊 Generar párrafo</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleGenStats()">Cerrar</button>
+      </div>
+      <div id="st-salida"></div>
     </div>
     <div id="ia-writer"></div>
     <!-- Referencias de la sección/proyecto -->
@@ -688,6 +774,36 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
   </div>
 </div>
 
+<!-- AUDITORÍA DE CONSISTENCIA NUMÉRICA -->
+<div id="mod-consistencia" style="display:none">
+  <div class="card">
+    <div class="card-title"><span class="icon">🔍</span><span class="title">Auditoría de consistencia numérica</span>
+      <span class="badge" style="background:var(--successLt);color:var(--success)">Sin IA</span></div>
+    <div class="card-desc">Compara entre secciones los <b>N declarados</b>, los <b>porcentajes con etiqueta</b> y los
+      <b>OR/HR/RR/AUC/ρ</b>, y marca los que no coinciden. Es un chequeo local y determinista: no pasa por ningún
+      modelo y siempre da el mismo resultado sobre el mismo texto.</div>
+
+    <!-- El limite se dice ARRIBA y no al pie. "Sin inconsistencias" es la salida mas peligrosa
+         de esta pantalla: se lee como "los numeros de la tesis estan verificados", y no es eso. -->
+    <div class="alert alert-warn" style="font-size:.82rem">
+      <b>Qué hace y qué no.</b> Compara entre sí los números que <b>vos escribiste</b> en dos o más secciones.
+      No verifica ningún número contra tus datos, no recalcula nada y no sabe cuál de dos cifras discordantes
+      es la correcta. <b>«Sin inconsistencias» significa «no encontré dos cifras del mismo tipo que se
+      contradigan», no «los números están bien».</b> Un número equivocado que aparece una sola vez, o el mismo
+      error repetido en todas las secciones, pasa sin marca.
+      <br><br><b>Formatos que NO lee:</b> medias con desvío («52 ± 8»), medianas con RIC, rangos, intervalos de
+      confianza escritos en prosa, edades, dosis y cualquier cifra dentro de una tabla. Esas revisalas a mano.
+    </div>
+
+    <div class="btn-group" style="margin-top:12px">
+      <button class="btn btn-gold" onclick="auditarConsistencia()">🔍 Verificar consistencia</button>
+      <button class="btn btn-secondary btn-sm" onclick="copiarAuditoria()">📋 Copiar el reporte</button>
+    </div>
+    <div id="au-copiado" style="font-size:.74rem;color:var(--success);margin-top:6px"></div>
+    <div id="au-resultado"></div>
+  </div>
+</div>
+
 <!-- DEFENSE -->
 <div id="mod-defense" style="display:none">
   <div class="card">
@@ -730,6 +846,33 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
       <button class="btn btn-secondary btn-sm" onclick="document.getElementById('f-refs-raw').value=''">Limpiar</button>
     </div>
     <div id="ia-references"></div>
+  </div>
+
+  <!-- PLANTILLAS POR REVISTA -->
+  <div class="card">
+    <div class="card-title"><span class="icon">📰</span><span class="title">Plantillas por revista</span></div>
+    <div class="card-desc">Estructura del abstract y formato de referencias de cuatro revistas de cardiología.</div>
+
+    <!-- Este aviso no es de tramite. Un limite de palabras equivocado no se descubre revisando:
+         se descubre con un rechazo editorial, semanas despues, y el autor no tiene como saber
+         que salio de esta pantalla. Por eso se distingue lo verificado de lo que no. -->
+    <div class="alert alert-warn" style="font-size:.82rem">
+      <b>Las instrucciones de las revistas cambian y esta app no las consulta.</b> Lo que está marcado
+      <span class="rev-verif ok">verificado</span> se corroboró contra las instrucciones oficiales el
+      <b>30/08/2026</b>; lo marcado <span class="rev-verif no">verificar</span> no se pudo corroborar y está
+      como orientación. <b>Antes de enviar, abrí las instrucciones vigentes desde el enlace de cada ficha.</b>
+      Un límite de palabras desactualizado se paga con un rechazo editorial.
+    </div>
+
+    <div class="rev-grid" id="rev-grid"></div>
+    <div id="rev-spec"></div>
+
+    <div class="btn-group" style="margin-top:12px">
+      <button class="btn btn-gold" id="btn-adaptar-rev" onclick="adaptarARevista()" disabled>📰 Adaptar a revista</button>
+      <button class="btn btn-secondary btn-sm" onclick="copiarEsqueletoRevista()">📋 Copiar el esqueleto</button>
+    </div>
+    <div id="rev-copiado" style="font-size:.74rem;color:var(--success);margin-top:6px"></div>
+    <div id="ia-revista"></div>
   </div>
 </div>
 
@@ -916,6 +1059,8 @@ function goTo(mod,el){
   if(mod==='data')initDataForm();
   if(mod==='quality')initChecklist();
   if(mod==='writer')initWriter();
+  if(mod==='references')renderRevistas();
+  if(mod==='consistencia')auditarConsistencia();
 }
 
 function ctx(){
@@ -953,7 +1098,8 @@ const AI_PURPOSES={
   'ia-defense':'Generación de preguntas de defensa',
   'ia-references':'Formateo de referencias',
   'ia-samplesize':'Asesoría de tamaño muestral',
-  'ia-foto-tabla':'Extracción de datos de tabla por imagen'
+  'ia-foto-tabla':'Extracción de datos de tabla por imagen',
+  'ia-revista':'Adaptación del abstract a la estructura de una revista'
 };
 function logAI(divId,proposito){
   try{
@@ -1113,6 +1259,7 @@ function _cargarRec(r){
   TS.proyecto=JSON.parse(JSON.stringify(r.proyecto));
   TS.versions=Array.isArray(r.versions)?JSON.parse(JSON.stringify(r.versions)):[];
   TS.qualityChecks=Array.isArray(r.qualityChecks)?r.qualityChecks.slice():[];
+  resetEstadoNoProyecto();
   sincronizarFormulario();
   const nb=document.getElementById('nb-builder'); if(nb)nb.style.display='inline';
   goTo('builder',document.querySelector('[data-mod="builder"]'));
@@ -1178,6 +1325,7 @@ function nuevoProyecto(){
   if(!confirm('¿Empezar un proyecto nuevo? Se limpiará el proyecto actual.\n(Los proyectos ya guardados en 📁 Proyectos NO se borran.)'))return;
   TS.proyecto=proyectoVacio();
   TS.versions=[]; TS.qualityChecks=[]; TS.fotoB64=''; TS.fotoMime=''; TS.aiLog=[];
+  resetEstadoNoProyecto();
   sincronizarFormulario();
   goTo('builder',document.querySelector('[data-mod="builder"]'));
   cerrarPanelProyectos();
@@ -1650,8 +1798,16 @@ function setSection(sec,el){
   document.getElementById('writer-text').value=TS.proyecto.secciones[sec]||'';
   const wg = document.getElementById('writer-guide');
   if(wg) wg.textContent = SECTION_GUIDES[sec]||'';
+  stSyncBoton();
   updateWC();
   refsScanAdditive();
+}
+/* El generador sólo aparece en Métodos, y el panel se cierra al salir: si quedara abierto en
+   Resultados, el botón "Insertar en Métodos" estaría a la vista sobre otra sección. */
+function stSyncBoton(){
+  TS._writerSync=TS.sectionActiva;
+  const b=document.getElementById('btn-gen-stats'); if(b) b.style.display=(TS.sectionActiva==='metodos')?'inline-flex':'none';
+  if(TS.sectionActiva!=='metodos'){ const pn=document.getElementById('gen-stats-panel'); if(pn) pn.style.display='none'; }
 }
 function updateWC(){const t=document.getElementById('writer-text').value;document.getElementById('writer-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
 function updateAbstractWC(){const t=document.getElementById('abstract-text').value;document.getElementById('abstract-wc').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' palabras';}
@@ -1805,6 +1961,7 @@ function initWriter(){
   const pills=document.querySelectorAll('#mod-writer .section-pill');
   pills.forEach(function(p,i){ p.classList.toggle('active', REF_SEC_ORDER[i]===sec); });
   const wg=document.getElementById('writer-guide'); if(wg)wg.textContent=SECTION_GUIDES[sec]||'';
+  stSyncBoton();
   updateWC();
   refsScanAdditive();
 }
@@ -1852,6 +2009,755 @@ async function formatearRefs(){
   const fmt=document.getElementById('f-ref-formato').value;
   if(!raw.trim()){alert('Pegá las referencias primero.');return;}
   await callIA('ia-references','Formateá estas referencias bibliográficas en estilo '+fmt+'. Devolvé SOLO la lista formateada, numerada, una por línea. Sin comentarios adicionales.\n\n'+raw,2000);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GENERADOR DEL PÁRRAFO DE ANÁLISIS ESTADÍSTICO
+// Plantillas fijas, NO IA: el objetivo es un párrafo de Métodos correcto y
+// reproducible. Un modelo redactándolo puede atribuirle al autor un test que
+// no corrió, y eso en Métodos es un problema de integridad, no de estilo.
+// ══════════════════════════════════════════════════════════════════
+const ST_TESTS=[
+  {id:'descr', t:'Descriptiva', d:'Medias, medianas, DS, RIC y frecuencias', pre:true,
+   txt:'Las variables continuas se describen como media ± desviación estándar cuando la distribución fue aproximadamente simétrica, y como mediana con rango intercuartílico (percentiles 25–75) en caso contrario. Las variables categóricas se describen como frecuencias absolutas y porcentajes.',
+   ojo:'La plantilla declara que se evaluó la simetría de cada variable y que se usaron LOS DOS formatos. Si en Resultados reportaste sólo medias, o sólo medianas, sacá la mitad que no corresponda: el tribunal compara este párrafo contra la Tabla 1.'},
+  {id:'normal', t:'Prueba de normalidad', d:'Shapiro-Wilk (editable) + inspección gráfica',
+   txt:'La distribución de las variables continuas se evaluó mediante la prueba de Shapiro-Wilk y la inspección de histogramas y gráficos Q-Q, criterio con el que se eligió entre pruebas paramétricas y no paramétricas.',
+   ojo:'El texto nombra Shapiro-Wilk, histogramas y gráficos Q-Q. Si usaste Kolmogórov-Smirnov (el default de SPSS) cambiá el nombre, y sacá la inspección gráfica si no la hiciste: con n>50 la diferencia entre las dos pruebas es lo primero que se pregunta.'},
+  {id:'spearman', t:'Correlación de Spearman', d:'ρ para relaciones monótonas',
+   txt:'La asociación entre variables continuas se evaluó con el coeficiente de correlación de Spearman (ρ), elegido por no asumir normalidad ni linealidad, e informado con su intervalo de confianza del 95 %.',
+   ojo:'Declara el IC 95 % de ρ. SPSS no lo da por defecto (necesita bootstrap): si no lo tenés en Resultados, sacá esa frase.'},
+  {id:'mw', t:'Mann-Whitney U', d:'Comparación de dos grupos independientes',
+   txt:'La comparación de variables continuas entre dos grupos independientes se realizó mediante la prueba U de Mann-Whitney.'},
+  {id:'chi', t:'Chi-cuadrado', d:'Tablas de contingencia',
+   txt:'La asociación entre variables categóricas se evaluó con la prueba de chi-cuadrado de Pearson; cuando alguna frecuencia esperada fue menor a 5 se utilizó la prueba exacta de Fisher.',
+   ojo:'La plantilla declara el uso de Fisher ante frecuencias esperadas <5. Si no lo hiciste, sacá esa frase.'},
+  {id:'fdr', t:'Corrección por comparaciones múltiples (FDR)', d:'Benjamini-Hochberg',
+   txt:'Dado el número de contrastes realizados, los valores p se corrigieron por comparaciones múltiples mediante el procedimiento de Benjamini-Hochberg, informándose el valor q correspondiente. Se consideraron robustos los hallazgos que mantuvieron significación tras la corrección.',
+   ojo:'La última frase es una regla de interpretación, no un método: sacala si no la aplicaste así. Y si informás q, revisá que el umbral declarado al final del párrafo no contradiga lo que decís en Resultados.'},
+  {id:'roc', t:'Curvas ROC', d:'AUC y punto de corte',
+   txt:'La capacidad discriminativa de las variables continuas frente a desenlaces binarios se evaluó mediante curvas ROC, informando el área bajo la curva (AUC) con su intervalo de confianza del 95 %. El punto de corte se determinó maximizando el índice de Youden.',
+   ojo:'Un punto de corte elegido y evaluado en la misma muestra está optimizado para ella: declaralo como exploratorio y decilo también en Limitaciones.'},
+  {id:'loguni', t:'Regresión logística univariada', d:'OR crudos',
+   txt:'La asociación entre cada predictor y el desenlace binario se estimó mediante regresión logística univariada, informando el odds ratio (OR) crudo con su intervalo de confianza del 95 %.'},
+  {id:'logmulti', t:'Regresión logística multivariada', d:'OR ajustados',
+   txt:'Las variables con asociación en el análisis univariado y aquellas con relevancia clínica reconocida se incorporaron a un modelo de regresión logística multivariada, informándose los odds ratio ajustados con sus intervalos de confianza del 95 %.',
+   ojo:'Completá el criterio real de entrada al modelo (p<0,10 univariado, selección por relevancia clínica, etc.) y cuántos eventos por variable tenías: con menos de 10 eventos por predictor el modelo está sobreajustado y el tribunal lo pregunta.'}
+];
+
+const ST_TOOL_TXT={
+  ceibo:'Los análisis se realizaron con CeiboAnalytics (CeiboMed), que ejecuta los procedimientos descritos sobre los registros exportados de las aplicaciones clínicas de la suite.',
+  'ceibo-r':'Los análisis descriptivos y las asociaciones se realizaron con CeiboAnalytics (CeiboMed) y se verificaron con R (R Foundation for Statistical Computing, Viena, Austria).',
+  r:'Los análisis se realizaron con R (R Foundation for Statistical Computing, Viena, Austria).',
+  spss:'Los análisis se realizaron con IBM SPSS Statistics.',
+  stata:'Los análisis se realizaron con Stata (StataCorp, College Station, TX, EE. UU.).',
+  otro:''
+};
+const ST_TOOL_OJO={
+  ceibo:'Agregá la versión de CeiboAnalytics y la fecha de exportación de los datos: las guías de reporte piden herramienta y versión.',
+  r:'Agregá la versión de R y los paquetes usados: sin eso el análisis no es reproducible.',
+  spss:'Agregá el número de versión de SPSS.',
+  stata:'Agregá el número de versión de Stata.',
+  'ceibo-r':'Agregá la versión de R y los paquetes usados.',
+  otro:'Elegiste no especificar la herramienta. Las guías de reporte piden nombrarla con su versión: completala a mano antes de entregar.'
+};
+
+let ST_SEL=new Set(['descr']);
+
+function toggleGenStats(){
+  const el=document.getElementById('gen-stats-panel'); if(!el)return;
+  const abierto=el.style.display!=='none';
+  el.style.display=abierto?'none':'block';
+  if(!abierto) renderStGrid();
+}
+function renderStGrid(){
+  const g=document.getElementById('st-grid'); if(!g)return;
+  g.innerHTML=ST_TESTS.map(t=>'<label class="st-chk'+(ST_SEL.has(t.id)?' on':'')+'" data-st="'+t.id+'">'+
+    '<input type="checkbox" '+(ST_SEL.has(t.id)?'checked':'')+' onchange="stToggle(\''+t.id+'\',this)">'+
+    '<div><div class="st-chk-t">'+esc(t.t)+'</div><div class="st-chk-d">'+esc(t.d)+'</div></div></label>').join('');
+}
+function stToggle(id,el){
+  if(el.checked) ST_SEL.add(id); else ST_SEL.delete(id);
+  const lab=el.closest('.st-chk'); if(lab) lab.classList.toggle('on',el.checked);
+  stInvalidar();
+}
+/* El párrafo generado quedaba congelado y el botón «Insertar» seguía insertando la versión
+   vieja. El flujo que la propia app induce lleva ahí: generás, leés el aviso de ROC que
+   dice que el corte está optimizado, desmarcás ROC, insertás — y va a Métodos un párrafo
+   que declara curvas ROC. Lo mismo cambiando la herramienta de SPSS a R. */
+function stInvalidar(){
+  if(!ST_PARRAFO) return;
+  ST_PARRAFO='';
+  const sal=document.getElementById('st-salida');
+  if(sal) sal.innerHTML='<div class="alert alert-warn" style="margin-top:10px">La selección cambió — '+
+    'volvé a generar el párrafo para que refleje lo que está marcado ahora.</div>';
+}
+
+function generarParrafoStats(){
+  const out=document.getElementById('st-salida'); if(!out)return;
+  const elegidos=ST_TESTS.filter(t=>ST_SEL.has(t.id));
+  if(!elegidos.length){
+    out.innerHTML='<div class="alert alert-warn" style="margin-top:10px">Marcá al menos un test.</div>'; return;
+  }
+  const tool=document.getElementById('st-tool').value;
+  const alfa=document.getElementById('st-alfa').value;
+
+  const frases=elegidos.map(t=>t.txt);
+  /* El umbral va SIEMPRE y al final: un párrafo de análisis estadístico sin declarar el
+     nivel de significación está incompleto en cualquier guía de reporte. */
+  frases.push('Se consideró estadísticamente significativo un valor de p < '+alfa+' para contrastes bilaterales.');
+  const herr=ST_TOOL_TXT[tool];
+  if(herr) frases.push(herr);
+  const parrafo=frases.join(' ');
+
+  /* Combinaciones que la app permite y que dejan el párrafo declarando algo que no se
+     declaró en ninguna otra parte. No se bloquean —el autor puede tener razones— pero se
+     dicen, que es lo que hace la diferencia entre un párrafo correcto y uno que el tribunal
+     desarma en la defensa. */
+  const inc=[];
+  if(ST_SEL.has('logmulti') && !ST_SEL.has('loguni'))
+    inc.push('El texto de la multivariada dice que entraron «las variables con asociación en el análisis univariado», pero no marcaste regresión univariada. O la marcás, o cambiás ese criterio por el que usaste de verdad.');
+  if(ST_SEL.has('fdr') && !['mw','chi','spearman','loguni','logmulti'].some(k=>ST_SEL.has(k)))
+    inc.push('Marcaste corrección por comparaciones múltiples pero ningún test que produzca valores p. El párrafo va a decir que se corrigieron contrastes que no se declararon.');
+  if((ST_SEL.has('mw')||ST_SEL.has('spearman')) && !ST_SEL.has('normal'))
+    inc.push('Usás pruebas no paramétricas (Mann-Whitney o Spearman) sin declarar con qué criterio las elegiste. «¿Por qué no paramétricas?» es de las primeras preguntas de una defensa: marcá la prueba de normalidad o explicitá el criterio.');
+
+  const ojos=elegidos.filter(t=>t.ojo).map(t=>'<li><b>'+esc(t.t)+':</b> '+esc(t.ojo)+'</li>')
+    .concat(ST_TOOL_OJO[tool]?['<li><b>Herramienta:</b> '+esc(ST_TOOL_OJO[tool])+'</li>']:[]).join('');
+  const incHtml=inc.length
+    ? '<div class="alert alert-warn" style="font-size:.8rem;margin-top:10px;border-left:4px solid var(--danger)"><b>⚠️ El párrafo declara algo que no marcaste:</b><ul style="margin:6px 0 0 18px;line-height:1.65">'+
+      inc.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>' : '';
+
+  out.innerHTML='<div style="margin-top:12px">'+
+    '<div style="font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--inkMuted);margin-bottom:5px">Análisis estadístico</div>'+
+    '<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--goldMid);border-radius:0 8px 8px 0;padding:13px 15px;font-size:.85rem;line-height:1.75;color:var(--ink)" id="st-parrafo-txt">'+esc(parrafo)+'</div>'+
+    incHtml+
+    (ojos?'<div class="alert alert-warn" style="font-size:.8rem;margin-top:10px"><b>Antes de pegarlo, revisá:</b><ul style="margin:6px 0 0 18px;line-height:1.65">'+ojos+'</ul></div>':'')+
+    '<div class="btn-group" style="margin-top:10px">'+
+      '<button class="btn btn-primary btn-sm" onclick="stInsertar()">⬇ Insertar en Métodos</button>'+
+      '<button class="btn btn-secondary btn-sm" onclick="stCopiar()">📋 Copiar</button>'+
+    '</div><div id="st-msg" style="font-size:.74rem;margin-top:6px"></div></div>';
+  ST_PARRAFO=parrafo;
+}
+let ST_PARRAFO='';
+
+function stInsertar(){
+  const ta=document.getElementById('writer-text'); if(!ta||!ST_PARRAFO)return;
+  /* Se APENDEA con un encabezado, nunca se pisa lo escrito: el botón vive al lado del texto
+     de Métodos y reemplazarlo perdería el trabajo del autor sin forma de recuperarlo. */
+  if(TS.sectionActiva!=='metodos'){ alert('Cambiá a la sección Métodos antes de insertar.'); return; }
+  const actual=ta.value;
+  if(/An[áa]lisis estad[íi]stico/i.test(actual) &&
+     !confirm('Métodos ya tiene un apartado de «Análisis estadístico».\n\nEl párrafo se va a agregar al final igual, sin borrar nada. ¿Seguir?')) return;
+  ta.value=(actual.trim()?actual.replace(/\s*$/,'')+'\n\n':'')+'Análisis estadístico\n'+ST_PARRAFO+'\n';
+  TS.proyecto.secciones.metodos=ta.value;
+  updateWC(); refsScanAdditive();
+  const m=document.getElementById('st-msg'); if(m){m.style.color='var(--success)';m.textContent='✅ Insertado al final de Métodos. Revisalo y guardá el proyecto desde ThesisBuilder → 💾 Guardar proyecto (es lo único que persiste en el navegador).';}
+}
+function stCopiar(){
+  if(!ST_PARRAFO)return;
+  const m=document.getElementById('st-msg');
+  const ok=()=>{ if(m){m.style.color='var(--success)';m.textContent='✅ Copiado.';setTimeout(()=>{m.textContent='';},4000);} };
+  const fail=()=>{ if(m){m.style.color='var(--warn)';m.textContent='⚠️ El navegador no dejó copiar. Seleccioná el texto a mano.';} };
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(ST_PARRAFO).then(ok,fail);
+  else { try{ const x=document.createElement('textarea'); x.value=ST_PARRAFO; x.style.position='fixed'; x.style.opacity='0';
+    document.body.appendChild(x); x.select(); const r=document.execCommand('copy'); document.body.removeChild(x); r?ok():fail(); }catch(e){ fail(); } }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AUDITORÍA DE CONSISTENCIA NUMÉRICA
+// Local y determinista. NO usa IA: un modelo "verificando números" los
+// inventa o los pasa por alto sin dejar rastro, y esta pantalla se lee
+// como una verificación.
+// ══════════════════════════════════════════════════════════════════
+const AU_SEC_LBL={intro:'Introducción',antecedentes:'Antecedentes',justificacion:'Justificación',
+  metodos:'Métodos',resultados:'Resultados',discusion:'Discusión',conclusion:'Conclusión'};
+
+/* Los marcadores de cita [12] son números que NO son datos, y el propio refsSync() los
+   inserta y renumera. Sin sacarlos, cada renumeración de la bibliografía se leería como una
+   contradicción numérica nueva. Se reemplazan por un hueco del mismo largo para no correr
+   los índices con los que después se recorta el fragmento de contexto. */
+function auSinCitas(t){ return String(t||'').replace(/\[(\d+)\]/g, m=>' '.repeat(m.length)); }
+
+/* Un número escrito a la uruguaya: 1.234,5 → 1234.5. Sin esto "1.250 pacientes" se leía
+   como 1,250 y no coincidía nunca con el "1250" de otra sección. */
+function auNum(txt){
+  let t=String(txt).trim().replace(/\s/g,'');
+  /* Puntuación final antes de parsear: los patrones capturan de forma golosa y se llevan el
+     punto de la oración. "N = 1.250." daba parseFloat('1.250.') = 1,25 — tres órdenes de
+     magnitud abajo, y contra un 1250 de otra sección salía como "1,25 vs 1250". */
+  t=t.replace(/[.,]+$/,'');
+  if(/,/.test(t)) t=t.replace(/\./g,'').replace(',','.');      // 1.234,5 → 1234.5
+  /* La rama de miles exigía tres decimales exactos, y 0.856 los cumple: devolvía 856.
+     Con AUC=0.856, r=0.312 o HR=1.250 —la salida por defecto de R y SPSS en inglés, que es
+     lo que el autor pega en Resultados— la pantalla mostraba un número que no está escrito
+     en ninguna parte de la tesis, que es lo peor que puede hacer una auditoría de cifras.
+     Un separador de miles nunca lleva un 0 solo adelante. */
+  else if(/^[1-9]\d{0,2}(\.\d{3})+$/.test(t)) t=t.replace(/\./g,''); // 1.234 → 1234
+  const n=parseFloat(t);
+  return isFinite(n)?n:null;
+}
+const auFmt=n=>Number.isInteger(n)?String(n):String(n).replace('.',',');
+
+/* Un año NO es un N. "entre 2023 y 2024 se incluyeron 45 pacientes" tiene tres números y
+   sólo uno es el tamaño muestral; sin este filtro los años entraban como candidatos y toda
+   tesis salía con "inconsistencias" que no lo eran — el modo más rápido de que el médico
+   aprenda a ignorar la pantalla. */
+const auEsAnio=n=>Number.isInteger(n)&&n>=1900&&n<=2100;
+
+/* Cada patrón declara qué CLASE de cifra captura. Sólo se comparan entre sí las de la misma
+   clase y —en porcentajes y estadísticos— con la misma etiqueta: comparar "45 pacientes"
+   contra "45%" o el N de un subgrupo contra el N total produce contradicciones falsas. */
+const AU_PATRONES=[
+  /* N declarado explícitamente. Es la clase de mayor confianza: quien escribe "N=45" está
+     declarando el tamaño de la muestra, no mencionando un número al pasar. */
+  {clase:'N', nivel:'rojo', lbl:'Tamaño muestral declarado (N=…)',
+   re:/\bN\s*=\s*(\d[\d.,]*)/g, valIdx:1},
+  /* `n` minúscula va SEPARADA de `N` mayúscula y a nivel ámbar. La convención médica es
+     N total / n subgrupo, así que juntarlas hacía que toda tesis comparativa abriera con un
+     bloque rojo: verificado con "N = 45" en Métodos y "(n = 23) ... (n = 22)" en Resultados
+     → «45 vs 23 vs 22» en rojo y primero en la lista. Un rojo que sale siempre no se lee. */
+  {clase:'n', nivel:'ambar', lbl:'Subgrupo declarado (n=…)',
+   re:/\bn\s*=\s*(\d[\d.,]*)/g, valIdx:1},
+  /* N en prosa. Menor confianza: "se analizaron 45 ecocardiogramas" puede ser el total o un
+     subgrupo, así que va en ámbar y se agrupa por el sustantivo. */
+  {clase:'Nprosa', nivel:'ambar', lbl:'Cantidad de sujetos/registros mencionada en el texto',
+   /* La "a" personal es obligatoria en español con personas —"se analizó A 45 pacientes"—
+      y sin admitirla el patrón fallaba en media tesis. Se sumaron además reclutar,
+      seleccionar, enrolar y registrar. */
+   /* `[\wáéíóúüñ]*` y no `\w*`: sin la clase con tildes, "se analizó", "se incluyó" y
+      "se evaluó" —el pretérito que usa toda sección de Métodos— no matcheaban, porque \w
+      en JavaScript es [A-Za-z0-9_] y se corta antes de la vocal acentuada. */
+   re:/\b(?:se\s+(?:inclu|analiz|estudi|evalu|recolect|reclut|seleccion|enrol|registr|revis)[\wáéíóúüñ]*|un\s+total\s+de|muestra\s+de|cohorte\s+de|población\s+de)\s+(?:un\s+total\s+de\s+)?(?:a\s+)?(\d[\d.,]*)\s+((?:pacient|sujet|registr|estudi|caso|individu|ecocardiogram|ergometr|historia)[\wáéíóúüñ]*)/gi,
+   valIdx:1, etiqIdx:2},
+  {clase:'Nprosa', nivel:'ambar', lbl:'Cantidad de sujetos/registros mencionada en el texto',
+   re:/\b(\d[\d.,]*)\s+((?:pacient|sujet|registr|caso|individu)[\wáéíóúüñ]*)\s+(?:fueron\s+)?(?:inclu|analiz|estudi|evalu)[\wáéíóúüñ]*/gi,
+   valIdx:1, etiqIdx:2},
+  /* Estadísticos con nombre. Un OR distinto para el mismo par entre Resultados y Discusión
+     es el error clásico de copiar y pegar de una tabla vieja. */
+  /* El estadístico se agrupa por LA VARIABLE, no por su nombre. Agrupando por "or", una
+     tesis que reporta OR de HTA y de diabetes en Resultados y retoma uno en la Discusión
+     salía en rojo con «1,8 vs 2,4» sin tener ningún error: todo análisis multivariable
+     informa más de un OR. Es el mismo razonamiento por el que se sacó la comparación de
+     valores p, y acá no se había aplicado. La etiqueta la pone auExtraerStats(). */
+];
+/* NO se comparan valores p sueltos, y es a propósito. En Métodos el p es el UMBRAL
+   ("se consideró significativo p<0,05") y en Resultados es un p OBSERVADO ("p<0,001"):
+   toda tesis bien escrita tiene los dos y no se contradicen. Verificado sobre una tesis de
+   prueba: la clase generaba «0,001 vs 0,05» como hallazgo. Una alerta que salta siempre no
+   se lee, se aprende a saltear — y con ella se saltean las que sí importan. Para comparar
+   el p de un mismo hallazgo entre secciones habría que saber a qué hallazgo pertenece, y
+   eso no se resuelve con una expresión regular. */
+
+/* Palabras que sitúan pero no identifican la cifra. Sin sacarlas, "la prevalencia de HTA
+   fue del 55 %" y "en nuestra serie la prevalencia de HTA fue del 62 %" quedaban en grupos
+   distintos —el segundo arrastraba "en nuestra serie"— y la contradicción real no se
+   reportaba. */
+const AU_VACIAS=new Set(['la','el','los','las','un','una','de','del','en','se','fue','fueron',
+ 'era','eran','con','por','para','y','o','a','al','que','su','sus','este','esta','estos','estas',
+ 'nuestro','nuestra','nuestros','nuestras','serie','muestra','estudio','trabajo','total','casi',
+ 'aproximadamente','alrededor','cerca','ronda','rondaba','alcanzo','alcanzaba','represento',
+ 'representaba','correspondio','correspondia','resulto','siendo','tras','entre','sobre','solo',
+ 'solamente','tambien','ademas','mientras','cual','como','mas','menos','presento','presentaba',
+ 'observo','observaba','registro','registraba','hallo','encontro','poblacion','general','grupo',
+ 'pacientes','paciente','sujetos','casos']);
+
+/* Los porcentajes se extraen mirando HACIA ATRÁS desde el signo %, hasta el corte de oración.
+   Con un solo regex la etiqueta arrancaba a mitad de palabra —"valencia de insuficiencia
+   cardíaca"— porque la ventana de caracteres cortaba donde caía. Acá el recorte es por
+   oración y la etiqueta se reduce a sus dos últimas palabras con contenido, que es lo que
+   de verdad nombra la cifra. */
+function auEtiquetaPrevia(texto, idx){
+  const desde=Math.max(0, idx-140);
+  let antes=texto.slice(desde, idx);
+  /* El ':' NO corta si lo que queda a su derecha es sólo la cifra: en "Hipertensión
+     arterial: 55 %" la etiqueta está justamente del otro lado, y cortando ahí quedaba vacía
+     y el porcentaje se descartaba. */
+  const trasDosP=antes.slice(antes.lastIndexOf(':')+1);
+  const dosPuntosEsSeparador = antes.lastIndexOf(':')>=0 && /^[\s\d.,]*$/.test(trasDosP);
+  const cortes=[antes.lastIndexOf('.'), antes.lastIndexOf(';'), antes.lastIndexOf('\n')];
+  if(!dosPuntosEsSeparador) cortes.push(antes.lastIndexOf(':'));
+  const corte=Math.max.apply(null,cortes);
+  if(corte>=0) antes=antes.slice(corte+1);
+  const pal=auNormEtiq(antes).split(' ').filter(w=>w && !AU_VACIAS.has(w) && !/^\d+$/.test(w));
+  if(!pal.length) return '';
+  return pal.slice(-2).map(auSing).join(' ');
+}
+
+/* Cuando hacia atrás no queda nada, se mira hacia ADELANTE. "El 55 % de los pacientes era
+   hipertenso" tiene la etiqueta después de la cifra, y "Hipertensión arterial: 55 %" la
+   tiene antes de un dos puntos: las dos formas —la enumeración de resultados y la
+   transcripción de la Tabla 1, o sea las dos más frecuentes— se descartaban en silencio y
+   el panel salía verde con "0 cifras leídas". */
+/* Para un estadístico la variable está al PRINCIPIO de la oración, no pegada al signo:
+   "La HTA se asoció a eventos (OR = 2,4)" y "Para la HTA el OR = 3,1" tienen como sujeto
+   la misma variable, pero mirando las dos últimas palabras daban "asocio evento" y
+   "para hta" — dos grupos distintos, y la contradicción real no se reportaba. */
+function auEtiquetaSujeto(texto, idx){
+  const desde=Math.max(0, idx-160);
+  let antes=texto.slice(desde, idx);
+  const corte=Math.max(antes.lastIndexOf('.'), antes.lastIndexOf(';'), antes.lastIndexOf('\n'));
+  if(corte>=0) antes=antes.slice(corte+1);
+  const pal=auNormEtiq(antes).split(' ').filter(w=>w && !AU_VACIAS.has(w) && !/^\d+$/.test(w));
+  if(!pal.length) return '';
+  /* UNA sola palabra, no dos. Los OR y HR se reportan por variable, y la variable es casi
+     siempre un término único (HTA, diabetes, FEVI, edad). Con dos palabras, "La HTA se
+     asoció a eventos (OR = 2,4)" daba «hta asocio» y "Para la HTA el OR = 3,1" daba «hta»:
+     la misma variable en dos grupos distintos, y la contradicción real no se reportaba. */
+  return auSing(pal[0]);
+}
+
+function auEtiquetaPosterior(texto, desde){
+  let d=texto.slice(desde, desde+140);
+  const corte=d.search(/[.;:\n]/);
+  if(corte>=0) d=d.slice(0,corte);
+  const pal=auNormEtiq(d).split(' ').filter(w=>w && !AU_VACIAS.has(w) && !/^\d+$/.test(w));
+  if(!pal.length) return '';
+  return pal.slice(0,2).map(auSing).join(' ');
+}
+
+function auExtraerPct(texto){
+  const out=[]; const re=/(\d[\d.,]*)\s*%/g; let m;
+  while((m=re.exec(texto))!==null){
+    const val=auNum(m[1]); if(val==null || val<0 || val>100) continue;
+    let etiq=auEtiquetaPrevia(texto, m.index);
+    if(!etiq) etiq=auEtiquetaPosterior(texto, m.index+m[0].length);
+    if(!etiq) continue;
+    out.push({val, etiq, idx:m.index, largo:m[0].length});
+  }
+  return out;
+}
+
+/* Estadísticos con nombre, etiquetados por la variable que los rodea. Se busca la etiqueta
+   ANTES del nombre del estadístico ("la HTA se asoció ... OR = 2,4") y, si ahí no hay nada,
+   después del valor. Sin etiqueta no se reporta: agrupar todos los OR de la tesis en una
+   bolsa produce contradicciones que no existen. */
+function auExtraerStats(texto){
+  const out=[]; const re=/\b(OR|HR|RR|AUC|rho|IC\s*95\s*%)\s*(?:ajustad[oa]\s*)?[=:]\s*(-?\d[\d.,]*)/gi; let m;
+  while((m=re.exec(texto))!==null){
+    const val=auNum(m[2]); if(val==null) continue;
+    const nom=m[1].toLowerCase().replace(/\s+/g,'');
+    let etiq=auEtiquetaSujeto(texto, m.index);
+    if(!etiq) etiq=auEtiquetaPosterior(texto, m.index+m[0].length);
+    if(!etiq) continue;
+    out.push({val, etiq:nom+' · '+etiq, idx:m.index, largo:m[0].length});
+  }
+  /* ρ y r se tratan aparte: la letra griega pierde su etiqueta al normalizar (auNormEtiq
+     borra todo lo que no sea a-z0-9) y una "r" suelta matchea dentro de cualquier palabra. */
+  const re2=/(?:^|[\s(])(ρ|r)\s*=\s*(-?[01][.,]\d+)/g; let m2;
+  while((m2=re2.exec(texto))!==null){
+    const val=auNum(m2[2]); if(val==null) continue;
+    const desp=m2.index+m2[0].length;
+    let etiq=auEtiquetaSujeto(texto, m2.index);
+    if(!etiq) etiq=auEtiquetaPosterior(texto, desp);
+    if(!etiq) continue;
+    out.push({val, etiq:'correlacion · '+etiq, idx:m2.index+(m2[0].length-m2[0].replace(/^[\s(]/,'').length), largo:m2[0].replace(/^[\s(]/,'').length});
+  }
+  return out;
+}
+
+function auNormEtiq(t){
+  return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+/* Singular grosero, para que "45 pacientes" y "45 paciente" no queden en grupos distintos. */
+const auSing=t=>String(t||'').replace(/(es|s)$/,'');
+
+function auFragmento(texto,idx,largo){
+  const ini=Math.max(0,idx-70), fin=Math.min(texto.length,idx+largo+70);
+  return {pre:(ini>0?'…':'')+texto.slice(ini,idx), hit:texto.slice(idx,idx+largo),
+          post:texto.slice(idx+largo,fin)+(fin<texto.length?'…':'')};
+}
+
+function auExtraer(){
+  const secs=TS.proyecto.secciones||{};
+  /* La sección abierta se lee del textarea y no del estado: el estado sólo se actualiza al
+     cambiar de pestaña o al guardar, así que auditar lo que se está escribiendo daba el
+     texto anterior sin avisar. */
+  /* El textarea sólo se usa si está EN SINCRONÍA con el proyecto y la sección actuales.
+     Sin la guarda: (a) abrir una tesis guardada y verificar sin pasar por Escritura guiada
+     dejaba `writer-text` vacío y la Introducción se leía como vacía —mientras el KPI decía
+     "7/7 secciones con texto"—, y (b) pasar del proyecto A al B con Resultados abierto
+     hacía que se auditara el texto de A dentro de B, con fragmento de contexto y todo.
+     `_tsWriterSync` lo pone initWriter/setSection y lo borra la carga de proyecto. */
+  const ta=document.getElementById('writer-text');
+  const enSync = ta && TS.sectionActiva && TS._writerSync===TS.sectionActiva;
+  const vivo = enSync ? {...secs,[TS.sectionActiva]:ta.value} : secs;
+  const hallazgos=[];
+  Object.keys(AU_SEC_LBL).forEach(sec=>{
+    const crudo=String(vivo[sec]||''); if(!crudo.trim()) return;
+    const texto=auSinCitas(crudo);
+    auExtraerPct(texto).forEach(x=>{
+      hallazgos.push({sec, clase:'pct', nivel:'ambar', lbl:'Porcentaje', etiq:x.etiq, val:x.val,
+        frag:auFragmento(crudo, x.idx, x.largo)});
+    });
+    auExtraerStats(texto).forEach(x=>{
+      hallazgos.push({sec, clase:'stat', nivel:'rojo', lbl:'Estadístico reportado', etiq:x.etiq, val:x.val,
+        frag:auFragmento(crudo, x.idx, x.largo)});
+    });
+    AU_PATRONES.forEach(pat=>{
+      const re=new RegExp(pat.re.source,pat.re.flags);
+      let m;
+      while((m=re.exec(texto))!==null){
+        if(m[0].length===0){ re.lastIndex++; continue; }
+        const val=auNum(m[pat.valIdx]);
+        if(val==null) continue;
+        if((pat.clase==='N'||pat.clase==='Nprosa') && auEsAnio(val)) continue;
+        const etiq = pat.etiqIdx ? auSing(auNormEtiq(m[pat.etiqIdx])) : '';
+        if(pat.etiqIdx && !etiq) continue;
+        hallazgos.push({sec, clase:pat.clase, nivel:pat.nivel, lbl:pat.lbl, etiq, val,
+          frag:auFragmento(crudo, m.index, m[0].length)});
+      }
+    });
+  });
+  return {hallazgos, vivo};
+}
+
+/* Agrupa por clase+etiqueta y deja sólo los grupos que (a) aparecen en DOS O MÁS secciones
+   y (b) tienen más de un valor distinto. Un valor repetido en varias secciones es lo normal
+   y no se reporta; un valor distinto dentro de la MISMA sección tampoco, porque ahí suele
+   ser un desglose (total y subgrupos) y marcarlo llena el reporte de ruido. */
+function auAgrupar(hallazgos){
+  const mapa=new Map();
+  hallazgos.forEach(h=>{
+    const k=h.clase+'|'+h.etiq;
+    if(!mapa.has(k)) mapa.set(k,{clase:h.clase,nivel:h.nivel,lbl:h.lbl,etiq:h.etiq,items:[]});
+    mapa.get(k).items.push(h);
+  });
+
+  /* Cubo aparte que junta el N DECLARADO ("N = 45", en Métodos) con el N EN PROSA
+     ("se analizaron 48 pacientes", en Resultados). Es la contradicción más típica de todas
+     y se escapaba entera porque cada forma vivía en su propia clase: lo normal es que
+     Métodos declare y Resultados narre, no que las dos usen la misma sintaxis.
+     Va en ámbar porque un N en prosa puede ser legítimamente un subconjunto —reclutados vs
+     analizados— y el reporte lo dice. */
+  const nDecl=hallazgos.filter(h=>h.clase==='N');
+  const nProsa=hallazgos.filter(h=>h.clase==='Nprosa');
+  /* Sólo si NINGUNO de los dos ya se contradice por su cuenta. Si "N=45 vs N=48" ya sale en
+     rojo, el cubo combinado repite el mismo conflicto en ámbar y el reporte muestra tres
+     bloques para un solo error. El cubo existe para el caso en que cada forma es consistente
+     consigo misma y la contradicción aparece sólo al cruzarlas. */
+  const conflictoSolo=arr=>{
+    const g={}; arr.forEach(h=>{(g[h.etiq]=g[h.etiq]||[]).push(h);});
+    return Object.keys(g).some(k=>new Set(g[k].map(i=>i.sec)).size>=2 && new Set(g[k].map(i=>i.val)).size>=2);
+  };
+  if(nDecl.length && nProsa.length && !conflictoSolo(nDecl) && !conflictoSolo(nProsa)){
+    const juntos=nDecl.concat(nProsa);
+    const secs=new Set(juntos.map(i=>i.sec)), vals=new Set(juntos.map(i=>i.val));
+    if(secs.size>=2 && vals.size>=2){
+      mapa.set('__Ntotal',{clase:'Ntotal',nivel:'ambar',etiq:'',
+        lbl:'Tamaño muestral — declarado (N=) contra el mencionado en el texto', items:juntos});
+    }
+  }
+  const conflictos=[];
+  mapa.forEach(g=>{
+    const secs=new Set(g.items.map(i=>i.sec));
+    const vals=new Set(g.items.map(i=>i.val));
+    if(secs.size>=2 && vals.size>=2) conflictos.push(g);
+  });
+  /* Rojo primero, y dentro de cada nivel los de más valores en conflicto. */
+  const ord={rojo:0,ambar:1,info:2};
+  conflictos.sort((a,b)=>(ord[a.nivel]-ord[b.nivel]) ||
+    (new Set(b.items.map(i=>i.val)).size - new Set(a.items.map(i=>i.val)).size));
+  return conflictos;
+}
+
+let AU_ULTIMA=null;
+
+function auditarConsistencia(){
+  const host=document.getElementById('au-resultado'); if(!host) return;
+  const ex=auExtraer();
+  const hallazgos=ex.hallazgos;
+  const conflictos=auAgrupar(hallazgos);
+  /* El recuento de secciones sale de la MISMA fuente que se auditó. Antes se calculaba
+     aparte y podía anunciar "7/7 secciones con texto" sobre un barrido que había leído
+     seis. */
+  const secsConTexto=Object.keys(AU_SEC_LBL).filter(k=>String(ex.vivo[k]||'').trim());
+
+  const nRojo=conflictos.filter(c=>c.nivel==='rojo').length;
+  const nAmbar=conflictos.filter(c=>c.nivel!=='rojo').length;
+
+  const kpis='<div class="au-resumen">'+
+    '<div class="au-kpi"><div class="au-kpi-n" style="color:'+(nRojo?'var(--danger)':'var(--inkMuted)')+'">'+nRojo+'</div><div class="au-kpi-l">Conflictos</div></div>'+
+    '<div class="au-kpi"><div class="au-kpi-n" style="color:'+(nAmbar?'var(--warn)':'var(--inkMuted)')+'">'+nAmbar+'</div><div class="au-kpi-l">A revisar</div></div>'+
+    '<div class="au-kpi"><div class="au-kpi-n">'+hallazgos.length+'</div><div class="au-kpi-l">Cifras leídas</div></div>'+
+    '<div class="au-kpi"><div class="au-kpi-n">'+secsConTexto.length+'/7</div><div class="au-kpi-l">Secciones con texto</div></div>'+
+  '</div>';
+
+  /* Sin secciones escritas no hay nada que comparar, y decir "sin inconsistencias" sobre una
+     tesis vacía sería el peor falso negativo posible. */
+  /* AU_ULTIMA se fija ACÁ y no antes de los returns: con una sola sección escrita, la
+     pantalla avisaba "no lo leas como que los números están bien" pero el reporte copiado
+     salía diciendo "Sin cifras del mismo tipo en conflicto" a secas — y ése es el texto que
+     se pega en un mail al tutor. */
+  const fijar=estado=>{ AU_ULTIMA={conflictos,hallazgos,secs:secsConTexto,estado}; };
+
+  if(!secsConTexto.length){
+    fijar('vacio');
+    host.innerHTML=kpis+'<div class="alert alert-warn">No hay ninguna sección escrita todavía, así que no hay '+
+      'nada que comparar. Escribí en <b>Escritura guiada</b> y volvé.</div>';
+    return;
+  }
+  if(secsConTexto.length===1){
+    fijar('unaSeccion');
+    host.innerHTML=kpis+'<div class="alert alert-warn"><b>Sólo hay una sección con texto ('+
+      esc(AU_SEC_LBL[secsConTexto[0]])+').</b> Esta auditoría compara cifras <b>entre</b> secciones, así que '+
+      'con una sola no puede encontrar nada. No lo leas como que los números están bien.</div>';
+    return;
+  }
+
+  fijar('normal');
+  let cuerpo='';
+  /* Cero cifras reconocidas NO es "sin contradicciones": es que no se pudo leer nada. Una
+     tesis que escriba las medias como "52 ± 8" y el N sólo en una tabla produce cero
+     hallazgos, y el cartel verde con el titular en negrita daba el veredicto antes de que
+     nadie leyera el "se leyeron 0 cifras" en cuerpo chico. */
+  if(!hallazgos.length){
+    fijar('sinCifras');
+    host.innerHTML=kpis+'<div class="alert alert-warn"><b>No se reconoció ninguna cifra en las '+
+      secsConTexto.length+' secciones escritas.</b> Eso <b>no</b> es un resultado de verificación: '+
+      'significa que el texto no usa ninguno de los formatos que esta pantalla sabe leer '+
+      '(N=…, «se incluyeron N pacientes», porcentajes con su etiqueta, OR/HR/RR/AUC/ρ). '+
+      'Las medias con desvío («52 ± 8»), las medianas con RIC, los rangos y los números dentro de '+
+      'tablas no se leen. Revisá esas cifras a mano.</div>';
+    return;
+  }
+  if(!conflictos.length){
+    cuerpo='<div class="alert alert-success" style="background:var(--successLt);border:1px solid var(--success);color:var(--success)">'+
+      '<b>No se encontraron cifras del mismo tipo que se contradigan</b> entre las '+secsConTexto.length+' secciones escritas. '+
+      'Se leyeron '+hallazgos.length+' cifra'+(hallazgos.length===1?'':'s')+'. '+
+      'Recordá lo que esto NO dice: que los números sean correctos. Un error repetido igual en todas las '+
+      'secciones, o una cifra que aparece una sola vez, no son detectables desde acá.</div>';
+  } else {
+    cuerpo=conflictos.map(g=>{
+      const vals=[...new Set(g.items.map(i=>i.val))].sort((a,b)=>a-b);
+      const porSec={};
+      g.items.forEach(i=>{ (porSec[i.sec]=porSec[i.sec]||[]).push(i); });
+      const filas=Object.keys(AU_SEC_LBL).filter(s=>porSec[s]).map(sec=>
+        porSec[sec].map(i=>'<div class="au-fila">'+
+          '<span class="au-sec">'+esc(AU_SEC_LBL[sec])+'</span>'+
+          '<span class="au-val">'+esc(auFmt(i.val))+(g.clase==='pct'?'%':'')+'</span>'+
+          '<span class="au-frag">'+esc(i.frag.pre)+'<mark>'+esc(i.frag.hit)+'</mark>'+esc(i.frag.post)+'</span>'+
+        '</div>').join('')
+      ).join('');
+      return '<div class="au-grupo '+g.nivel+'">'+
+        '<div class="au-head">'+(g.nivel==='rojo'?'🔴':'🟡')+' '+esc(g.lbl)+
+          (g.etiq?' — «'+esc(g.etiq)+'»':'')+
+          '<span class="au-chip">'+vals.map(v=>esc(auFmt(v))+(g.clase==='pct'?'%':'')).join(' vs ')+'</span>'+
+        '</div><div class="au-body">'+filas+'</div></div>';
+    }).join('');
+    cuerpo='<div class="alert alert-warn" style="font-size:.82rem"><b>Cada bloque es una cifra del mismo tipo '+
+      'con valores distintos en secciones distintas.</b> La app no sabe cuál es la correcta: puede ser un error '+
+      'de tipeo, o pueden ser dos cosas legítimamente distintas (el total y un subgrupo, los reclutados y los '+
+      'analizados). Revisá el fragmento de cada una.</div>'+cuerpo;
+  }
+  host.innerHTML=kpis+cuerpo;
+}
+
+function copiarAuditoria(){
+  if(!AU_ULTIMA){ alert('Corré la verificación primero.'); return; }
+  const L=['AUDITORÍA DE CONSISTENCIA NUMÉRICA — ThesiSmart',
+    'Fecha: '+new Date().toLocaleDateString('es-UY'),
+    'Secciones con texto: '+AU_ULTIMA.secs.map(s=>AU_SEC_LBL[s]).join(', '),
+    'Cifras leídas: '+AU_ULTIMA.hallazgos.length,''];
+  const AVISO={
+    vacio:'⚠️ NO SE COMPARÓ NADA: no había ninguna sección escrita.',
+    unaSeccion:'⚠️ NO SE COMPARÓ NADA: sólo había UNA sección con texto, y esta auditoría compara ENTRE secciones.',
+    sinCifras:'⚠️ NO SE RECONOCIÓ NINGUNA CIFRA en el formato que esta pantalla sabe leer. No es un resultado de verificación.'
+  }[AU_ULTIMA.estado];
+  if(AVISO){ L.push(AVISO); L.push(''); }
+  else if(!AU_ULTIMA.conflictos.length) L.push('Sin cifras del mismo tipo en conflicto entre secciones.');
+  AU_ULTIMA.conflictos.forEach(g=>{
+    L.push((g.nivel==='rojo'?'[CONFLICTO] ':'[REVISAR] ')+g.lbl+(g.etiq?' — «'+g.etiq+'»':''));
+    g.items.forEach(i=>L.push('   · '+AU_SEC_LBL[i.sec]+': '+auFmt(i.val)+(g.clase==='pct'?'%':'')+
+      '   →  '+(i.frag.pre+i.frag.hit+i.frag.post).replace(/\s+/g,' ').trim()));
+    L.push('');
+  });
+  L.push('—');
+  L.push('Este chequeo compara entre sí números escritos por el autor. NO verifica ninguna cifra');
+  L.push('contra los datos ni recalcula nada. "Sin conflictos" no significa que los números sean correctos.');
+  const t=L.join('\n');
+  const av=document.getElementById('au-copiado');
+  const ok=()=>{ if(av){av.style.color='var(--success)';av.textContent='✅ Reporte copiado.';setTimeout(()=>{av.textContent='';},4000);} };
+  const fail=()=>{ if(av){av.style.color='var(--warn)';av.textContent='⚠️ El navegador no dejó copiar. Seleccioná el reporte a mano.';} };
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok,fail);
+  else { try{ const x=document.createElement('textarea'); x.value=t; x.style.position='fixed'; x.style.opacity='0';
+    document.body.appendChild(x); x.select(); const r=document.execCommand('copy'); document.body.removeChild(x);
+    r?ok():fail(); }catch(e){ fail(); } }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PLANTILLAS POR REVISTA
+// `verif:true` = corroborado contra las instrucciones oficiales el 2026-08-30.
+// `verif:false` = NO se pudo corroborar (la página no respondió o exige sesión).
+// La distinción se MUESTRA. Un límite de palabras equivocado no se descubre
+// revisando: se descubre con un rechazo, semanas después.
+// ══════════════════════════════════════════════════════════════════
+const REVISTAS=[
+  {id:'ehj', nombre:'European Heart Journal', sub:'ESC · Oxford University Press', idioma:'Inglés', idiomaSalida:'inglés',
+   url:'https://academic.oup.com/eurheartj/pages/General_Instructions',
+   verif:true, fechaVerif:'30/08/2026',
+   abstract:{estructura:['Background and Aims','Methods','Results','Conclusions'], palabras:'250 máximo, sin referencias', verif:true},
+   texto:'5.000 palabras (excluye título, abstracts, leyendas y referencias)',
+   refs:{estilo:'Vancouver (autor-número)', max:'100 referencias',
+     nota:'Información completa en cada referencia: título del artículo, título abreviado de la revista y páginas.'},
+   extra:'Exige además un Structured Graphical Abstract como componente aparte (texto de hasta 40 palabras por encabezado + archivo gráfico).'},
+
+  {id:'jase', nombre:'Journal of the American Society of Echocardiography', sub:'ASE · Elsevier', idioma:'Inglés', idiomaSalida:'inglés',
+   url:'https://www.jaseonline.org/content/authorinfo',
+   verif:false,
+   abstract:{estructura:['Background','Methods','Results','Conclusions'], palabras:'verificar en las instrucciones vigentes', verif:false},
+   texto:'verificar en las instrucciones vigentes',
+   refs:{estilo:'Numérico tipo AMA/Vancouver', max:'verificar',
+     nota:'Confirmá el estilo exacto y el máximo en la guía de Elsevier antes de enviar.'},
+   extra:'No se pudo acceder a las instrucciones oficiales desde la app (el sitio rechazó la consulta). Todo lo de esta ficha es orientativo.'},
+
+  {id:'ruc', nombre:'Revista Uruguaya de Cardiología', sub:'Sociedad Uruguaya de Cardiología', idioma:'Español (con abstract en inglés)', idiomaSalida:'español',
+   url:'https://www.suc.org.uy/revista-uruguaya-de-cardiologia/',
+   verif:false,
+   abstract:{estructura:['Introducción','Método','Resultados','Conclusiones'], palabras:'verificar en las instrucciones vigentes', verif:false},
+   texto:'verificar en las instrucciones vigentes',
+   refs:{estilo:'Vancouver', max:'verificar',
+     nota:'Requiere resumen en español y abstract en inglés, con palabras clave en ambos idiomas.'},
+   extra:'No se pudo acceder a las instrucciones oficiales desde la app. Confirmá estructura, extensión y palabras clave (DeCS/MeSH) en la web de la SUC.'},
+
+  {id:'rac', nombre:'Revista Argentina de Cardiología', sub:'Sociedad Argentina de Cardiología', idioma:'Español (con abstract en inglés)', idiomaSalida:'español',
+   url:'https://www.sac.org.ar/revista-argentina-de-cardiologia/',
+   verif:false,
+   abstract:{estructura:['Introducción','Objetivos','Material y métodos','Resultados','Conclusiones'], palabras:'verificar en las instrucciones vigentes', verif:false},
+   texto:'verificar en las instrucciones vigentes',
+   refs:{estilo:'Vancouver', max:'verificar',
+     nota:'Requiere resumen en español y abstract en inglés, con palabras clave en ambos idiomas.'},
+   extra:'No se pudo acceder a las instrucciones oficiales desde la app. Confirmá la estructura del resumen y la extensión en la web de la SAC.'}
+];
+let REV_SEL=null;
+
+function renderRevistas(){
+  const g=document.getElementById('rev-grid'); if(!g)return;
+  g.innerHTML=REVISTAS.map(r=>'<div class="rev-card'+(REV_SEL===r.id?' on':'')+'" onclick="selRevista(\''+r.id+'\')">'+
+    '<div class="rev-card-t">'+esc(r.nombre)+'</div>'+
+    '<div class="rev-card-s">'+esc(r.sub)+' · '+esc(r.idioma)+'</div></div>').join('');
+}
+function revById(id){ return REVISTAS.filter(r=>r.id===id)[0]; }
+
+function selRevista(id){
+  REV_SEL=id; renderRevistas();
+  const r=revById(id), host=document.getElementById('rev-spec');
+  const btn=document.getElementById('btn-adaptar-rev'); if(btn) btn.disabled=false;
+  if(!r||!host)return;
+  const marca=ok=>ok?'<span class="rev-verif ok">verificado</span>':'<span class="rev-verif no">verificar</span>';
+  host.innerHTML='<div class="rev-spec">'+
+    '<div style="font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:2px">'+esc(r.nombre)+'</div>'+
+    '<div style="font-size:.73rem;color:var(--inkMuted);margin-bottom:12px">'+esc(r.sub)+
+      (r.verif?' · corroborado el '+esc(r.fechaVerif):'')+'</div>'+
+    '<dl>'+
+      '<dt>Idioma</dt><dd>'+esc(r.idioma)+'</dd>'+
+      '<dt>Abstract '+marca(r.abstract.verif)+'</dt><dd>'+r.abstract.estructura.map(e=>'<b>'+esc(e)+'</b>').join(' · ')+
+        '<br><span style="color:var(--inkMuted)">Extensión: '+esc(r.abstract.palabras)+'</span></dd>'+
+      '<dt>Texto principal '+marca(r.verif)+'</dt><dd>'+esc(r.texto)+'</dd>'+
+      '<dt>Referencias '+marca(r.verif)+'</dt><dd>'+esc(r.refs.estilo)+' · máximo: '+esc(r.refs.max)+
+        '<br><span style="color:var(--inkMuted)">'+esc(r.refs.nota)+'</span></dd>'+
+      (r.extra?'<dt>Nota</dt><dd>'+esc(r.extra)+'</dd>':'')+
+    '</dl>'+
+    '<div style="margin-top:12px"><a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer" '+
+      'style="font-size:.8rem;color:var(--accentMid);font-weight:600">↗ Abrir las instrucciones vigentes para autores</a></div>'+
+  '</div>';
+}
+
+/* El esqueleto se arma LOCALMENTE con los encabezados de la revista y el abstract que el
+   autor ya escribió. No inventa contenido: los encabezados sin material salen marcados como
+   pendientes en vez de rellenarse. */
+function esqueletoRevista(){
+  const r=revById(REV_SEL); if(!r) return '';
+  const p=TS.proyecto;
+  /* El esqueleto es lo que el autor conserva mientras escribe, así que lleva TODO lo que
+     está en pantalla. Faltaban el límite de texto principal y el `extra`: para EHJ eso son
+     las dos exigencias verificadas más caras de incumplir —5.000 palabras y el Structured
+     Graphical Abstract obligatorio—, y para las otras tres, el aviso de que la ficha no
+     está corroborada. */
+  const L=['ESQUELETO PARA: '+r.nombre];
+  if(!r.verif) L.push('⚠️ FICHA NO VERIFICADA — no se pudo acceder a las instrucciones oficiales.');
+  L.push('Abstract: '+r.abstract.palabras,
+    'Texto principal: '+r.texto,
+    'Referencias: '+r.refs.estilo+' · máximo: '+r.refs.max);
+  if(r.extra) L.push('Nota: '+r.extra);
+  L.push('','⚠️ Verificá las instrucciones vigentes antes de enviar: '+r.url,'');
+  L.push('── ABSTRACT ──');
+  r.abstract.estructura.forEach(h=>{ L.push(h.toUpperCase()+':'); L.push('   [pendiente]'); L.push(''); });
+  if(p.abstract && p.abstract.trim()){
+    L.push('── ABSTRACT QUE YA TENÉS (para repartir en los encabezados de arriba) ──');
+    L.push(p.abstract.trim()); L.push('');
+  } else {
+    L.push('(Todavía no generaste el abstract en el módulo 📋 Abstract.)'); L.push('');
+  }
+  const refs=(p.referencias||[]).slice().sort((a,b)=>a.num-b.num);
+  if(!refs.length) L.push('── REFERENCIAS ──','(Todavía no cargaste ninguna. Se detectan solas al escribir [1], [2]… en el texto.)','');
+  if(refs.length){
+    L.push('── REFERENCIAS ('+refs.length+') — pasar a '+r.refs.estilo+' ──');
+    refs.forEach(x=>L.push('['+x.num+'] '+(x.desc||'(sin descripción)')+(x.doi?' — '+x.doi:'')+
+      (x.estado==='verificada'?'':'   ⚠️ SIN VERIFICAR')));
+    const pend=refs.filter(x=>x.estado!=='verificada').length;
+    if(pend) L.push('','⚠️ '+pend+' de '+refs.length+' referencias sin verificar contra PubMed/DOI.');
+  }
+  return L.join('\n');
+}
+
+function copiarEsqueletoRevista(){
+  if(!REV_SEL){ alert('Elegí una revista primero.'); return; }
+  const t=esqueletoRevista(), av=document.getElementById('rev-copiado');
+  const ok=()=>{ if(av){av.style.color='var(--success)';av.textContent='✅ Esqueleto copiado.';setTimeout(()=>{av.textContent='';},4000);} };
+  const fail=()=>{ if(av){av.style.color='var(--warn)';av.textContent='⚠️ El navegador no dejó copiar.';} };
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok,fail);
+  else { try{ const x=document.createElement('textarea'); x.value=t; x.style.position='fixed'; x.style.opacity='0';
+    document.body.appendChild(x); x.select(); const r=document.execCommand('copy'); document.body.removeChild(x); r?ok():fail(); }catch(e){ fail(); } }
+}
+
+async function adaptarARevista(){
+  const r=revById(REV_SEL); if(!r){ alert('Elegí una revista primero.'); return; }
+  const p=TS.proyecto;
+  if(!(p.abstract||'').trim()){
+    alert('Para adaptar hace falta el abstract. Generalo primero en el módulo 📋 Abstract.'); return;
+  }
+  const limite=r.abstract.verif?r.abstract.palabras:'la extensión que exija la revista (esta app no la verificó)';
+  await callIA('ia-revista',
+    'Reescribí este abstract con la estructura exacta que pide '+r.nombre+'.\n\n'+
+    'ENCABEZADOS OBLIGATORIOS, en este orden y con estos nombres literales:\n'+
+    r.abstract.estructura.map((h,i)=>(i+1)+'. '+h).join('\n')+'\n\n'+
+    /* Un solo idioma. Pasar la etiqueta de la interfaz —"Español (con abstract en inglés)"—
+       dejaba al modelo eligiendo entre devolver el español, el inglés o los dos, y los
+       encabezados que se le mandan son sólo los del español. */
+    'Idioma de salida: '+(r.idiomaSalida||r.idioma)+' (una sola versión).\nExtensión: '+limite+'.\n\n'+
+    'ABSTRACT ACTUAL DEL AUTOR:\n'+p.abstract+'\n\n'+
+    'REGLAS QUE NO PODÉS ROMPER:\n'+
+    '- Reorganizá y condensá lo que ya está. NO agregues ningún dato, cifra, N ni resultado que no esté en el abstract de arriba.\n'+
+    '- Si un encabezado no tiene material en el texto original, escribí bajo él: [FALTA — completar con el contenido correspondiente]. No lo rellenes.\n'+
+    '- No inventes valores de p, intervalos de confianza ni tamaños de efecto.\n'+
+    '- Conservá exactamente las cifras del original: no las redondees ni las reformules.',
+    1500,
+    '<div class="alert alert-warn" style="margin-bottom:10px">🤖 Reorganización hecha por IA sobre tu propio abstract. '+
+    '<b>Comprobá cifra por cifra contra el original</b> y verificá la extensión y los encabezados en las '+
+    'instrucciones vigentes de '+esc(r.nombre)+' antes de enviar.</div>');
+}
+
+/* Estado que vive FUERA de TS.proyecto y que por lo tanto no viaja con la tesis: la
+   selección de tests, el párrafo generado, el textarea del writer y la última auditoría.
+   Sin limpiarlo, abrir otra tesis dejaba el panel de Métodos abierto con el párrafo del
+   proyecto anterior y su botón «Insertar en Métodos» operativo: un clic escribía en los
+   Métodos de la tesis B un análisis estadístico del estudio A. Es exactamente declarar un
+   método que el autor no ejecutó. */
+function resetEstadoNoProyecto(){
+  ST_SEL=new Set(['descr']); ST_PARRAFO='';
+  const sal=document.getElementById('st-salida'); if(sal) sal.innerHTML='';
+  const pan=document.getElementById('gen-stats-panel'); if(pan) pan.style.display='none';
+  TS.sectionActiva='intro';
+  TS._writerSync=null;
+  const ta=document.getElementById('writer-text'); if(ta) ta.value='';
+  AU_ULTIMA=null;
+  const au=document.getElementById('au-resultado'); if(au) au.innerHTML='';
+  REV_SEL=null;
+  const rs=document.getElementById('rev-spec'); if(rs) rs.innerHTML='';
+  const rb=document.getElementById('btn-adaptar-rev'); if(rb) rb.disabled=true;
+  const ir=document.getElementById('ia-revista'); if(ir) ir.innerHTML='';
 }
 
 // ── QUALITY ──
