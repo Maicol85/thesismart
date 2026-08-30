@@ -167,6 +167,26 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
 .btn-sm{padding:5px 13px;font-size:.78rem}
 .btn-full{width:100%;justify-content:center}
 .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* ── Traducción del abstract ── */
+.trad-wrap{position:relative;display:inline-block}
+.trad-chev{font-size:.6rem;transition:transform .15s}
+#btn-trad[aria-expanded="true"] .trad-chev{transform:rotate(180deg)}
+/* z-index por encima del encabezado fijo (200) y del panel del Director (150): con 60 el
+   menú quedaba tapado por el encabezado al abrirlo cerca del borde superior, y tocar el
+   botón flotante del Director no lo cerraba porque el clic no llegaba a la capa. */
+.trad-menu{display:none;position:absolute;top:calc(100% + 5px);left:0;z-index:260;width:280px;max-width:calc(100vw - 24px);
+  background:#fff;border:1px solid var(--border);border-radius:9px;padding:5px;box-shadow:var(--shadow)}
+.trad-menu.open{display:block}
+.trad-op{display:block;width:100%;text-align:left;background:none;border:none;color:var(--ink);
+  font-family:inherit;font-size:.83rem;font-weight:600;padding:9px 10px;border-radius:6px;cursor:pointer;line-height:1.3}
+.trad-op:hover{background:var(--bg)}
+.trad-op small{display:block;color:var(--inkSoft);font-size:.7rem;font-weight:400;margin-top:2px}
+/* Capa invisible que cierra al tocar afuera; sin ella el menú tapa el abstract en celular. */
+#trad-ov{display:none;position:fixed;inset:0;z-index:259;background:transparent}
+#trad-ov.open{display:block}
+.trad-panel{border:1px solid var(--border);border-left:3px solid var(--goldMid);border-radius:0 10px 10px 0;padding:12px 14px;margin-top:14px;background:var(--bg)}
+.trad-panel-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:8px}
+.trad-panel-txt{font-size:.83rem;line-height:1.75;white-space:pre-wrap;color:var(--ink);background:#fff;border:1px solid var(--border);border-radius:7px;padding:11px 13px;max-height:420px;overflow:auto}
 .form-label{font-size:.72rem;font-weight:700;color:var(--inkSoft);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
 .form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:.85rem;font-family:inherit;outline:none;background:var(--bg);color:var(--ink);transition:border .2s}
 .form-input:focus{border-color:var(--accentMid)}
@@ -731,13 +751,23 @@ main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 52px)}
     <div id="ia-abstract"></div>
     <div id="abstract-editor" style="display:none;margin-top:14px">
       <label class="form-label">Abstract — editá si es necesario</label>
-      <textarea class="form-textarea" id="abstract-text" style="min-height:180px" oninput="updateAbstractWC()"></textarea>
+      <textarea class="form-textarea" id="abstract-text" style="min-height:180px" oninput="updateAbstractWC();tradInvalidar()"></textarea>
       <div class="word-count" id="abstract-wc">0 palabras</div>
       <div class="btn-group">
         <button class="btn btn-primary" onclick="guardarAbstract()">💾 Guardar abstract</button>
-        <button class="btn btn-secondary btn-sm" onclick="traducirAbstract()">🌐 Traducir al inglés</button>
+        <div class="trad-wrap">
+          <button class="btn btn-secondary btn-sm" id="btn-trad" aria-haspopup="true" aria-expanded="false" aria-controls="trad-menu" onclick="tradToggle()">🌐 Traducir abstract <span class="trad-chev">▾</span></button>
+          <div class="trad-menu" id="trad-menu" role="menu">
+            <button type="button" class="trad-op" role="menuitem" onclick="traducirAbstract('en')">🇬🇧 Inglés científico<small>Terminología internacional (LVEF, LVEDD, TAPSE) y punto decimal</small></button>
+            <button type="button" class="trad-op" role="menuitem" onclick="traducirAbstract('ptbr')">🇧🇷 Portugués brasileño<small>Terminología de la SBC y coma decimal</small></button>
+          </div>
+        </div>
       </div>
+      <!-- La traducción va DEBAJO y en su propio panel: el original queda intacto arriba,
+           editable, y las dos versiones se pueden comparar sin cambiar de pantalla. -->
+      <div id="abstract-trad"></div>
     </div>
+    <div id="trad-ov" onclick="tradCerrar()"></div>
   </div>
 </div>
 
@@ -1019,14 +1049,28 @@ const TS = {
 
 const SYS = 'Sos un experto en metodología de investigación biomédica, bioestadística y redacción científica. Ayudás a médicos y residentes de LATAM a elaborar tesis académicas. Respondés en español, de forma clara y directa. Cuando el usuario comparte datos de su proyecto, los usás para respuestas personalizadas.';
 
-async function llamarIA(msgs, maxTokens=1500) {
+/* `sysOverride` permite cambiar el system prompt por llamada. Hace falta para la
+   traducción: SYS le dice al modelo que es un director de tesis que ayuda y sugiere, y
+   un traductor que "ayuda" mejora la redacción del autor — que es exactamente lo que no
+   debe hacer con un abstract que se manda a una revista. */
+async function llamarIA(msgs, maxTokens=1500, sysOverride) {
+  /* Red de contención por el parecido de firmas: llamarIA(msgs,maxTokens,SYSTEM) y
+     callIA(divId,prompt,maxTokens,BANNER_HTML) terminan las dos en un string después de
+     maxTokens, pero en una es el system prompt y en la otra HTML. Copiar la forma de una
+     sobre la otra mandaría un <div> como system prompt sin ningún error visible — y para
+     la traducción el system prompt ES el mecanismo de seguridad. */
+  if(sysOverride && /^\s*</.test(sysOverride)) throw new Error('llamarIA: el system prompt no puede ser HTML');
   const r = await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':TS.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,system:SYS,messages:msgs})
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTokens,system:sysOverride||SYS,messages:msgs})
   });
   const d = await r.json();
   if(d.error) throw new Error(d.error.message);
+  /* stop_reason queda accesible para quien lo necesite. 'max_tokens' significa que la
+     respuesta se cortó a mitad: sin mirarlo, un abstract truncado justo antes de las
+     Conclusiones se muestra como si estuviera completo. */
+  TS._ultimoStop = d.stop_reason || '';
   return d.content?.[0]?.text||'';
 }
 
@@ -1049,6 +1093,9 @@ function actualizarCreditos(){document.getElementById('creditsChip').textContent
 function usarCredito(){if(TS.creditos<=0){alert('Sin créditos.');return false;}TS.creditos--;actualizarCreditos();return true;}
 
 function goTo(mod,el){
+  // Salir del módulo con el desplegable abierto lo dejaba abierto —y con el translateX
+  // calculado para el layout anterior— al volver.
+  if(typeof tradCerrar==='function')tradCerrar();
   document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   if(el)el.classList.add('active');
   else document.querySelector('[data-mod="'+mod+'"]')?.classList.add('active');
@@ -1093,6 +1140,7 @@ const AI_PURPOSES={
   'ia-benchmark':'Benchmark en la literatura',
   'ia-stats':'Interpretación descriptiva de estadísticas',
   'ia-abstract':'Redacción/traducción de abstract',
+  'ia-abstract-trad':'Traducción del abstract a otro idioma',
   'ia-bias':'Análisis de sesgos',
   'ia-coherence':'Verificación de coherencia metodológica',
   'ia-defense':'Generación de preguntas de defensa',
@@ -1129,6 +1177,7 @@ async function callIA(divId,prompt,maxTokens=1500,banner){
     const r=await llamarIA([{role:'user',content:prompt}],maxTokens);
     logAI(divId);
     showResp(divId,r,banner);
+    return r;                    // el texto crudo, para quien necesite algo más que pintarlo
   }catch(e){showErr(divId,e.message);}
 }
 
@@ -1200,7 +1249,12 @@ function persistirProyecto(){
   if(!key) return false;
   const rec={schema:'thesismart-project',v:1,nombre:projNombre(p),investigador:p.investigador||'',tema:p.tema||'',
     updatedAt:new Date().toISOString(),updatedLabel:projFechaLegible(),progreso:projProgreso(p),
-    proyecto:JSON.parse(JSON.stringify(p)),versions:TS.versions||[],qualityChecks:TS.qualityChecks||[]};
+    proyecto:JSON.parse(JSON.stringify(p)),versions:TS.versions||[],qualityChecks:TS.qualityChecks||[],
+    /* aiLog viaja con el proyecto. Sin esto era de sesión: se traducía el abstract hoy,
+       se cerraba el navegador, y mañana la declaración de uso de IA que se le entrega al
+       tribunal decía "(sin usos registrados en esta sesión)" sobre una tesis cuyo abstract
+       en inglés lo tradujo un modelo. */
+    aiLog:TS.aiLog||[]};
   try{ localStorage.setItem(key,JSON.stringify(rec)); return true; }
   catch(e){ alert('No se pudo guardar en el navegador (¿almacenamiento lleno?).'); return false; }
 }
@@ -1250,6 +1304,18 @@ function sincronizarFormulario(){
   set('f-temporalidad',p.temporalidad);set('f-n',p.n);
   set('f-obj-general',p.objetivoGeneral);set('f-obj-especificos',p.objetivosEspecificos);set('f-hipotesis',p.hipotesis);
   set('f-cei',p.cei);set('f-consentimiento',p.consentimiento);set('f-etica-notas',p.eticaNotas);
+  /* El abstract NO se recargaba: era el único campo del formulario que quedaba con el
+     texto del proyecto anterior al abrir otro, indistinguible de uno bien cargado porque
+     todos los de al lado sí se actualizaban. Con la traducción, ese texto viejo se manda
+     a traducir, se copia y se envía a una revista bajo el título de otra tesis. */
+  set('abstract-text',p.abstract);
+  if(typeof updateAbstractWC==='function')updateAbstractWC();
+  /* resetEstadoNoProyecto escondió el editor un instante antes (corre primero en
+     _cargarRec). Se vuelve a abrir sólo si el proyecto que se acaba de cargar TIENE un
+     abstract: si no, el cuadro quedaría vacío y visible, que es como se veía el del
+     proyecto anterior. */
+  const _ed=document.getElementById('abstract-editor');
+  if(_ed) _ed.style.display=(p.abstract&&String(p.abstract).trim())?'block':'none';
   if(typeof renderVariables==='function')renderVariables();
   if(typeof renderVersions==='function')renderVersions();
   if(typeof initChecklist==='function')initChecklist();
@@ -1259,6 +1325,11 @@ function _cargarRec(r){
   TS.proyecto=JSON.parse(JSON.stringify(r.proyecto));
   TS.versions=Array.isArray(r.versions)?JSON.parse(JSON.stringify(r.versions)):[];
   TS.qualityChecks=Array.isArray(r.qualityChecks)?r.qualityChecks.slice():[];
+  /* El registro de uso de IA es POR PROYECTO. nuevoProyecto() ya lo vaciaba; abrir uno
+     guardado no, así que la declaración ICMJE del proyecto B terminaba enumerando los
+     usos de IA del proyecto A de la misma sesión — declarando una traducción automática
+     que en B nunca ocurrió. Se restaura el del proyecto si quedó guardado. */
+  TS.aiLog=Array.isArray(r.aiLog)?r.aiLog.slice():[];
   resetEstadoNoProyecto();
   sincronizarFormulario();
   const nb=document.getElementById('nb-builder'); if(nb)nb.style.display='inline';
@@ -1971,13 +2042,307 @@ async function generarAbstract(){
   const lang=document.getElementById('f-abstract-lang').value;
   const words=document.getElementById('f-abstract-words').value;
   const p=TS.proyecto;
-  await callIA('ia-abstract',ctx()+'\n\nSecciones escritas:\nIntroducción: '+(p.secciones.intro.substring(0,400)||'No disponible')+'\nMétodos: '+(p.secciones.metodos.substring(0,400)||'No disponible')+'\nResultados: '+(p.secciones.resultados.substring(0,400)||'No disponible')+'\nConclusión: '+(p.secciones.conclusion.substring(0,200)||'No disponible')+'\n\nGenerá un abstract estructurado en '+lang+' de máximo '+words+'.\nEstructura: Introducción / Objetivo / Métodos / Resultados / Conclusión / Palabras clave (5-8 términos MeSH)',1500);
+  const r=await callIA('ia-abstract',ctx()+'\n\nSecciones escritas:\nIntroducción: '+(p.secciones.intro.substring(0,400)||'No disponible')+'\nMétodos: '+(p.secciones.metodos.substring(0,400)||'No disponible')+'\nResultados: '+(p.secciones.resultados.substring(0,400)||'No disponible')+'\nConclusión: '+(p.secciones.conclusion.substring(0,200)||'No disponible')+'\n\nGenerá un abstract estructurado en '+lang+' de máximo '+words+'.\nEstructura: Introducción / Objetivo / Métodos / Resultados / Conclusión / Palabras clave (5-8 términos MeSH)',1500);
   document.getElementById('abstract-editor').style.display='block';
+  /* El abstract generado se copia al cuadro editable. Antes quedaba SÓLO en el panel
+     oscuro de arriba y el cuadro seguía vacío, así que "Guardar abstract" guardaba nada y
+     "Traducir" contestaba "no hay abstract para traducir" con el abstract a la vista dos
+     centímetros más arriba. Sólo se copia si el cuadro está vacío: regenerar no puede
+     pisar lo que el médico ya editó a mano. */
+  const ta=document.getElementById('abstract-text');
+  if(r&&ta&&!ta.value.trim()){ ta.value=r; updateAbstractWC(); tradInvalidar(); }
 }
 function guardarAbstract(){TS.proyecto.abstract=document.getElementById('abstract-text').value;alert('✅ Abstract guardado.');}
-async function traducirAbstract(){
-  const txt=document.getElementById('abstract-text').value;if(!txt.trim())return;
-  await callIA('ia-abstract','Traducí este abstract al inglés de forma académica. Mantenés la estructura IMRYD. Términos técnicos en inglés correcto.\n\n'+txt);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TRADUCCIÓN DEL ABSTRACT
+
+   El botón anterior traducía sólo al inglés y escribía el resultado en #ia-abstract
+   —el mismo panel donde estaba el abstract generado—, así que traducir BORRABA de la
+   pantalla el texto del que venía la traducción. Ahora va a un panel propio, debajo,
+   y el original queda arriba editable para poder comparar los dos.
+
+   El riesgo de esta función no es que traduzca mal el estilo: es que un modelo
+   "mejorando" un abstract cambie una cifra, redondee un intervalo de confianza o
+   complete una conclusión que el autor no escribió. Ese texto se manda a una revista
+   y lo firma el autor. De ahí que el system prompt sea propio, prohibitivo y explícito
+   sobre los números, y que el panel avise que hay que cotejarlos uno por uno.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const TRAD_IDIOMAS={
+  en:{
+    etiq:'Inglés científico', bandera:'🇬🇧', codigo:'en',
+    destino:'inglés científico formal (scientific English) de publicación biomédica',
+    encabezados:'Background (o Introduction) / Objective / Methods / Results / Conclusions / Keywords',
+    decimal:'PUNTO decimal (p = 0.03, mean 45.2). El español usa coma; en inglés hay que convertirla. Esta es la ÚNICA transformación numérica permitida: cambia el separador, nunca el valor ni la cantidad de decimales.',
+    miles:'Sin separador de miles o con coma (1,250), nunca con punto.',
+    terminos:'LVEF (no "FEVI"), LVEDD/LVESD, IVS, LV posterior wall, LA volume index (LAVI), TAPSE, PASP, GLS, HFrEF/HFpEF/HFmrEF, NYHA functional class, interquartile range (IQR), 95% confidence interval (95% CI).',
+    /* Los tres estimadores se nombran juntos y con la sigla obligatoria porque en la
+       traducción se confunden entre sí, y OR, HR y RR no son intercambiables: cambiarlos
+       es una afirmación metodológica distinta, no un problema de estilo. */
+    estimadores:'odds ratio (OR), hazard ratio (HR), risk ratio / relative risk (RR). Conservá SIEMPRE la sigla entre paréntesis y no cambies un estimador por otro.',
+    claves:'Keywords: traducí las palabras clave del autor al inglés. Si un término no tiene un descriptor MeSH exacto, dejá la traducción directa y agregale « [verificar descriptor] ». NO inventes encabezados MeSH: son una lista cerrada y un descriptor inexistente lo rechaza el indexador.'
+  },
+  ptbr:{
+    etiq:'Portugués brasileño', bandera:'🇧🇷', codigo:'pt-BR',
+    destino:'portugués brasileño (pt-BR) científico formal de publicación biomédica',
+    encabezados:'Introdução (o Fundamento) / Objetivo / Métodos / Resultados / Conclusões / Palavras-chave',
+    decimal:'VÍRGULA decimal (p = 0,03; média 45,2), igual que en español. NO convertir el separador.',
+    miles:'Punto como separador de miles (1.250), igual que en español.',
+    terminos:'FEVE (fração de ejeção do ventrículo esquerdo), DDVE/DSVE, septo interventricular, parede posterior do VE, volume do átrio esquerdo indexado, TAPSE, PSAP, strain longitudinal global (SLG), ICFEr/ICFEp/ICFElr, intervalo de confiança de 95% (IC 95%), intervalo interquartil (IIQ), classe funcional NYHA. Usar la terminología de la Sociedade Brasileira de Cardiologia.',
+    /* En portugués «razão de risco» se usa tanto para hazard ratio como para risk ratio.
+       Un estudio de cohorte que informa los dos salía con el mismo nombre para ambos y
+       el lector no puede saber cuál estimador se usó. La sigla lo desambigua. */
+    estimadores:'razão de chances (OR), hazard ratio (HR), risco relativo (RR). Conservá SIEMPRE la sigla entre paréntesis: «razão de risco» a secas es ambiguo entre hazard ratio y risk ratio. No cambies un estimador por otro.',
+    claves:'Palavras-chave: traducí las palabras clave del autor al portugués. Si un término no tiene un descriptor DeCS exacto, dejá la traducción directa y agregale « [verificar descritor] ». NO inventes descriptores DeCS: son una lista cerrada.'
+  }
+};
+
+function TRAD_SYS(d){
+  return 'Sos un traductor médico-científico profesional. Traducís resúmenes estructurados (abstracts) '+
+  'de tesis médicas desde el español hacia el '+d.destino+', para su envío a revistas científicas.\n\n'+
+  'REGLAS QUE NO SE NEGOCIAN:\n'+
+  '1. NO ALTERES NINGUNA CIFRA. Los N, porcentajes, medias, desvíos estándar, medianas, rangos '+
+  'intercuartílicos, valores de p, odds ratios, hazard ratios, intervalos de confianza, tamaños de '+
+  'efecto y unidades se reproducen EXACTAMENTE como están. No redondees, no cambies la cantidad de '+
+  'decimales, no conviertas unidades, no "corrijas" un número que te parezca inverosímil.\n'+
+  '2. NO AGREGUES NI SAQUES CONTENIDO. No mejores la redacción del autor, no completes frases, no '+
+  'agregues limitaciones, implicancias clínicas ni conclusiones que el original no tenga. Si una '+
+  'frase está incompleta o es ambigua, traducila incompleta o ambigua. Traducir no es editar.\n'+
+  '3. TERMINOLOGÍA: usá los términos técnicos estándar internacionales del idioma de destino, no la '+
+  'traducción literal. En este idioma: '+d.terminos+'\n'+
+  '   La equivalencia terminológica cambia la FORMA del término, nunca su especificidad: no '+
+  'agregues lateralidad, ventrículo, calificadores ni precisiones que el original no tenga. Si el '+
+  'original dice "fracción de eyección" sin decir cuál, no lo conviertas en "left ventricular".\n'+
+  '   ESTIMADORES: '+d.estimadores+'\n'+
+  '4. ESTRUCTURA IMRAD: respetá el orden y los encabezados del original y traducilos como '+
+  d.encabezados+'. Si el original no tiene encabezados explícitos, NO los agregues.\n'+
+  '5. SEPARADOR DECIMAL: '+d.decimal+' Separador de miles: '+d.miles+'\n'+
+  '   CUIDADO: antes de tocar un separador decidí qué papel cumple. En español "1.240" son mil '+
+  'doscientos cuarenta y "1,24" es uno coma veinticuatro. Convertir el primero como si fuera '+
+  'decimal lo transforma en 1,24 — un error de tres órdenes de magnitud en un tamaño muestral. '+
+  'Ante la duda dejá el número como está: es preferible un separador con la convención equivocada '+
+  'a un valor equivocado.\n'+
+  '6. '+d.claves+'\n'+
+  '7. Si el texto trae marcadores del tipo [REF PENDIENTE: ...], dejalos tal cual, sin traducir.\n'+
+  '8. Si el texto que recibís YA ESTÁ en '+d.destino+', devolvelo sin cambios. No lo reescribas ni '+
+  'lo "mejores": sería editar el texto del autor bajo la etiqueta de una traducción. Si el texto '+
+  'viene mezclado (parte en español y parte en el idioma de destino), traducí sólo la parte en '+
+  'español y dejá el resto intacto, sin fusionar ni descartar nada.\n'+
+  '9. Devolvé ÚNICAMENTE la traducción. Sin preámbulo, sin notas del traductor, sin comentarios '+
+  'sobre el original, sin explicar tus decisiones.';
+}
+
+let TRAD_ULTIMA=null;   // { idioma, texto, fuente } — lo que muestra el panel, para Copiar
+let TRAD_GEN=0;         // token de generación: descarta respuestas de un pedido ya abandonado
+
+/* ── Cotejo automático de cifras ──────────────────────────────────────────────
+   El panel le pide al autor que compare "una por una" las cifras del original con las de
+   la traducción. Eso es exactamente lo que puede hacer la app, y hacerlo a mano es lo que
+   nadie hace: son 20 números repartidos entre dos bloques de texto separados por 400 px.
+   Peor todavía, al traducir al inglés se le PIDE al modelo que cambie la puntuación de
+   todos los números, así que el lector va predispuesto a ver los números distintos — que
+   es justo la disposición mental con la que se pasa por alto un 1.240 donde iba 1,240.
+
+   Se comparan las SECUENCIAS DE DÍGITOS, ignorando los separadores. Eso detecta lo que
+   importa —un 45 que salió 54, un 118 que salió 120, un decimal que se perdió— sin tener
+   que resolver si un punto era decimal o de miles, que es ambiguo entre los dos idiomas.
+   Lo que NO detecta —que 1.240 pase a significar 1,24 conservando los dígitos— se dice
+   explícitamente en pantalla, en vez de dejar creer que el cotejo cubre todo. */
+function _tradCifras(txt){
+  const out=[];
+  String(txt||'').replace(/\d[\d.,]*/g, function(m){
+    const limpio=m.replace(/[.,]+$/,'');            // "45," al final de una frase
+    const digitos=limpio.replace(/[.,]/g,'');
+    if(digitos) out.push({vista:limpio, digitos:digitos});
+    return m;
+  });
+  return out;
+}
+function tradCotejarCifras(orig,trad){
+  const a=_tradCifras(orig), b=_tradCifras(trad);
+  const cuenta=arr=>arr.reduce(function(m,x){m[x.digitos]=(m[x.digitos]||0)+1;return m;},{});
+  const ca=cuenta(a), cb=cuenta(b);
+  const faltan=[], sobran=[];
+  Object.keys(ca).forEach(function(k){
+    const d=ca[k]-(cb[k]||0);
+    if(d>0){ const v=a.find(x=>x.digitos===k); for(let i=0;i<d;i++) faltan.push(v.vista); }
+  });
+  Object.keys(cb).forEach(function(k){
+    const d=cb[k]-(ca[k]||0);
+    if(d>0){ const v=b.find(x=>x.digitos===k); for(let i=0;i<d;i++) sobran.push(v.vista); }
+  });
+  return { faltan:faltan, sobran:sobran, total:a.length, ok:!faltan.length&&!sobran.length };
+}
+
+function tradCerrar(){
+  const m=document.getElementById('trad-menu'), b=document.getElementById('btn-trad'), o=document.getElementById('trad-ov');
+  if(m)m.classList.remove('open');
+  if(b)b.setAttribute('aria-expanded','false');
+  if(o)o.classList.remove('open');
+}
+function tradToggle(){
+  const m=document.getElementById('trad-menu'); if(!m)return;
+  const abrir=!m.classList.contains('open');
+  tradCerrar();
+  if(!abrir)return;
+  m.classList.add('open');
+  document.getElementById('btn-trad').setAttribute('aria-expanded','true');
+  document.getElementById('trad-ov').classList.add('open');
+  tradEncuadrar(m);
+}
+/* El panel cuelga a la izquierda del botón, que a ancho de escritorio está bien. En
+   celular no: el botón queda pegado al borde derecho (a 375 px su borde cae justo en
+   375), así que el menú arrancaba en 215 y terminaba en 495 — la mitad de las dos
+   opciones fuera de la pantalla. Se corrige DESLIZANDO el panel lo justo, no cambiando
+   de ancla: con el `max-width` del CSS el panel siempre es más angosto que la ventana,
+   así que siempre hay una posición donde entra. Se mide contra clientWidth, que es el
+   ancho de layout; innerWidth incluye la barra de desplazamiento. */
+function tradEncuadrar(m){
+  m.style.transform='';
+  const M=8, W=document.documentElement.clientWidth||window.innerWidth;
+  const r=m.getBoundingClientRect();
+  let dx=0;
+  if(r.left<M) dx=M-r.left;
+  else if(r.right>W-M) dx=(W-M)-r.right;
+  if(dx) m.style.transform='translateX('+Math.round(dx)+'px)';
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') tradCerrar(); });
+// Rotar el celular con el menú abierto deja el translateX calculado para el ancho anterior.
+window.addEventListener('resize',function(){ if(document.getElementById('trad-menu')?.classList.contains('open')) tradCerrar(); });
+
+/* Marca la traducción como vencida cuando cambia el abstract de arriba. La llama el
+   oninput del textarea: corregir un N y volver a leer la traducción son las dos cosas que
+   el autor hace en la misma sentada, y sin esto el panel de abajo seguía mostrando —y el
+   botón Copiar seguía entregando— la traducción del texto anterior. */
+function tradInvalidar(){
+  if(!TRAD_ULTIMA)return;
+  const actual=(document.getElementById('abstract-text')?.value||'').trim();
+  if(actual===TRAD_ULTIMA.fuente)return;
+  TRAD_ULTIMA.vencida=true;
+  const av=document.getElementById('trad-vencida');
+  if(av)av.style.display='block';
+}
+
+async function traducirAbstract(id){
+  tradCerrar();
+  const d=TRAD_IDIOMAS[id];
+  const cont=document.getElementById('abstract-trad');
+  if(!d||!cont)return;
+  TRAD_ULTIMA=null;
+  const txt=(document.getElementById('abstract-text').value||'').trim();
+  /* El botón anterior hacía `if(!txt.trim())return;` — no pasaba nada y no decía nada,
+     que desde afuera se lee como que la traducción está rota. */
+  if(!txt){
+    cont.innerHTML='<div class="alert alert-warn" style="margin-top:14px">⚠️ El cuadro de edición está vacío. Generá el abstract o escribilo ahí arriba: la traducción sale de ese cuadro, no del panel del Director IA.</div>';
+    return;
+  }
+  if(!TS.iaActiva){alert('Conectá tu API key primero.');return;}
+  if(!usarCredito())return;
+  const gen=++TRAD_GEN;
+  cont.innerHTML='<div class="ia-loading"><div class="ia-spinner"></div> Traduciendo al '+esc(d.etiq.toLowerCase())+'...</div>';
+  try{
+    const r=await llamarIA([{role:'user',content:txt}],2000,TRAD_SYS(d));
+    /* Si mientras tanto se abrió otro proyecto o se pidió otra traducción, esta respuesta
+       ya no corresponde a lo que hay en pantalla. Sin este control se pintaba igual —
+       debajo del abstract de OTRA tesis— y se anotaba en su registro de uso de IA. */
+    if(gen!==TRAD_GEN)return;
+    if(!r||!r.trim()){
+      cont.innerHTML='<div class="alert alert-warn" style="margin-top:14px">⚠️ La API devolvió una respuesta vacía. Reintentá.</div>';
+      return;
+    }
+    /* Se registra en el log de uso de IA (ICMJE): un abstract traducido por un modelo es
+       texto generado por IA que se publica con la firma del autor, y la declaración de
+       uso de IA de la tesis tiene que incluirlo. */
+    logAI('ia-abstract-trad','Traducción del abstract al '+d.etiq.toLowerCase());
+    TRAD_ULTIMA={idioma:d.etiq,texto:r,fuente:txt};
+    tradRender(d,r,txt,TS._ultimoStop==='max_tokens');
+  }catch(e){
+    if(gen!==TRAD_GEN)return;
+    cont.innerHTML='<div class="alert alert-warn" style="margin-top:14px">⚠️ '+esc(e.message)+'</div>';
+  }
+}
+
+function tradRender(d,texto,fuente,cortada){
+  const cont=document.getElementById('abstract-trad');
+  const cuenta=t=>t.trim()?t.trim().split(/\s+/).length:0;
+  const pal=cuenta(texto), palOrig=cuenta(fuente);
+  const cot=tradCotejarCifras(fuente,texto);
+
+  /* El cotejo de cifras, arriba de todo y con el resultado a la vista. Es lo único de
+     este panel que verifica algo en vez de pedirle al autor que verifique. */
+  let bloqueCifras;
+  if(!cot.total){
+    bloqueCifras='';
+  }else if(cot.ok){
+    bloqueCifras='<div class="alert" style="background:var(--successLt,#eafaf1);border-color:var(--success,#1e8449);color:var(--success,#1e8449);margin-bottom:10px;font-size:.78rem">✅ Las '+cot.total+' cifras del original aparecen todas en la traducción, con los mismos dígitos. <b>Ojo:</b> esto no verifica los separadores — un «1.240» que pase a significar 1,24 conserva los dígitos y no lo detecta. Los números largos revisalos igual.</div>';
+  }else{
+    bloqueCifras='<div class="alert alert-warn" style="margin-bottom:10px;font-size:.78rem">🔴 <b>Las cifras no coinciden.</b>'+
+      (cot.faltan.length?'<br>Están en el original y NO en la traducción: <b>'+cot.faltan.map(esc).join(' · ')+'</b>':'')+
+      (cot.sobran.length?'<br>Aparecen en la traducción y NO en el original: <b>'+cot.sobran.map(esc).join(' · ')+'</b>':'')+
+      '<br>Revisalas antes de usar esta traducción.</div>';
+  }
+  const avisoCorte=cortada
+    ? '<div class="alert alert-warn" style="margin-bottom:10px;font-size:.78rem">✂️ <b>La traducción quedó cortada</b> — se alcanzó el límite de la respuesta. Lo que se ve abajo está incompleto: acortá el abstract y reintentá.</div>'
+    : '';
+  const avisoLargo=(palOrig&&pal&&(pal<palOrig*0.6||pal>palOrig*1.8))
+    ? '<div class="alert alert-warn" style="margin-bottom:10px;font-size:.78rem">📏 El original tiene '+palOrig+' palabras y la traducción '+pal+'. Una diferencia así de grande suele significar que se perdió o se agregó contenido.</div>'
+    : '';
+
+  cont.innerHTML=
+    '<div class="trad-panel">'+
+      '<div class="trad-panel-head">'+d.bandera+' Traducción — '+esc(d.etiq)+
+        '<span style="font-weight:400;color:var(--inkSoft);font-size:.75rem">'+pal+' palabras (original: '+palOrig+')</span>'+
+        '<button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="copiarTraduccion(this)">📋 Copiar traducción</button>'+
+      '</div>'+
+      '<div id="trad-vencida" class="alert alert-warn" style="display:none;margin-bottom:10px;font-size:.78rem">⚠️ <b>El abstract cambió después de esta traducción.</b> Lo que se ve abajo corresponde a la versión anterior — volvé a traducir antes de copiar.</div>'+
+      avisoCorte+avisoLargo+bloqueCifras+
+      /* El aviso habla de LO QUE PUEDE FALLAR ACÁ, no del genérico "revisá el texto".
+         Dice "debería usar" y no "usa": lo que hay es una instrucción al modelo, no una
+         garantía, y afirmarlo tranquilizaba al autor sobre algo que nadie comprobó. */
+      '<div class="alert alert-warn" style="margin-bottom:10px;font-size:.78rem">🤖 Traducción automática — revisá los términos técnicos y los descriptores de las palabras clave: <b>debería</b> usar la terminología internacional estándar, pero es una instrucción al modelo, no una garantía. Los descriptores marcados <b>[verificar descriptor]</b> hay que buscarlos en MeSH o DeCS antes de enviar.</div>'+
+      '<div class="trad-panel-txt" id="trad-texto">'+esc(texto)+'</div>'+
+    '</div>';
+}
+
+const TRAD_COPIAR_LBL='📋 Copiar traducción';
+async function copiarTraduccion(btn){
+  if(!TRAD_ULTIMA||!TRAD_ULTIMA.texto){alert('No hay ninguna traducción para copiar.');return;}
+  /* Se niega a copiar una traducción vencida en vez de entregarla en silencio: el texto
+     que se copia es el que termina en la revista. */
+  tradInvalidar();
+  if(TRAD_ULTIMA.vencida &&
+     !confirm('El abstract cambió después de esta traducción, así que lo que vas a copiar corresponde a la versión anterior.\n\n¿Copiarlo igual?')) return;
+  /* La etiqueta se restaura desde una CONSTANTE y no desde btn.textContent: tocando dos
+     veces seguidas dentro del segundo y medio, la segunda llamada capturaba "✅ Copiado"
+     como texto "original" y el botón quedaba clavado en el cartel de éxito para siempre,
+     sin volver a distinguir un copiado bueno de uno fallido. */
+  const marcar=(t,ms)=>{ if(btn){btn.textContent=t;setTimeout(function(){btn.textContent=TRAD_COPIAR_LBL;},ms||1600);} };
+  try{
+    await navigator.clipboard.writeText(TRAD_ULTIMA.texto);
+    marcar('✅ Copiado');
+    return;
+  }catch(e){ /* sin https o sin permiso (Safari es el caso típico) — sigue abajo */ }
+  /* Respaldo con execCommand, igual que copiar() del resto de la app: SÍ copia, y en
+     iPad o celular es el único que funciona (decir "⌘C" en una tablet no sirve de nada). */
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=TRAD_ULTIMA.texto;
+    ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0,ta.value.length);
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    if(ok){ marcar('✅ Copiado'); return; }
+  }catch(e){}
+  // Último recurso: seleccionar el texto en pantalla para copiarlo a mano.
+  const el=document.getElementById('trad-texto');
+  if(el&&window.getSelection){
+    const rango=document.createRange(); rango.selectNodeContents(el);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(rango);
+    marcar('Seleccionado — copialo a mano',3000);
+  }else alert('El navegador no dejó copiar automáticamente. Seleccioná el texto y copialo a mano.');
 }
 
 // ── BIAS, COHERENCE, BENCHMARK ──
@@ -2758,6 +3123,18 @@ function resetEstadoNoProyecto(){
   const rs=document.getElementById('rev-spec'); if(rs) rs.innerHTML='';
   const rb=document.getElementById('btn-adaptar-rev'); if(rb) rb.disabled=true;
   const ir=document.getElementById('ia-revista'); if(ir) ir.innerHTML='';
+  /* La traducción es del abstract del proyecto ANTERIOR. El panel es HTML estático, así
+     que sin esto quedaba en pantalla al abrir otro proyecto, debajo de un abstract que
+     ya no es el suyo — y el botón Copiar seguía entregando el texto viejo.
+     TRAD_GEN++ además invalida una traducción que esté EN VUELO: sin eso, la respuesta
+     llegaba un segundo después del cambio de proyecto y se pintaba igual, ya bajo el
+     abstract del proyecto nuevo y anotándose en SU registro de uso de IA. */
+  TRAD_ULTIMA=null; TRAD_GEN++; tradCerrar();
+  const tr=document.getElementById('abstract-trad'); if(tr) tr.innerHTML='';
+  const ab=document.getElementById('ia-abstract'); if(ab) ab.innerHTML='';
+  /* El editor se vuelve a esconder: sólo debe verse cuando el abstract que muestra es el
+     del proyecto abierto. sincronizarFormulario lo repuebla y generarAbstract lo abre. */
+  const ed=document.getElementById('abstract-editor'); if(ed) ed.style.display='none';
 }
 
 // ── QUALITY ──
